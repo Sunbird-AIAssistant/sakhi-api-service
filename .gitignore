@@ -1,5 +1,6 @@
 .env
 data
+input_data
 venv/
 .DS_Store
 .idea/
