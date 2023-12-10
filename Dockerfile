@@ -14,6 +14,7 @@ COPY gcp_credentials.json /root/
 COPY ./main.py /root/
 COPY ./query_with_gptindex.py /root/
 COPY ./cloud_storage.py /root/
+COPY ./cloud_storage_oci.py /root/
 COPY ./query_with_langchain.py /root/
 COPY ./io_processing.py /root/
 COPY ./translator.py /root/

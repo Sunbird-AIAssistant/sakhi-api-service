@@ -13,6 +13,7 @@ from io_processing import *
 from query_with_gptindex import *
 from query_with_langchain import *
 from cloud_storage import *
+from cloud_storage_oci import *
 import uuid
 import shutil
 from zipfile import ZipFile
@@ -264,8 +265,9 @@ async def query_with_voice_input(index_id: str, input_language: DropDownInputLan
                     if is_audio:
                         output_file, error_message = process_outgoing_voice(regional_answer, language)
                         if output_file is not None:
-                            upload_file("output_audio_files", output_file.name)
+                            upload_file_object(output_file.name)
                             audio_output_url = give_public_url(output_file.name)
+                            print("audio_output_url ===>", audio_output_url)
                             output_file.close()
                             os.remove(output_file.name)
                         else:
