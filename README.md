@@ -52,6 +52,11 @@ To use the code, you need to follow these steps:
     USERNAME=<your_login_username>
     PASSWORD=<your_login_password>
     AI4BHARAT_API_KEY=<your_ai4bharat_api_key>
+    OCI_ENDPOINT_URL=<oracle_bucket_name>
+    OCI_REGION_NAME=<oracle_region_name>
+    OCI_BUCKET_NAME=<oracle_bucket_name>
+    OCI_SECRET_ACCESS_KEY=<oracle_secret_access_key>
+    OCI_ACCESS_KEY_ID=<oracle_access_key_id>
     MARQO_URL=<your_marqo_db_url>
     ```
 
