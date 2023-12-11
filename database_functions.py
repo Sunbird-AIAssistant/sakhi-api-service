@@ -21,17 +21,6 @@ async def create_engine(timeout=60):
 async def create_schema(engine):
     async with engine.acquire() as connection:
         await connection.execute('''
-            CREATE TABLE IF NOT EXISTS qa_logs (
-                id SERIAL PRIMARY KEY,
-                model_name TEXT DEFAULT 'langchain',
-                uuid_number TEXT,
-                query TEXT,
-                paraphrased_query TEXT,
-                response TEXT,
-                source_text TEXT,
-                error_message TEXT,
-                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-            );
             CREATE TABLE IF NOT EXISTS qa_voice_logs (
                 id SERIAL PRIMARY KEY,
                 uuid_number TEXT,
@@ -44,14 +33,6 @@ async def create_schema(engine):
                 response_in_english TEXT,
                 audio_output_link TEXT,
                 source_text TEXT,
-                error_message TEXT,
-                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-            );
-            CREATE TABLE IF NOT EXISTS document_store_logs (
-                id SERIAL PRIMARY KEY,
-                description TEXT,
-                uuid_number TEXT,
-                documents_list TEXT[],
                 error_message TEXT,
                 created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
             );
@@ -70,31 +51,6 @@ async def create_schema(engine):
                 created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
             );
         ''')
-
-
-async def insert_qa_logs(engine, model_name, uuid_number, query, paraphrased_query, response, source_text,
-                         error_message):
-    async with engine.acquire() as connection:
-        await connection.execute(
-            '''
-            INSERT INTO qa_logs 
-            (model_name, uuid_number, query, paraphrased_query, response, source_text, error_message, created_at) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-            ''',
-            model_name, uuid_number, query, paraphrased_query, response, source_text, error_message,
-            datetime.now(pytz.UTC)
-        )
-
-
-async def insert_document_store_logs(engine, description, uuid_number, documents_list, error_message):
-    async with engine.acquire() as connection:
-        await connection.execute(
-            f'''
-            INSERT INTO document_store_logs
-            (description, uuid_number, documents_list, error_message, created_at)
-            VALUES ($1, $2, ARRAY {documents_list}, $3, $4)
-            ''', description, uuid_number, error_message, datetime.now(pytz.UTC))
-
 
 async def insert_qa_voice_logs(engine, uuid_number, input_language, output_format, query, query_in_english,
                                paraphrased_query, response, response_in_english, audio_output_link, source_text,

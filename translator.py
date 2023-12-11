@@ -88,7 +88,7 @@ def google_speech_to_text(wav_file_content, input_language):
 
 def speech_to_text(encoded_string, input_language):
 
-    url = "https://api.dhruva.ai4bharat.org/services/inference/pipeline"
+    url = os.environ["AI4BHARAT_ENDPOINT_URL"]
 
     payload = json.dumps({
         "pipelineTasks": [
@@ -141,7 +141,7 @@ def indic_translation(text, source, destination):
     if source == destination:
         return text
     try:
-        url = "https://api.dhruva.ai4bharat.org/services/inference/pipeline"
+        url = os.environ["AI4BHARAT_ENDPOINT_URL"]
 
         payload = json.dumps({
         "pipelineTasks": [
@@ -198,7 +198,7 @@ def google_text_to_speech(text, language):
 
 def text_to_speech(language, text, gender='female'):
     try:
-        url = "https://api.dhruva.ai4bharat.org/services/inference/pipeline"
+        url = os.environ["AI4BHARAT_ENDPOINT_URL"]
 
         payload = json.dumps({
             "pipelineTasks": [
