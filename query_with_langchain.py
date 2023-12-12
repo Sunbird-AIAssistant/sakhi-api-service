@@ -67,12 +67,12 @@ def get_source_markdown(documents: List[Tuple[Document, Any]], language: str) ->
     try:
         sources =  [document.metadata for document, search_score in documents]
         added_sources = []
-        sources_markdown = f'\n\n Sources \n\n'
+        sources_markdown = f'\n\n**Sources** \n'
         counter = 1
         for data in sources:  
             logger.debug(f"Source {counter} ==> {data}") 
             if not data["file_name"] in added_sources:
-                sources_markdown = sources_markdown + f'''{counter}. {data["file_name"]} \n\n'''
+                sources_markdown = sources_markdown + f'''{counter}. {data["file_name"]} \n'''
                 added_sources.append(data["file_name"])
                 counter += 1
 

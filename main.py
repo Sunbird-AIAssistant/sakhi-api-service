@@ -118,11 +118,8 @@ async def query_with_voice_input(input_language: DropDownInputLanguage,
                 if regional_answer is not None:
                     if is_audio:
                         output_file, error_message = process_outgoing_voice(regional_answer, language)
-                        print("Errrrr")
-                        print(output_file, error_message)
                         if output_file is not None:
                             upload_file_object(output_file.name)
-                            print("uploded")
                             audio_output_url, error_message = give_public_url(output_file.name)
                             logger.debug("Audio Ouput URL ===>", audio_output_url)
                             output_file.close()
