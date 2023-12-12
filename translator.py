@@ -88,7 +88,7 @@ def google_speech_to_text(wav_file_content, input_language):
 
 def speech_to_text(encoded_string, input_language):
 
-    url = os.environ["AI4BHARAT_ENDPOINT_URL"]
+    url = os.environ["BHASHINI_ENDPOINT_URL"]
 
     payload = json.dumps({
         "pipelineTasks": [
@@ -111,7 +111,7 @@ def speech_to_text(encoded_string, input_language):
         }
     })
     headers = {
-        'Authorization': os.environ["AI4BHARAT_API_KEY"],
+        'Authorization': os.environ["BHASHINI_API_KEY"],
         'Content-Type': 'application/json'
     }
 
@@ -141,7 +141,7 @@ def indic_translation(text, source, destination):
     if source == destination:
         return text
     try:
-        url = os.environ["AI4BHARAT_ENDPOINT_URL"]
+        url = os.environ["BHASHINI_ENDPOINT_URL"]
 
         payload = json.dumps({
         "pipelineTasks": [
@@ -165,7 +165,7 @@ def indic_translation(text, source, destination):
         }
         })
         headers = {
-            'Authorization': os.environ["AI4BHARAT_API_KEY"],
+            'Authorization': os.environ["BHASHINI_API_KEY"],
             'Content-Type': 'application/json'
         }
 
@@ -198,7 +198,7 @@ def google_text_to_speech(text, language):
 
 def text_to_speech(language, text, gender='female'):
     try:
-        url = os.environ["AI4BHARAT_ENDPOINT_URL"]
+        url = os.environ["BHASHINI_ENDPOINT_URL"]
 
         payload = json.dumps({
             "pipelineTasks": [
@@ -227,7 +227,7 @@ def text_to_speech(language, text, gender='female'):
             }
         })
         headers = {
-            'Authorization': os.environ["AI4BHARAT_API_KEY"],
+            'Authorization': os.environ["BHASHINI_API_KEY"],
             'Content-Type': 'application/json'
         }
 

@@ -19,21 +19,15 @@ To use the code, you need to follow these steps:
     pip install -r requirements-dev.txt
     ```
 
-3. You will need a OCI account to store the audio file for response & indices in a bucket and to host a postgres connection to store the api logs.
+3. You will need a OCI account to store the audio file for response & marqo vector database for semantic similarity search.
 
-4. create another file **.env** which will hold the development credentials and add the following variables. Update the openai_api_key, OCI details, AI4BHARAT api key and your db connections appropriately.
+4. create another file **.env** which will hold the development credentials and add the following variables. Update the openai_api_key, OCI details, Bhashini endpoint URL and API key.
 
     ```bash
     OPENAI_API_KEY=<your_openai_api_key>
-    DATABASE_NAME=<your_db_name>
-    DATABASE_USERNAME=<your_db_username>
-    DATABASE_PASSWORD=<your_db_password>
-    DATABASE_IP=<your_db_public_ip>
-    DATABASE_PORT=5432
-    USERNAME=<your_login_username>
-    PASSWORD=<your_login_password>
-    AI4BHARAT_API_KEY=<your_ai4bharat_api_key>
-    AI4BHARAT_ENDPOINT_URL=<your_ai4bharat_api_endpoint>
+    LOG_LEVEL=<log_level>  # INFO, DEBUG, ERROR
+    BHASHINI_ENDPOINT_URL=<your_bhashini_api_endpoint>
+    BHASHINI_API_KEY=<your_bhashini_api_key>
     OCI_ENDPOINT_URL=<oracle_bucket_name>
     OCI_REGION_NAME=<oracle_region_name>
     OCI_BUCKET_NAME=<oracle_bucket_name>
@@ -71,7 +65,7 @@ When you try to open the URL for the first time (or click the "Execute" button i
 
 #### Request
 
-Requires an input_language(Selection - English, Hindi, Kannada) and output_format(Selection - Text, Voice).
+Requires an input_language(Selection - English, Hindi, Kannada, etc..), audience_type(Selection - Default, Teacher, Parent) and output_format(Selection - Text, Voice).
 
 Either of the query_text(string) or audio_url(string) should be present. If both the values are given, query_text is taken for consideration. Another requirement is that the input_language should be same as the one given in query_text and audio_url (i.e, if you select English in input_language, then your query_text and audio_url should contain queries in English). The audio_url should be publicly downloadable, otherwise the audio_url will not work.
 
@@ -92,7 +86,7 @@ Either of the query_text(string) or audio_url(string) should be present. If both
 
 Once the API is hit with proper request parameters, it is then checked for the presence of query_text. 
 
-If query_text is present, the translation of query_text based on input_language is done. Then the translated query_text is given to langchain model which does the same work. Then the paraphrased answer is again translated back to input_language. If the output_format is voice, the translated paraphrased answer is then converted to a mp3 file and uploaded to a GCP folder and made public.
+If query_text is present, the translation of query_text based on input_language is done. Then the translated query_text is given to langchain model which does the same work. Then the paraphrased answer is again translated back to input_language. If the output_format is voice, the translated paraphrased answer is then converted to a mp3 file and uploaded to a OCI folder and made public.
 
 If the query_text is absent and audio_url is present, then the audio url is downloaded and converted into text based on the input_language. Once speech to text conversion in input_language is finished, the same process mentioned above happens. One difference is that by default, the paraphrased answer is converted to voice irrespective of the output_format since the input_format is voice.
 

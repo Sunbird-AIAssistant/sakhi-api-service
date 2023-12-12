@@ -1,8 +1,10 @@
 import boto3
 from botocore.exceptions import ClientError
 import os
+from logger import logger
+from dotenv import load_dotenv
 
-
+load_dotenv()
 # Create S3 client for OCI object storage
 s3_client = boto3.client(
  's3',
@@ -29,9 +31,9 @@ def upload_file_object(file_name, object_name = None):
 
     try:
         s3_client.upload_file(file_name, bucket_name, object_name, ExtraArgs={'ACL': 'public-read'})
-        print(f"File uploaded to OCI Object Storage bucket: {bucket_name}")
+        logger.info(f"File uploaded to OCI Object Storage bucket: {bucket_name}")
     except ClientError as e:
-        print(f"Error uploading file: {e}")
+        logger.error(f"Exception uploading a file: {e}", exc_info=True)
         return False
     return True
 
@@ -49,9 +51,9 @@ def download_file_object(file_name, object_name = None):
 
     try:
         s3_client.download_file(bucket_name, object_name, file_name)
-        print(f"File downloaded from OCI Object Storage bucket: {bucket_name}")
+        logger.info(f"File downloaded from OCI Object Storage bucket: {bucket_name}")
     except ClientError as e:
-        print(f"Error downloading file: {e}")
+        logger.error(f"Exception downloading a file: {e}", exc_info=True)
         return False
     return True
 
@@ -70,7 +72,7 @@ def create_presigned_url(object_name, expiration=3600):
                                                             'Key': object_name},
                                                     ExpiresIn=expiration)
     except ClientError as e:
-        print(f"Error generating public URL: {e}")
+        logger.error(f"Exception generating public URL: {e}", exc_info=True)
         return None
 
     # The response contains the presigned URL
@@ -86,6 +88,10 @@ def give_public_url(file_name: str):
     Returns:
         The full path to the file.
     """
-    oci_endpoint_url = os.environ["OCI_ENDPOINT_URL"]
-    public_url = f"{oci_endpoint_url}{bucket_name}/{file_name}"
-    return public_url
+    try:
+        oci_endpoint_url = os.environ["OCI_ENDPOINT_URL"]
+        public_url = f"{oci_endpoint_url}{bucket_name}/{file_name}"
+        return public_url, None
+    except Exception as e:
+        logger.error(f"Exception Preparing public URL: {e}", exc_info=True)
+        return None, "Error while generating public URL"
