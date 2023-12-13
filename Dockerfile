@@ -14,6 +14,7 @@ COPY ./cloud_storage_oci.py /root/
 COPY ./query_with_langchain.py /root/
 COPY ./io_processing.py /root/
 COPY ./translator.py /root/
+COPY ./logger.py /root/
 EXPOSE 8000
 COPY script.sh /root/
 ENTRYPOINT ["bash","script.sh"]
