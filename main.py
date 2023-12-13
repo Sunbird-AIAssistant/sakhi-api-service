@@ -75,7 +75,7 @@ class DropDownInputLanguage(str, Enum):
     ml = "Malayalam"
     mr = "Marathi"
     ori = "Oriya"
-    pa = "Panjabi"
+    pa = "Punjabi"
     ta = "Tamil"
     te = "Telugu"
 
@@ -147,7 +147,7 @@ async def query_with_voice_input(input_language: DropDownInputLanguage,
                         if output_file is not None:
                             upload_file_object(output_file.name)
                             audio_output_url, error_message = give_public_url(output_file.name)
-                            logger.debug("Audio Ouput URL ===>", audio_output_url)
+                            logger.debug(f"Audio Ouput URL ===> {audio_output_url}")
                             output_file.close()
                             os.remove(output_file.name)
                         else:
