@@ -30,7 +30,6 @@ def querying_with_langchain_gpt3(index_id, query, audience_type ):
         contexts =  [document.page_content for document, search_score in documents]
         contexts = "\n\n---\n\n".join(contexts) + "\n\n-----\n\n"
         system_rules = getSystemPromptTemplate(audience_type)
-        print(system_rules)
         system_rules = system_rules.format(context=contexts)
         client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
         res = client.chat.completions.create(
