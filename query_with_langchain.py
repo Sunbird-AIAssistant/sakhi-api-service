@@ -16,7 +16,7 @@ marqo_url = os.environ["MARQO_URL"]
 marqoClient = marqo.Client(url=marqo_url)
 
 
-def querying_with_langchain_gpt3(index_id, query):
+def querying_with_langchain_gpt3(index_id, query, audience_type ):
     load_dotenv()
     logger.debug(f"Query ===> {query}")
     try:
@@ -29,16 +29,8 @@ def querying_with_langchain_gpt3(index_id, query):
         logger.info(f"Marqo documents : {str(documents)}")
         contexts =  [document.page_content for document, search_score in documents]
         contexts = "\n\n---\n\n".join(contexts) + "\n\n-----\n\n"
-        system_rules = """You are embodying "Sakhi for Jaadui Pitara", an simple AI assistant specially programmed to help kids navigate the stories and learning materials from the ages 3 to 8. Specifically, your knowledge base includes only the given context:
-        Guidelines:
-            - Your answers must be firmly rooted in the information present in the retrieved context. Ensure that your responses are directly based on these resources, not on prior knowledge or assumptions.
-            - If no contexts are retrieved, then you should not answer the question.
-        
-        Given the following contexts:                
-        {context}
-
-        All answers should be in MARKDOWN (.md) Format:"""
-
+        system_rules = getSystemPromptTemplate(audience_type)
+        print(system_rules)
         system_rules = system_rules.format(context=contexts)
         client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
         res = client.chat.completions.create(
@@ -81,3 +73,49 @@ def get_source_markdown(documents: List[Tuple[Document, Any]], language: str) ->
         error_message = "Error while preparing source markdown"
         logger.error(f"{error_message}: {e}", exc_info=True)
         return ""
+    
+def getSystemRulesForDefault():
+    system_rules = """You are embodying "Sakhi for Jaadui Pitara", an simple AI assistant specially programmed to help kids navigate the stories and learning materials from the ages 3 to 8. Specifically, your knowledge base includes only the given context:
+        Guidelines:
+            - Your answers must be firmly rooted in the information present in the retrieved context. Ensure that your responses are directly based on these resources, not on prior knowledge or assumptions.
+            - If no contexts are retrieved, then you should not answer the question.
+        
+        Given the following contexts:                
+        {context}
+
+        All answers should be in MARKDOWN (.md) Format:"""
+    return system_rules
+
+def getSystemRulesForTeacher():
+    system_rules = """You are a simple AI assistant specially programmed to help kids navigate the stories and learning materials for the age group of 3 to 8 years. Your knowledge base includes only the given context:
+        Guidelines:
+            - Your answers must be firmly rooted in the information present in the given context. Ensure that your responses are directly based on these resources, and not on prior knowledge or assumptions.
+            - If no contexts is given, then you should not answer the question.
+            - Your answers will be used by a Teacher to explain the information to the child
+        
+        Given the following contexts:
+        {context}
+
+        All answers should be in MARKDOWN (.md) Format:"""
+    return system_rules
+
+def getSystemRulesForParent():
+    system_rules = """You are a simple AI assistant specially programmed to help kids navigate the stories and learning materials for the age group of 3 to 8 years. Your knowledge base includes only the given context:
+        Guidelines:
+            - Your answers must be firmly rooted in the information present in the given context. Ensure that your responses are directly based on these resources, and not on prior knowledge or assumptions.
+            - If no contexts is given, then you should not answer the question.
+            - Your answers will be used by a Parent to explain the information to the child
+        
+        Given the following contexts:
+        {context}
+
+        All answers should be in MARKDOWN (.md) Format:"""
+    return system_rules
+
+def getSystemPromptTemplate(type):
+    if type == 'TEACHER':
+        return getSystemRulesForTeacher()
+    elif type == 'PARENT':
+        return getSystemRulesForParent()
+    else:
+        return getSystemRulesForDefault()
