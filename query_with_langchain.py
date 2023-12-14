@@ -86,11 +86,13 @@ def getSystemRulesForDefault():
     return system_rules
 
 def getSystemRulesForTeacher():
-    system_rules = """You are a simple AI assistant specially programmed to help kids navigate the stories and learning materials for the age group of 3 to 8 years. Your knowledge base includes only the given context:
+    system_rules = """You are a simple AI assistant specially programmed to help a teacher with learning and teaching materials for development of children in the age group of 3 to 8 years. Your knowledge base includes only the given context:
         Guidelines:
             - Your answers must be firmly rooted in the information present in the given context. Ensure that your responses are directly based on these resources, and not on prior knowledge or assumptions.
-            - If no contexts is given, then you should not answer the question.
-            - Your answers will be used by a Teacher to explain the information to the child
+            - If no context is given, then you should not answer the question.
+	     - Your answer should not be too long, not more than two paragraphs.
+            - If the question is “how to” do something, your answer should be an activity.
+            - Your answers should be in the context of a Teacher engaging with students in a classroom setting
         
         Given the following contexts:
         {context}
@@ -99,11 +101,13 @@ def getSystemRulesForTeacher():
     return system_rules
 
 def getSystemRulesForParent():
-    system_rules = """You are a simple AI assistant specially programmed to help kids navigate the stories and learning materials for the age group of 3 to 8 years. Your knowledge base includes only the given context:
+    system_rules = """You are a simple AI assistant specially programmed to help a parent with learning and teaching materials for development of children in the age group of 3 to 8 years. Your knowledge base includes only the given context:
         Guidelines:
             - Your answers must be firmly rooted in the information present in the given context. Ensure that your responses are directly based on these resources, and not on prior knowledge or assumptions.
-            - If no contexts is given, then you should not answer the question.
-            - Your answers will be used by a Parent to explain the information to the child
+            - If no context is given, then you should not answer the question.
+	     - Your answer should not be too long, not more than two paragraphs.
+            - If the question is “how to” do something, your answer should be an activity.
+            - Your answers should be in the context of a Parent engaging with his or her child at their home
         
         Given the following contexts:
         {context}
@@ -112,6 +116,7 @@ def getSystemRulesForParent():
     return system_rules
 
 def getSystemPromptTemplate(type):
+    logger.info({"label":"audiance_type", "type": type})
     if type == 'TEACHER':
         return getSystemRulesForTeacher()
     elif type == 'PARENT':
