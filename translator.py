@@ -4,7 +4,7 @@ import os
 import requests
 from pydub import AudioSegment
 from google.cloud import texttospeech, speech, translate
-from urllib.parse import urlparse
+from utils import *
 
 asr_mapping = {
     "bn": "ai4bharat/conformer-multilingual-indo_aryan-gpu--t4",
@@ -42,23 +42,20 @@ tts_mapping = {
     "te": "ai4bharat/indic-tts-coqui-dravidian-gpu--t4"
 }
 
-
-def is_url(string):
-    try:
-        result = urlparse(string)
-        return all([result.scheme, result.netloc])
-    except ValueError:
-        return False
-
-
-def get_encoded_string(url):
-    if is_url(url):
+def get_encoded_string(audio):
+    if is_url(audio):
         local_filename = "local_file.mp3"
-        with requests.get(url) as r:
+        with requests.get(audio) as r:
             with open(local_filename, 'wb') as f:
                 f.write(r.content)
+    elif is_base64(audio):
+        local_filename = "local_file.mp3"
+        decoded_audio_content = base64.b64decode(audio)
+        output_mp3_file = open(local_filename, "wb")
+        output_mp3_file.write(decoded_audio_content)
+        output_mp3_file.close()
     else:
-        local_filename = url
+        local_filename = audio
 
     given_audio = AudioSegment.from_file(local_filename)
     given_audio = given_audio.set_frame_rate(16000)
@@ -69,7 +66,7 @@ def get_encoded_string(url):
     encoded_string = base64.b64encode(wav_file_content)
     encoded_string = str(encoded_string, 'ascii', 'ignore')
     os.remove(local_filename)
-    os.remove("temp.wav")
+    os.remove("temp.wav")   
     return encoded_string, wav_file_content
 
 
