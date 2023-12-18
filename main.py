@@ -77,7 +77,7 @@ class QueryInputModel(BaseModel):
     language: DropDownInputLanguage
     text:str = None
     audio:str = None
-    audienceType: AudienceType
+    audienceType: AudienceType = AudienceType.ANY
 
 
 class QueryOuputModel(BaseModel):
@@ -168,10 +168,10 @@ async def query(request: QueryModel) -> ResponseForQuery:
         else:
             status_code = 503
 
-    if source_text is not None:
-        sources = get_source_markdown(source_text, language)
-        regional_answer = (regional_answer or "") + sources
-        answer = answer + sources
+    # if source_text is not None:
+        # sources = get_source_markdown(source_text, language)
+        # regional_answer = (regional_answer or "") + sources
+        # answer = answer + sources
 
     if status_code != 200:
         logger.error({"uuid_number":index_id, "query":query_text, "input_language": language, "output_format": output_format, "audio_url": audio_url, "status_code": status_code, "error_message": error_message})

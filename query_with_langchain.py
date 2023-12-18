@@ -27,10 +27,12 @@ def querying_with_langchain_gpt3(index_id, query, audience_type ):
                 return "I'm sorry, but I don't have enough information to provide a specific answer for your question. Please provide more information or context about what you are referring to.", None, None, None, 200
 
         logger.info(f"Marqo documents : {str(documents)}")
-        contexts =  [document.page_content for document, search_score in documents]
-        contexts = "\n\n---\n\n".join(contexts) + "\n\n-----\n\n"
+        contexts =  get_formatted_documents(documents)
+        # contexts = "\n\n---\n\n".join(contexts) + "\n\n-----\n\n"
         system_rules = getSystemPromptTemplate(audience_type)
         system_rules = system_rules.format(context=contexts)
+        logger.debug("==== System Rules ====")
+        logger.debug(system_rules)
         client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
         res = client.chat.completions.create(
             model="gpt-3.5-turbo-16k",
@@ -53,6 +55,16 @@ def querying_with_langchain_gpt3(index_id, query, audience_type ):
         error_message = str(e.__context__) + " and " + e.__str__()
         status_code = 500
     return "", None, None, error_message, status_code
+
+def get_formatted_documents(documents: List[Tuple[Document, Any]]):
+    sources = ""
+    for document, score in documents:
+        sources += f"""\n\n
+            > {document.page_content}
+            >> filename: {document.metadata.get('file_name')}, page: {document.metadata.get('page_label')}
+            """ 
+    return sources
+
 
 def get_source_markdown(documents: List[Tuple[Document, Any]], language: str) -> str:
     try:
@@ -79,6 +91,14 @@ def getSystemRulesForDefault():
             - Your answers must be firmly rooted in the information present in the retrieved context. Ensure that your responses are directly based on these resources, not on prior knowledge or assumptions.
             - If no contexts are retrieved, then you should not answer the question.
         
+        Example of context:
+        ------------------
+        > Family Picnic (Picture Reading)\nLook at the picture What is happening in the picture? Have you been on a picnic with your family? What items would you like to eat when you go for a picnic? How many people are \nthere in the family? Draw the pattern given in the fruit basket. Family Activity 86
+        >> filename:anand-activity-book-for-balvatika-13246.pdf, page: 118
+        
+        > My House Talk about your house and family. Count the number of squares  and write it down. Count the number of triangles  and write it down. Count the number of leaves and write it down.  Family Activity 81'
+        >> filename:unmukh-teacher-handbook.pdf, page: 12    
+            
         Given the following contexts:                
         {context}
 
@@ -86,18 +106,34 @@ def getSystemRulesForDefault():
     return system_rules
 
 def getSystemRulesForTeacher():
-    system_rules = """You are a simple AI assistant specially programmed to help a teacher with learning and teaching materials for development of children in the age group of 3 to 8 years. Your knowledge base includes only the given context:
+    system_rules = '''You are a simple AI assistant specially programmed to help a teacher with learning and teaching materials for development of children in the age group of 3 to 8 years. Your knowledge base includes only the given context:
         Guidelines:
             - Your answers must be firmly rooted in the information present in the given context. Ensure that your responses are directly based on these resources, and not on prior knowledge or assumptions.
             - If no context is given, then you should not answer the question.
-	     - Your answer should not be too long, not more than two paragraphs.
+         - Your answer should not be too long, not more than two paragraphs.
             - If the question is “how to” do something, your answer should be an activity.
             - Your answers should be in the context of a Teacher engaging with students in a classroom setting
+       
+        Example of context:
+        ------------------
+        > Family Picnic (Picture Reading)\nLook at the picture What is happening in the picture? Have you been on a picnic with your family? What items would you like to eat when you go for a picnic? How many people are \nthere in the family? Draw the pattern given in the fruit basket. Family Activity 86
+        >> filename:anand-activity-book-for-balvatika-13246.pdf, page: 118
         
-        Given the following contexts:
+        > My House Talk about your house and family. Count the number of squares  and write it down. Count the number of triangles  and write it down. Count the number of leaves and write it down.  Family Activity 81'
+        >> filename:unmukh-teacher-handbook.pdf, page: 12
+
+    
+        Example of answer:
+        -----------------
+        In the picture, a family is having a picnic. They are sitting on a picnic blanket in a park or outdoor area. 
+        There are food items like sandwiches, fruits, and drinks on the blanket. Some family members are eating, 
+        while others are talking and enjoying each other's company.
+        Sources: [filename:anand-activity-book-for-balvatika-13246.pdf - page: 188, filename: unmukh-teacher-handbook.pdf - page: 12]
+
+        Given the above example of context provide answers
         {context}
 
-        All answers should be in MARKDOWN (.md) Format:"""
+        All answers should be in the  Answer format provided above:'''
     return system_rules
 
 def getSystemRulesForParent():
@@ -109,6 +145,14 @@ def getSystemRulesForParent():
             - If the question is “how to” do something, your answer should be an activity.
             - Your answers should be in the context of a Parent engaging with his or her child at their home
         
+        Example of context:
+        ------------------
+        > Family Picnic (Picture Reading)\nLook at the picture What is happening in the picture? Have you been on a picnic with your family? What items would you like to eat when you go for a picnic? How many people are \nthere in the family? Draw the pattern given in the fruit basket. Family Activity 86
+        >> filename:anand-activity-book-for-balvatika-13246.pdf, page: 118
+        
+        > My House Talk about your house and family. Count the number of squares  and write it down. Count the number of triangles  and write it down. Count the number of leaves and write it down.  Family Activity 81'
+        >> filename:unmukh-teacher-handbook.pdf, page: 12    
+            
         Given the following contexts:
         {context}
 
