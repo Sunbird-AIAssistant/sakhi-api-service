@@ -1,4 +1,4 @@
-from fastapi.datastructures import Headers
+from fastapi import Request
 import requests
 import time
 import os
@@ -6,6 +6,7 @@ import uuid
 from logger import logger
 
 telemetryURL = os.environ["TELEMETRY_ENDPOINT_URL"]
+ENV_NAME = os.environ.get("SERVICE_ENVIRONMENT","dev")
 
 class TelemetryLogger:
     """
@@ -26,7 +27,7 @@ class TelemetryLogger:
         # Check for required fields
         # if not ("eid" in event or "object" in event):
         #     raise ValueError("Missing required field(s) for event: 'eid' or 'object'")
-        logger.info(f"event: {event}")
+        logger.info(f"Telemetry event: {event}")
         self.events.append(event)
 
         # Send logs if exceeding threshold
@@ -55,7 +56,7 @@ class TelemetryLogger:
         # Reset captured events after sending
         self.events = []
 
-    def prepare_log_event(self, headers: dict, body, etype = "api_access", elevel = "INFO", message=""):
+    def prepare_log_event(self, request: Request, body, etype = "api_access", elevel = "INFO", message=""):
         """
         Prepare a telemetry event dictionary with the specified values. 
         Args:
@@ -80,33 +81,43 @@ class TelemetryLogger:
                 "type": "System",
             },
             "context": {
-                "channel": "sakhi-api-service",
+                "channel": request.headers.get("X-Source", ""),
                  "pdata": {
                     "id": "djp.sakhi.api.service",
                     "ver": "1.0.0",
                     "pid": ""
                 },
-                "env": "sakhi-api-service",
-                "sid":headers.get("x-request-id", ""), # Optional. session id of the requestor stamped by portal
-                "did": headers.get("x-device-id", ""), # Optional. uuid of the device, created during app installation
+                "env": ENV_NAME,
+                "sid": request.headers.get("x-request-id", ""), # Optional. session id of the requestor stamped by portal
+                "did": request.headers.get("x-device-id", ""), # Optional. uuid of the device, created during app installation
                 "cdata": [
                     {
-                        "id": headers.get("x-consumer-id", ""),
+                        "id": request.headers.get("x-consumer-id", ""),
                         "type": "UserSession"
                     },
                     {
-                        "id": headers.get("X-Source", ""),
+                        "id": request.headers.get("X-Source", ""),
                         "type": "Device"
                     }
                 ]
             },
-            "object": {},  # Can be populated with relevant event data if needed
-            "tags": [],  # Add relevant tags if any
+            "object": {}, 
+            "tags": [],
             "edata": {
-                "type": etype,  # Required. Type of log (system, process, api_access, api_call, job, app_update etc)
-                "level": elevel, # Required. Level of the log. TRACE, DEBUG, INFO, WARN, ERROR, FATAL
-                "message": message, # Required. Log message
-                "params": [body], # Optional. Additional params in the log message
+                "type": etype,
+                "level": elevel,
+                "message": message,
+                "params": [
+                    {
+                        "request":  body
+                    },
+                    {
+                        "method": str(request.method)
+                    },
+                    {
+                        "url": str(request.url)
+                    }
+                ]
             }
         }
         return data

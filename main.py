@@ -109,7 +109,7 @@ async def add_process_time_header(request: Request, call_next):
     response = await call_next(request)
     process_time = time.time() - start_time
     if "v1" in str(request.url):
-        event = telemetryLogger.prepare_log_event(request.headers, body)
+        event = telemetryLogger.prepare_log_event(request, body)
         telemetryLogger.add_event(event)
     response.headers["X-Process-Time"] = str(process_time)
     return response
