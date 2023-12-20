@@ -136,18 +136,18 @@ curl -X 'POST' \
 ```
 
 #### Request
-| Request Input      |                                                       Value |
-|:-------------------|----------------------------------|
-| input.language     | en,bn,gu,hi,kn,ml,mr,or,pa,ta,te |
-| input.text         | User entered question (any of the above language) |
-| input.audio        | Public file URL Or Base64 encoded audio |
-| input.audienceType | any, parent, teacher (default value is any, if not passing) |
-| output.format      | text or audio |
+| Request Input       |                                                       Value |
+|:--------------------|----------------------------------|
+| `input.language`    | en,bn,gu,hi,kn,ml,mr,or,pa,ta,te |
+| `input.text`        | User entered question (any of the above language) |
+| `input.audio`       | Public file URL Or Base64 encoded audio |
+| `input.audienceType` | any, parent, teacher (default value is any, if not passing) |
+| `output.format`      | text or audio |
 
-Required inputs are 'text', 'audio' and 'language'.
+Required inputs are `text`, `audio` and `language`.
 
-Either of the 'text'(string) or 'audio'(string) should be present. If both the values are given, exception is thrown. Another requirement is that the 'language' should be same as the one given in text and audio (i.e, if you pass English as 'language', then your 'text'/'audio' should contain queries in English language). The audio should either contain a publicly downloadable url of mp3 file or base64 encoded text of the mp3.
-If output format is given as 'text' than response will return text format only. If output format is given as 'audio' than response will return text and audio both.
+Either of the `text`(string) or `audio`(string) should be present. If both the values are given, `text` is taken for consideration. Another requirement is that the `language` should be same as the one given in text and audio (i.e, if you pass English as `language`, then your `text/audio` should contain queries in English language). The audio should either contain a publicly downloadable url of mp3 file or base64 encoded text of the mp3.
+If output format is given as `text` than response will return `text` format only. If output format is given as `audio` than response will return `text` and `audio` both.
 
 ```json
 {
@@ -176,16 +176,16 @@ If output format is given as 'text' than response will return text format only. 
 
 #### What happens during the API call?
 
-Once the API is hit with proper request parameters, it is then checked for the presence of query_text. 
+Once the API is hit with proper request parameters, it is then checked for the presence of query text. 
 
-If query_text is present, the translation of query_text based on input_language is done. Then the translated query_text is given to langchain model which does the same work. Then the paraphrased answer is again translated back to input_language. If the output_format is voice, the translated paraphrased answer is then converted to a mp3 file and uploaded to a OCI folder and made public.
+If query text is present, the translation of query text based on input language is done. Then the translated query text is given to langchain model which does the same work. Then the paraphrased answer is again translated back to input_language. If the output_format is voice, the translated paraphrased answer is then converted to a mp3 file and uploaded to an OCI folder and made public.
 
-If the query_text is absent and audio_url is present, then the audio url is downloaded and converted into text based on the input_language. Once speech to text conversion in input_language is finished, the same process mentioned above happens. One difference is that by default, the paraphrased answer is converted to voice irrespective of the output_format since the input_format is voice.
+If the query text is absent and audio url is present, then the audio url is downloaded and converted into text based on the input language. Once speech to text conversion in input language is finished, the same process mentioned above happens. One difference is that by default, the paraphrased answer is converted to voice irrespective of the output_format since the input format is voice.
 
 # 🚀 4. Deployment
 
 This repository comes with a Dockerfile. You can use this dockerfile to deploy your version of this application to Cloud Run.
-Make the necessary changes to your dockerfile with respect to your new changes. (Note: The given Dockerfile will deploy the base code without any error, provided you added the required environment variables (mentioned in the .env file) to either the Dockerfile or the cloud run revision)
+Make the necessary changes to your dockerfile with respect to your new changes. (Note: The given Dockerfile will deploy the base code without any error, provided you added the required environment variables (mentioned in the `.env` file) to either the Dockerfile or the cloud run revision)
 
 
 ## Feature request and contribution
