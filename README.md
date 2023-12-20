@@ -1,38 +1,14 @@
-# Jugalbandi API : Factual Question & Answering over arbitrary number of documents
+# Activity Sakhi API : Factual Question & Answering over arbitrary number of documents
 
-[Jugalbandi API](https://api.jugalbandi.ai/docs) is a system of APIs that allows users to build Q&A style applications on their private and public datasets. The system creates Open API 3.0 specification endpoints using FastAPI.
+Activity Sakhi API is a system of APIs that allows users to build Q&A style applications on their private and public datasets. The system creates Open API 3.0 specification endpoints using FastAPI.
 
 ### Prerequisites
 
 - **Python 3.7 or higher**
 - Latest Docker
 
-### Postgres database setup in Docker
 
-1. To get the Postgres image, use the following command:
-
-```shell
-docker pull postgres:latest 
-```
-
-2. For the network, you can either use an existing network or create a new one by executing the following command:
-```shell
-docker network create sunbird-network
-```
-
-3. To create the Postgres instance, run the following command:
-
-```shell
-docker run --name=sunbird_postgres \
-		  --net sunbird-network \
-		  -e POSTGRES_PASSWORD=<postgres db password> \
-		  -e POSTGRES_USER=<postgres db username> \
-		  -e POSTGRES_DB=postgres \
-		  -p 5432:5432 \
-		  -d postgres:latest
-```
-
-### Morqo database setup in Docker
+### [Morqo database setup](https://docs.marqo.ai/1.5.0/#setup-and-installation)
 
 1. To get the Morqo image, use the following command:
 
@@ -70,20 +46,19 @@ To use the code, you need to follow these steps:
     pip install -r requirements-dev.txt
     ```
 
-    To injest data to marqo
+3. To injest data to marqo
 
     ```bash
-    mkdir data
+    python3 index_documents.py --marqo_url=<MARQO_URL> --index_name=<MARQO_INDEX_NAME> --folder_path=<PATH_TO_INPUT_FILE_DIRECTORY>
+    ```
+   e.g.
+   ```bash
+   python3 index_documents.py --marqo_url=http://0.0.0.0:8882 --index_name=sakhi_activity --folder_path=input_data
    ```
 
-    ```bash
-    python jadupitara_ingest_data.py
-   ```
+4. You will need an OCI account to store the audio file for response.
 
-
-3. You will need a OCI account to store the audio file for response & marqo vector database for semantic similarity search.
-
-4. create another file **.env** which will hold the development credentials and add the following variables. Update the openai_api_key, OCI details, Bhashini endpoint URL and API key.
+5. create another file **.env** which will hold the development credentials and add the following variables. Update the openai_api_key, OCI details, Bhashini endpoint URL and API key.
 
     ```bash
     SERVICE_ENVIRONMENT=<name_of_the_environment>
@@ -98,6 +73,7 @@ To use the code, you need to follow these steps:
     OCI_ACCESS_KEY_ID=<oracle_access_key_id>
     MARQO_URL=<your_marqo_db_url>
     MARQO_INDEX_NAME=<your_marqo_index_name>
+    TELEMETRY_ENDPOINT_URL=<telemetry_url>
     ```
 
 # 🏃🏻 2. Running
@@ -124,24 +100,65 @@ When you try to open the URL for the first time (or click the "Execute" button i
 
 # 📃 3. API Specification and Documentation
 
-### `GET /query-using-voice`
+### `POST /v1/query`
+
+#### API Function
+API is used to generate activity/story based on user query and translation of text/audio from one language to another language in text/audio format. To achieve the same, Bhashini has been integrated. OCI object storage has been used to store translated audio files when audio is chosen as target output format.
+
+```commandline
+curl -X 'POST' \
+  'http://127.0.0.1:8000/v1/query' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "input": {
+    "language": "en",
+    "text": "string",
+    "audio": "string",
+    "audienceType": "any"
+  },
+  "output": {
+    "format": "text"
+  }
+}'
+```
 
 #### Request
+| Request Input      |                                                       Value |
+|:-------------------|----------------------------------|
+| input.language     | en,bn,gu,hi,kn,ml,mr,or,pa,ta,te |
+| input.text         | User entered question (any of the above language) |
+| input.audio        | Public file URL Or Base64 encoded audio |
+| input.audienceType | any, parent, teacher (default value is any, if not passing) |
+| output.format      | text or audio |
 
-Requires an input_language(Selection - English, Hindi, Kannada, etc..), audience_type(Selection - Default, Teacher, Parent) and output_format(Selection - Text, Voice).
+Required inputs are 'text', 'audio' and 'language'.
 
-Either of the query_text(string) or audio_url(string) should be present. If both the values are given, query_text is taken for consideration. Another requirement is that the input_language should be same as the one given in query_text and audio_url (i.e, if you select English in input_language, then your query_text and audio_url should contain queries in English). The audio_url should be publicly downloadable, otherwise the audio_url will not work.
+Either of the 'text'(string) or 'audio'(string) should be present. If both the values are given, exception is thrown. Another requirement is that the 'language' should be same as the one given in text and audio (i.e, if you pass English as 'language', then your 'text'/'audio' should contain queries in English language). The audio should either contain a publicly downloadable url of mp3 file or base64 encoded text of the mp3.
+If output format is given as 'text' than response will return text format only. If output format is given as 'audio' than response will return text and audio both.
+
+```json
+{
+   "input": {
+      "text": "How to Teach Kids to Play Games", 
+      "language": "en"
+   },
+   "output": {
+      "format": "text"
+   }
+}
+```
 
 #### Successful Response
 
 ```json
 {
-  "query": "<query-in-given-language>",
-  "query_in_english": "<query-in-english>",
-  "answer": "<paraphrased-answer-in-given-language>",
-  "answer_in_english": "<paraphrased-answer-in-english>",
-  "audio_output_url": "<publicly-downloadable-audio-output-url-in-given-language>",
-  "source_text": "<source-text-from-which-answer-is-paraphrased-in-english>"
+   "output": {
+      "text": "string",
+      "audio": "string",
+      "language": "en",
+      "format": "text|audio"
+   }
 }
 ```
 
