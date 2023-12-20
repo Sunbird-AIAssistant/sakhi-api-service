@@ -1,12 +1,15 @@
 import os.path
+import time
 from enum import Enum
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, status, Request
+from starlette.types import Message
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from io_processing import *
 from query_with_langchain import *
 from cloud_storage_oci import *
 from logger import logger
+from telemetry_logger import TelemetryLogger 
 from utils import *
 from dotenv import load_dotenv
 
@@ -87,6 +90,32 @@ class QueryModel(BaseModel):
     input: QueryInputModel
     output: QueryOuputModel
 
+async def set_body(request: Request, body: bytes):
+    async def receive() -> Message:
+        return {"type": "http.request", "body": body}
+    request._receive = receive
+ 
+async def get_body(request: Request) -> bytes:
+    body = await request.body()
+    await set_body(request, body)
+    return body
+
+telemetryLogger =  TelemetryLogger()
+@app.middleware("http")
+async def add_process_time_header(request: Request, call_next):
+    start_time = time.time()
+    await set_body(request, await request.body())
+    body = await get_body(request)
+    if body.decode("utf-8"):
+        body = json.loads(body)
+    response = await call_next(request)
+    process_time = time.time() - start_time
+    if "v1" in str(request.url):
+        event = telemetryLogger.prepare_log_event(request, body)
+        telemetryLogger.add_event(event)
+    response.headers["X-Process-Time"] = str(process_time)
+    return response
+
 @app.get("/", include_in_schema=False)
 async def root():
     return {"message": "Welcome to Sakhi API Service"}
@@ -148,6 +177,75 @@ async def query(request: QueryModel) -> ResponseForQuery:
 
         if text is not None:
             answer, source_text, paraphrased_query, error_message, status_code = querying_with_langchain_gpt3(index_id, text, audience_type)
+            if len(answer) != 0:
+                regional_answer, error_message = process_outgoing_text(answer, language)
+                if regional_answer is not None:
+                    if is_audio:
+                        output_file, error_message = process_outgoing_voice(regional_answer, language)
+                        if output_file is not None:
+                            upload_file_object(output_file.name)
+                            audio_output_url, error_message = give_public_url(output_file.name)
+                            logger.debug(f"Audio Ouput URL ===> {audio_output_url}")
+                            output_file.close()
+                            os.remove(output_file.name)
+                        else:
+                            status_code = 503
+                    else:
+                        audio_output_url = ""
+                else:
+                    status_code = 503
+        else:
+            status_code = 503
+
+    # if source_text is not None:
+        # sources = get_source_markdown(source_text, language)
+        # regional_answer = (regional_answer or "") + sources
+        # answer = answer + sources
+
+    if status_code != 200:
+        logger.error({"uuid_number":index_id, "query":query_text, "input_language": language, "output_format": output_format, "audio_url": audio_url, "status_code": status_code, "error_message": error_message})
+        raise HTTPException(status_code=status_code, detail=error_message)
+
+    response = ResponseForQuery(output=OutputResponse(text=regional_answer, audio=audio_output_url, language=language, format=output_format.lower()))
+    logger.info(response)
+    return response
+
+
+@app.post("/v1/query_rstory", tags=["Q&A over Document Store"],  include_in_schema=True)
+async def query_rstory(request: QueryModel) -> ResponseForQuery:
+    load_dotenv()
+    index_id = os.environ["MARQO_INDEX_NAME"]
+    language = 'or' if request.input.language.name == DropDownInputLanguage.ori.name else request.input.language.name
+    output_format = request.output.format.name
+    audio_url = request.input.audio
+    query_text = request.input.text
+    is_audio = False
+    text = None
+    paraphrased_query = None
+    regional_answer = None
+    answer = None
+    audio_output_url = None
+    source_text = None
+    logger.info({"label": "query", "query_text":query_text, "index_id": index_id, "input_language": language, "output_format": output_format, "audio_url": audio_url})
+    
+    if query_text is None and audio_url is None:
+        query_text = None
+        error_message = "Either 'Query Text' or 'Audio URL' should be present"
+        status_code = 422
+    else:
+        if query_text is not None:
+            text, error_message =   process_incoming_text(query_text, language)
+            if output_format == "AUDIO":
+                is_audio = True
+        else:
+            if not is_url(audio_url) and not is_base64(audio_url):
+                logger.error({"uuid_number":index_id, "query":query_text, "input_language": language, "output_format": output_format, "audio_url": audio_url, "status_code": status.HTTP_422_UNPROCESSABLE_ENTITY, "error_message": "Invalid audio input!"})
+                raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid audio input!")
+            query_text, text, error_message = process_incoming_voice(audio_url, language)
+            is_audio = True
+
+        if text is not None:
+            answer, source_text, paraphrased_query, error_message, status_code = query_rstory_gpt3(index_id, text)
             if len(answer) != 0:
                 regional_answer, error_message = process_outgoing_text(answer, language)
                 if regional_answer is not None:

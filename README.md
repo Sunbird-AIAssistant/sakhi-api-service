@@ -86,6 +86,7 @@ To use the code, you need to follow these steps:
 4. create another file **.env** which will hold the development credentials and add the following variables. Update the openai_api_key, OCI details, Bhashini endpoint URL and API key.
 
     ```bash
+    SERVICE_ENVIRONMENT=<name_of_the_environment>
     OPENAI_API_KEY=<your_openai_api_key>
     LOG_LEVEL=<log_level>  # INFO, DEBUG, ERROR
     BHASHINI_ENDPOINT_URL=<your_bhashini_api_endpoint>
