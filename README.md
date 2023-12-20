@@ -1,4 +1,4 @@
-# Activity Sakhi API : Factual Question & Answering over arbitrary number of documents
+# Activity Sakhi API : 
 
 A powerful service designed to enhance the educational experience for both parents and teachers. Our service revolves around a curated collection of documents focused on children's activities and curriculum frameworks. With simplicity at its core, "Activity Sakhi" empowers parents and teachers to effortlessly discover relevant content and find answers to audience-specific questions.
 
