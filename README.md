@@ -1,6 +1,18 @@
 # Activity Sakhi API : Factual Question & Answering over arbitrary number of documents
 
-Activity Sakhi API is a system of APIs that allows users to build Q&A style applications on their private and public datasets. The system creates Open API 3.0 specification endpoints using FastAPI.
+A powerful service designed to enhance the educational experience for both parents and teachers. Our service revolves around a curated collection of documents focused on children's activities and curriculum frameworks. With simplicity at its core, "Activity Sakhi" empowers parents and teachers to effortlessly discover relevant content and find answers to audience-specific questions.
+
+### Key Features:
+#### Rich Content Repository: 
+Explore a predefined set of documents tailored to children's activities and curriculum frameworks, ensuring a wealth of valuable information at your fingertips.
+#### Audience-Centric: 
+Targeted specifically for parents and teachers, "Activity Sakhi" caters to their unique needs, providing insights and resources tailored to enhance the learning journey.
+Discover and Learn: Seamlessly discover engaging content and obtain answers to your specific questions, making the educational process more accessible and enjoyable.
+
+Whether you're a parent looking for creative activities or a teacher seeking curriculum support, Activity Sakhi is your go-to solution. Unlock the potential of educational resources and make learning a delightful experience for children.
+
+### Getting Started:
+Integrate "Activity Sakhi" effortlessly into your applications to revolutionize the way parents and teachers engage with educational content. Check out our documentation to get started and embark on a journey of enriched learning experiences.
 
 ### Prerequisites
 
