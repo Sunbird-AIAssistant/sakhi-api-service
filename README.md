@@ -63,6 +63,9 @@ To use the code, you need to follow these steps:
     ```bash
     python3 index_documents.py --marqo_url=<MARQO_URL> --index_name=<MARQO_INDEX_NAME> --folder_path=<PATH_TO_INPUT_FILE_DIRECTORY>
     ```
+
+   PATH_TO_INPUT_FILE_DIRECTORY should have only PDF, audio, video and txt file only.
+
    e.g.
    ```bash
    python3 index_documents.py --marqo_url=http://0.0.0.0:8882 --index_name=sakhi_activity --folder_path=input_data
@@ -106,7 +109,6 @@ The command `uvicorn main:app` refers to:
     uvicorn main:app --reload
     ```
 
-When you try to open the URL for the first time (or click the "Execute" button in the docs) the browser will ask you for your username and password (Which you provided in the `.env` file):
 
 ![Alt text](docs/image.png)
 
