@@ -36,6 +36,7 @@ To use the code, you need to follow these steps:
     OCI_ACCESS_KEY_ID=<oracle_access_key_id>
     MARQO_URL=<your_marqo_db_url>
     MARQO_INDEX_NAME=<your_marqo_index_name>
+    TELEMETRY_ENDPOINT_URL=<telemetry_endpoint_url>
     ```
 
 # 🏃🏻 2. Running

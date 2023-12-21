@@ -40,7 +40,7 @@ class TelemetryLogger:
         """
         data = {
             "id": "api.djp.telemetry",
-            "ver": "1.0",
+            "ver": "3.1",
             "params": {"msgid": str(uuid.uuid4())},
             "ets": int(time.time() * 1000),
             "events": self.events,
@@ -56,68 +56,81 @@ class TelemetryLogger:
         # Reset captured events after sending
         self.events = []
 
-    def prepare_log_event(self, request: Request, body, etype = "api_access", elevel = "INFO", message=""):
+    def prepare_log_event(self, eventInput: dict, etype = "api_access", elevel = "INFO", message=""):
         """
         Prepare a telemetry event dictionary with the specified values. 
         Args:
-            eid: Event identifier (e.g., "LOG").
+            eventInput: Event Input.
+            etype: Event type (default: "api_access").
+            elevel: Event level (default: "INFO").
             message: Event message.
-            user_id: User ID.
-            channel: Event channel (default: "01269878797503692810").
-            level: Event level (default: "ERROR").
-            pageid: Page ID where the event occurred (default: "/").
 
         Returns:
             A dictionary representing the telemetry event data.
         """
-
         data = {
             "eid": "LOG",
             "ets": int(time.time() * 1000),  # Current timestamp
-            "ver": "1.0",  # Version
+            "ver": "3.1",  # Version
             "mid": f"LOG:{round(time.time())}",  # Unique message ID
             "actor": {
                 "id": "sakhi-api-service",
                 "type": "System",
             },
             "context": {
-                "channel": request.headers.get("X-Source", ""),
+                "channel": "ejp",
                  "pdata": {
-                    "id": "djp.sakhi.api.service",
-                    "ver": "1.0.0",
+                    "id": "ejp.sakhi.api.service",
+                    "ver": "1.0",
                     "pid": ""
                 },
-                "env": ENV_NAME,
-                "sid": request.headers.get("x-request-id", ""), # Optional. session id of the requestor stamped by portal
-                "did": request.headers.get("x-device-id", ""), # Optional. uuid of the device, created during app installation
-                "cdata": [
-                    {
-                        "id": request.headers.get("x-consumer-id", ""),
-                        "type": "UserSession"
-                    },
-                    {
-                        "id": request.headers.get("X-Source", ""),
-                        "type": "Device"
-                    }
-                ]
+                "env": ENV_NAME
             },
-            "object": {}, 
-            "tags": [],
             "edata": {
                 "type": etype,
                 "level": elevel,
-                "message": message,
-                "params": [
-                    {
-                        "request":  body
-                    },
-                    {
-                        "method": str(request.method)
-                    },
-                    {
-                        "url": str(request.url)
-                    }
-                ]
+                "message": str(message).replace("'", "")
             }
         }
+
+        if eventInput.get("x-request-id", None):
+            data["context"]["sid"] = eventInput.get("x-request-id")
+        
+        if eventInput.get("x-device-id", None):
+            data["context"]["did"] = eventInput.get("x-device-id")
+        
+        eventCData = self.__getEventCData(eventInput)
+        if eventCData:
+            data["context"]["cdata"] = eventCData
+
+        eventEDataParams = self.__getEventEDataParams(eventInput)
+        if eventEDataParams:
+            data["edata"]["params"] = eventEDataParams
         return data
+    
+
+    def __getEventCData(self, eventInput: dict):
+        eventCData = []
+        if eventInput.get("x-consumer-id", None) and eventInput.get("x-source", None):
+            eventCData = [
+                    {
+                        "id": eventInput.get("x-consumer-id"),
+                        "type": "ConsumerId"
+                    },
+                    {
+                        "id": eventInput.get("x-source"),
+                        "type": "Source"
+                    }
+                ]
+        return eventCData
+    
+    def __getEventEDataParams(self, eventInput: dict):
+        body = str(eventInput.get("body")).replace("'", "")
+        eventEDataParams = [
+            { "request":  body },
+            { "method": str(eventInput.get("method")) },
+            { "url": str(eventInput.get("url")) },
+            { "status": eventInput.get("status_code") }, 
+            { "duration": int(eventInput.get("duration")) }
+        ]
+        return eventEDataParams
