@@ -1,17 +1,15 @@
 import os.path
-import time
 from enum import Enum
-from fastapi import FastAPI, HTTPException, status, Request
-from starlette.types import Message
+from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from io_processing import *
 from query_with_langchain import *
 from cloud_storage_oci import *
 from logger import logger
-from telemetry_logger import TelemetryLogger 
 from utils import *
 from dotenv import load_dotenv
+from telemetry_middleware import TelemetryMiddleware
 
 app = FastAPI(title="Sakhi API Service",
             #   docs_url=None,  # Swagger UI: disable it by setting docs_url=None
@@ -90,31 +88,8 @@ class QueryModel(BaseModel):
     input: QueryInputModel
     output: QueryOuputModel
 
-async def set_body(request: Request, body: bytes):
-    async def receive() -> Message:
-        return {"type": "http.request", "body": body}
-    request._receive = receive
- 
-async def get_body(request: Request) -> bytes:
-    body = await request.body()
-    await set_body(request, body)
-    return body
-
-telemetryLogger =  TelemetryLogger()
-@app.middleware("http")
-async def add_process_time_header(request: Request, call_next):
-    start_time = time.time()
-    await set_body(request, await request.body())
-    body = await get_body(request)
-    if body.decode("utf-8"):
-        body = json.loads(body)
-    response = await call_next(request)
-    process_time = time.time() - start_time
-    if "v1" in str(request.url):
-        event = telemetryLogger.prepare_log_event(request, body)
-        telemetryLogger.add_event(event)
-    response.headers["X-Process-Time"] = str(process_time)
-    return response
+# Telemetry API logs middleware
+app.add_middleware(TelemetryMiddleware)
 
 @app.get("/", include_in_schema=False)
 async def root():
