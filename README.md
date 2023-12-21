@@ -20,15 +20,15 @@ Integrate "Activity Sakhi" effortlessly into your applications to revolutionize 
 - Latest Docker
 
 
-### [Morqo database setup](https://docs.marqo.ai/1.5.0/#setup-and-installation)
+### [Marqo database setup](https://docs.marqo.ai/1.5.0/#setup-and-installation)
 
-1. To get the Morqo image, use the following command:
+1. To get the Marqo image, use the following command:
 
 ```shell
 docker pull marqoai/marqo:latest
 ```
 
-2. To create the Morqo instance, run the following command:
+2. To create the Marqo instance, run the following command:
 
 ```shell
 docker run --name marqo --privileged \
