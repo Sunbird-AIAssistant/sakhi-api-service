@@ -30,6 +30,7 @@ COPY ./translator.py /root/
 COPY ./logger.py /root/
 COPY ./utils.py /root/
 COPY ./telemetry_logger.py /root/
+COPY ./telemetry_middleware.py /root/
 EXPOSE 8000
 COPY script.sh /root/
 ENTRYPOINT ["bash","script.sh"]
