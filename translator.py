@@ -177,7 +177,7 @@ def indic_translation(text, source, destination):
     try:
         start_time = time.time()
         url = os.environ["BHASHINI_ENDPOINT_URL"]
-        payload = json.dumps({
+        payload = {
             "pipelineTasks": [
                 {
                 "taskType": "tts",
@@ -197,13 +197,13 @@ def indic_translation(text, source, destination):
                 }
                 ]
         }
-        })
+        }
         headers = {
             'Authorization': os.environ["BHASHINI_API_KEY"],
             'Content-Type': 'application/json'
         }
     
-        response = requests.request("POST", url, headers=headers, data=payload)
+        response = requests.request("POST", url, headers=headers, data=json.dumps(payload))
         process_time = time.time() - start_time
         response.raise_for_status()
         log_success_telemetry_event(url, "POST", payload, process_time, status_code=response.status_code)
