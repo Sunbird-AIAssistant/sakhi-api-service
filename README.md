@@ -68,8 +68,18 @@ To use the code, you need to follow these steps:
 
    e.g.
    ```bash
-   python3 index_documents.py --marqo_url=http://0.0.0.0:8882 --index_name=sakhi_activity --folder_path=input_data
+   python3 index_documents.py --marqo_url=http://0.0.0.0:8882 --index_name=sakhi_parent_activities --folder_path=parent_pdfs
+   python3 index_documents.py --marqo_url=http://0.0.0.0:8882 --index_name=sakhi_teacher_activities --folder_path=teacher_pfs
    ```
+   Create the index by using the above command. After creating the index add the index name in `config.ini` file.
+
+   ```json
+      indices = {
+         "parent":"<PARENT_INDEX_NAME>",
+         "teacher": "<TEACHER_INDEX_NAME>"
+      }
+   ```
+
 
 4. You will need an OCI account to store the audio file for response.
 
@@ -129,7 +139,7 @@ curl -X 'POST' \
     "language": "en",
     "text": "string",
     "audio": "string",
-    "audienceType": "any"
+    "audienceType": "teacher"
   },
   "output": {
     "format": "text"
@@ -138,13 +148,13 @@ curl -X 'POST' \
 ```
 
 #### Request
-| Request Input       |                                                       Value |
-|:--------------------|----------------------------------|
-| `input.language`    | en,bn,gu,hi,kn,ml,mr,or,pa,ta,te |
-| `input.text`        | User entered question (any of the above language) |
-| `input.audio`       | Public file URL Or Base64 encoded audio |
-| `input.audienceType` | any, parent, teacher (default value is any, if not passing) |
-| `output.format`      | text or audio |
+| Request Input       | Value                                                     |
+|:--------------------|-----------------------------------------------------------|
+| `input.language`    | en,bn,gu,hi,kn,ml,mr,or,pa,ta,te                          |
+| `input.text`        | User entered question (any of the above language)         |
+| `input.audio`       | Public file URL Or Base64 encoded audio                   |
+| `input.audienceType` | parent, teacher (default value is parent, if not passing) |
+| `output.format`      | text or audio                                             |
 
 Required inputs are `text`, `audio` and `language`.
 
