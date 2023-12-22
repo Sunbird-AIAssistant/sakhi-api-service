@@ -74,7 +74,7 @@ To use the code, you need to follow these steps:
    Create the index by using the above command. After creating the index add the index name in `config.ini` file. `config.ini` contains the key and value pair. Key is audienceType and value will be the index name of that audience type.
    ```json
       indices = {
-      "key":"index_name"
+        "key":"index_name"
       }
    ```
 
