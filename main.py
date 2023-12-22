@@ -39,7 +39,6 @@ async def shutdown_event():
     logger.info('shutdown_event : Engine closed')
 
 class AudienceType(str, Enum):
-    ANY = "any"
     TEACHER = "teacher"
     PARENT = "parent"
 
@@ -78,7 +77,7 @@ class QueryInputModel(BaseModel):
     language: DropDownInputLanguage
     text:str = None
     audio:str = None
-    audienceType: AudienceType = AudienceType.ANY
+    audienceType: AudienceType = AudienceType.PARENT
 
 
 class QueryOuputModel(BaseModel):
@@ -172,10 +171,10 @@ async def query(request: QueryModel) -> ResponseForQuery:
         else:
             status_code = 503
 
-    # if source_text is not None:
-        # sources = get_source_markdown(source_text, language)
-        # regional_answer = (regional_answer or "") + sources
-        # answer = answer + sources
+    if source_text is not None:
+        sources = generate_source_format(source_text)
+        regional_answer = (regional_answer or "") + sources
+        answer = answer + sources
 
     if status_code != 200:
         logger.error({"uuid_number":index_id, "query":query_text, "input_language": language, "output_format": output_format, "audio_url": audio_url, "status_code": status_code, "error_message": error_message})
@@ -241,10 +240,10 @@ async def query_rstory(request: QueryModel) -> ResponseForQuery:
         else:
             status_code = 503
 
-    # if source_text is not None:
-        # sources = get_source_markdown(source_text, language)
-        # regional_answer = (regional_answer or "") + sources
-        # answer = answer + sources
+    if source_text is not None:
+        sources = generate_source_format(source_text)
+        regional_answer = (regional_answer or "") + sources
+        answer = answer + sources
 
     if status_code != 200:
         logger.error({"uuid_number":index_id, "query":query_text, "input_language": language, "output_format": output_format, "audio_url": audio_url, "status_code": status_code, "error_message": error_message})

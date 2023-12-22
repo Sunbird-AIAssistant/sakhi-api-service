@@ -1,5 +1,4 @@
 import json
-
 from fastapi import Request
 import requests
 import time
@@ -7,8 +6,9 @@ import os
 import uuid
 from logger import logger
 
-telemetryURL = os.environ["TELEMETRY_ENDPOINT_URL"]
-ENV_NAME = os.environ.get("SERVICE_ENVIRONMENT", "dev")
+telemetryURL = os.environ.get("TELEMETRY_ENDPOINT_URL", "")
+ENV_NAME = os.environ.get("SERVICE_ENVIRONMENT","dev")
+TELEMETRY_LOG_ENABLED = os.environ.get("TELEMETRY_LOG_ENABLED", "true").lower() == "true"
 
 class TelemetryLogger:
     """
@@ -26,12 +26,13 @@ class TelemetryLogger:
 
         **kwargs:** Keyword arguments containing the event data.
         """
-        # Check for required fields
-        # if not ("eid" in event or "object" in event):
-        #     raise ValueError("Missing required field(s) for event: 'eid' or 'object'")
+        
         logger.info(f"Telemetry event: {event}")
-        self.events.append(event)
-
+        
+        if not TELEMETRY_LOG_ENABLED:
+            return
+        
+        self.events.append(event)   
         # Send logs if exceeding threshold
         if len(self.events) >= self.threshold:
             self.send_logs()
@@ -40,23 +41,23 @@ class TelemetryLogger:
         """
         Sends the captured telemetry logs using the requests library.
         """
-        data = {
-            "id": "api.djp.telemetry",
-            "ver": "3.1",
-            "params": {"msgid": str(uuid.uuid4())},
-            "ets": int(time.time() * 1000),
-            "events": self.events,
-        }
-        headers = {"Content-Type": "application/json"}
-        response = requests.post(self.url + "/v1/telemetry", json=data, headers=headers)
-        logger.debug(f"Telemetry API request data: {data}")
-        if response.status_code != 200:
-            logger.error(f"Error sending telemetry log: {response.status_code} - {response.text}")
-        else:
+        try:
+            data = {
+                    "id": "api.djp.telemetry",
+                    "ver": "3.1",
+                    "params": {"msgid": str(uuid.uuid4())},
+                    "ets": int(time.time() * 1000),
+                    "events": self.events
+            }
+            headers = {"Content-Type": "application/json"}
+            response = requests.post(self.url + "/v1/telemetry", json=data, headers=headers)
+            response.raise_for_status()
+            logger.debug(f"Telemetry API request data: {data}")
             logger.info("Telemetry logs sent successfully!")
-
-        # Reset captured events after sending
-        self.events = []
+            # Reset captured events after sending
+            self.events = []
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error sending telemetry log: {e}", exc_info=True)    
 
     def prepare_log_event(self, eventInput: dict, etype="api_access", elevel="INFO", message=""):
         """
@@ -126,13 +127,13 @@ class TelemetryLogger:
         return eventCData
 
     def __getEventEDataParams(self, eventInput: dict):
-        flattened_dict = self.__flatten_dict(eventInput.get("body"))
         eventEDataParams = [
             {"method": str(eventInput.get("method"))},
             {"url": str(eventInput.get("url"))},
             {"status": eventInput.get("status_code")},
             {"duration": int(eventInput.get("duration"))}
         ]
+        flattened_dict = self.__flatten_dict(eventInput.get("body", {}))
         for item in flattened_dict.items():
             eventEDataParams.append({item[0]: item[1]})
         return eventEDataParams
