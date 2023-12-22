@@ -71,18 +71,12 @@ To use the code, you need to follow these steps:
    python3 index_documents.py --marqo_url=http://0.0.0.0:8882 --index_name=sakhi_parent_activities --folder_path=parent_pdfs
    python3 index_documents.py --marqo_url=http://0.0.0.0:8882 --index_name=sakhi_teacher_activities --folder_path=teacher_pfs
    ```
-   Create the index by using the above command. After creating the index add the index name in `config.ini` file. `config.ini` contains the key and value pair. Key is audienceType and value will be the index name of that audience type.
-   ```json
-      indices = {
-        "key":"index_name"
-      }
-   ```
+   Create the index by using the above command. After creating the index add the index name in `config.ini` file.
 
-   e.g.
    ```json
       indices = {
-         "parent":"sakhi_parent_activities",
-         "teacher": "sakhi_teacher_activities"
+         "parent":"<PARENT_INDEX_NAME>",
+         "teacher": "<TEACHER_INDEX_NAME>"
       }
    ```
 
