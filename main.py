@@ -1,4 +1,5 @@
 import os.path
+import configparser
 from enum import Enum
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -10,6 +11,9 @@ from logger import logger
 from utils import *
 from dotenv import load_dotenv
 from telemetry_middleware import TelemetryMiddleware
+
+config = configparser.ConfigParser()
+config.read("config.ini")
 
 app = FastAPI(title="Sakhi API Service",
             #   docs_url=None,  # Swagger UI: disable it by setting docs_url=None
@@ -118,9 +122,10 @@ def get_health() -> HealthCheck:
 @app.post("/v1/query", tags=["Q&A over Document Store"],  include_in_schema=True)
 async def query(request: QueryModel) -> ResponseForQuery:
     load_dotenv()
-    index_id = os.environ["MARQO_INDEX_NAME"]
+    indices = json.loads(config['marqo_index']['indices'])
     language = 'or' if request.input.language.name == DropDownInputLanguage.ori.name else request.input.language.name
     audience_type = request.input.audienceType.name
+    index_id = indices.get(audience_type.lower())
     output_format = request.output.format.name
     audio_url = request.input.audio
     query_text = request.input.text
@@ -184,11 +189,11 @@ async def query(request: QueryModel) -> ResponseForQuery:
     logger.info(response)
     return response
 
-
 @app.post("/v1/query_rstory", tags=["Q&A over Document Store"],  include_in_schema=True)
 async def query_rstory(request: QueryModel) -> ResponseForQuery:
     load_dotenv()
-    index_id = os.environ["MARQO_INDEX_NAME"]
+    indices = json.loads(config['marqo_index']['indices'])
+    index_id = indices.get("rstory")
     language = 'or' if request.input.language.name == DropDownInputLanguage.ori.name else request.input.language.name
     output_format = request.output.format.name
     audio_url = request.input.audio
