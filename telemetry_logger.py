@@ -1,3 +1,5 @@
+import json
+from fastapi import Request
 import requests
 import time
 import os
@@ -57,7 +59,7 @@ class TelemetryLogger:
         except requests.exceptions.RequestException as e:
             logger.error(f"Error sending telemetry log: {e}", exc_info=True)    
 
-    def prepare_log_event(self, eventInput: dict, etype = "api_access", elevel = "INFO", message=""):
+    def prepare_log_event(self, eventInput: dict, etype="api_access", elevel="INFO", message=""):
         """
         Prepare a telemetry event dictionary with the specified values. 
         Args:
@@ -96,10 +98,10 @@ class TelemetryLogger:
 
         if eventInput.get("x-request-id", None):
             data["context"]["sid"] = eventInput.get("x-request-id")
-        
+
         if eventInput.get("x-device-id", None):
             data["context"]["did"] = eventInput.get("x-device-id")
-        
+
         eventCData = self.__getEventCData(eventInput)
         if eventCData:
             data["context"]["cdata"] = eventCData
@@ -108,30 +110,40 @@ class TelemetryLogger:
         if eventEDataParams:
             data["edata"]["params"] = eventEDataParams
         return data
-    
 
     def __getEventCData(self, eventInput: dict):
         eventCData = []
         if eventInput.get("x-consumer-id", None) and eventInput.get("x-source", None):
             eventCData = [
-                    {
-                        "id": eventInput.get("x-consumer-id"),
-                        "type": "ConsumerId"
-                    },
-                    {
-                        "id": eventInput.get("x-source"),
-                        "type": "Source"
-                    }
-                ]
+                {
+                    "id": eventInput.get("x-consumer-id"),
+                    "type": "ConsumerId"
+                },
+                {
+                    "id": eventInput.get("x-source"),
+                    "type": "Source"
+                }
+            ]
         return eventCData
-    
+
     def __getEventEDataParams(self, eventInput: dict):
-        body = str(eventInput.get("body")).replace("'", "")
         eventEDataParams = [
-            { "request":  body },
-            { "method": str(eventInput.get("method")) },
-            { "url": str(eventInput.get("url")) },
-            { "status": eventInput.get("status_code") }, 
-            { "duration": int(eventInput.get("duration")) }
+            {"method": str(eventInput.get("method"))},
+            {"url": str(eventInput.get("url"))},
+            {"status": eventInput.get("status_code")},
+            {"duration": int(eventInput.get("duration"))}
         ]
+        flattened_dict = self.__flatten_dict(eventInput.get("body", {}))
+        for item in flattened_dict.items():
+            eventEDataParams.append({item[0]: item[1]})
         return eventEDataParams
+
+    def __flatten_dict(self, d, parent_key='', sep='_'):
+        flattened = {}
+        for k, v in d.items():
+            new_key = f"{parent_key}{sep}{k}" if parent_key else k
+            if isinstance(v, dict):
+                flattened.update(self.__flatten_dict(v, new_key, sep=sep))
+            else:
+                flattened[new_key] = v
+        return flattened
