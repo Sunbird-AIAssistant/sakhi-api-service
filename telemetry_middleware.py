@@ -5,6 +5,20 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from telemetry_logger import TelemetryLogger
 from starlette.types import Message
 
+# https://github.com/tiangolo/fastapi/issues/394 
+# Stream response does not work => https://github.com/tiangolo/fastapi/issues/394#issuecomment-994665859
+async def set_body(request: Request, body: bytes):
+    async def receive() -> Message:
+        return {"type": "http.request", "body": body}
+
+    request._receive = receive
+
+
+async def get_body(request: Request) -> bytes:
+    body = await request.body()
+    await set_body(request, body)
+    return body
+
 class TelemetryMiddleware(BaseHTTPMiddleware):
     def __init__(
             self,
@@ -12,18 +26,11 @@ class TelemetryMiddleware(BaseHTTPMiddleware):
     ):
         super().__init__(app)
 
-    # https://github.com/tiangolo/fastapi/issues/394 
-    # Stream response does not work => https://github.com/tiangolo/fastapi/issues/394#issuecomment-994665859   
-    async def set_body(self, request: Request):
-        receive_ = await request._receive()
-        async def receive() -> Message:
-            return receive_
-        request._receive = receive
 
     async def dispatch(self, request: Request, call_next):
         start_time = time.time()
-        await self.set_body(request)
-        body = await request.body()
+        await set_body(request, await request.body())
+        body = await get_body(request)
         if body.decode("utf-8"):
             body = json.loads(body)
         response = await call_next(request)
