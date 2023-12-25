@@ -1,18 +1,18 @@
 import os
-from langchain.docstore.document import Document
-from langchain.vectorstores.marqo import Marqo
+from typing import (
+    Any,
+    List,
+    Tuple
+)
+
 import marqo
 from dotenv import load_dotenv
+from langchain.docstore.document import Document
+from langchain.vectorstores.marqo import Marqo
 from openai import OpenAI, RateLimitError, APIError, InternalServerError
 
 from config_util import get_config_value
 from logger import logger
-from typing import (
-    Any,
-    Dict,
-    List,
-    Tuple
-)
 
 load_dotenv()
 marqo_url = get_config_value('database', 'MARQO_URL', None)
