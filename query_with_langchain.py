@@ -15,7 +15,7 @@ from typing import (
 )
 
 load_dotenv()
-marqo_url = get_config_value('database', 'MARQO_URL', "")
+marqo_url = get_config_value('database', 'MARQO_URL', None)
 marqoClient = marqo.Client(url=marqo_url)
 
 
