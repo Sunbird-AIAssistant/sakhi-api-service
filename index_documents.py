@@ -1,9 +1,14 @@
+import json
 from llama_index import SimpleDirectoryReader
 from langchain.docstore.document import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores.marqo import Marqo
 import marqo
 import argparse
+from typing import (
+    Dict,
+    List
+)
 
 def load_documents(folder_path):
     source_chunks = []
@@ -19,16 +24,19 @@ def load_documents(folder_path):
             }))
     return source_chunks
 
-def index_documents(documents, index_name):
-    try:
-        add_documents_settings = { "auto_refresh": True, "client_batch_size" : 50 }
-        Marqo.from_documents(documents, index_name=index_name, add_documents_settings = add_documents_settings)
-        error_message = None
-        status_code = 200
-    except Exception as e:
-        error_message = str(e.__context__) + " and " + e.__str__()
-        status_code = 500
-    return error_message, status_code
+def get_formatted_documents(documents: List[Document]):
+    docs: List[Dict[str, str]] = []
+    for d in documents:
+        doc = {
+            "text": d.page_content,
+            "metadata": json.dumps(d.metadata) if d.metadata else json.dumps({}),
+        }
+        docs.append(doc)
+    return docs
+
+def chunk_list(document, batch_size):
+    """Return a list of batch sized chunks from document."""
+    return [document[i : i + batch_size] for i in range(0, len(document), batch_size)]
 
 def main():
     
@@ -77,17 +85,18 @@ def main():
     f.close()
     
     print(f"Indexing documents...")
-    err, code = index_documents(documents, MARQO_INDEX_NAME)
-    print(err, code)
-   
-
+    formatted_documents = get_formatted_documents(documents)
+    tensor_fields = ['text']
+    _document_batch_size = 50
+    chunks = list(chunk_list(formatted_documents, _document_batch_size))
+    for chunk in chunks:
+        marqo_client.index(MARQO_INDEX_NAME).add_documents(documents=chunk, client_batch_size= _document_batch_size, tensor_fields=tensor_fields)
+    
     print("============ INDEX DONE =============")
 
 if __name__ == "__main__":
     main()
 
 
-
 # RUN
-
 #python3 index_documents.py --marqo_url=http://0.0.0.0:8882 --index_name=sakhi_activity --folder_path=input_data
