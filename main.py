@@ -167,6 +167,7 @@ async def query(request: QueryModel) -> ResponseForQuery:
 
         if text is not None:
             answer, source_text, paraphrased_query, error_message, status_code = querying_with_langchain_gpt3(index_id, text, audience_type)
+
             if len(answer) != 0:
                 regional_answer, error_message = process_outgoing_text(answer, language)
                 if regional_answer is not None:
@@ -187,10 +188,8 @@ async def query(request: QueryModel) -> ResponseForQuery:
         else:
             status_code = 503
 
-    # if source_text is not None:
-    #     sources = generate_source_format(source_text)
-    #     regional_answer = (regional_answer or "") + sources
-    #     answer = answer + sources
+    if source_text is not None:
+        regional_answer = (regional_answer or "") + source_text
 
     if status_code != 200:
         logger.error({"uuid_number": index_id, "query": query_text, "input_language": language, "output_format": output_format, "audio_url": audio_url, "status_code": status_code, "error_message": error_message})
@@ -259,9 +258,7 @@ async def query_rstory(request: QueryModel) -> ResponseForQuery:
             status_code = 503
 
     if source_text is not None:
-        sources = generate_source_format(source_text)
-        regional_answer = (regional_answer or "") + sources
-        answer = answer + sources
+        regional_answer = (regional_answer or "") + source_text
 
     if status_code != 200:
         logger.error({"uuid_number": index_id, "query": query_text, "input_language": language, "output_format": output_format, "audio_url": audio_url, "status_code": status_code, "error_message": error_message})

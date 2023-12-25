@@ -51,7 +51,22 @@ def querying_with_langchain_gpt3(index_id, query, audience_type):
         message = res.choices[0].message.model_dump()
         response = message["content"]
         logger.info({"label": "openai_response", "response": response})
-        return response, filtered_document, None, None, 200
+
+        response_tags = response.split("> ")
+        answer: str = ""
+        context_source: str = ""
+        for response_tag in response_tags:
+            if response_tag.strip():
+                tags = response_tag.split(":")
+                if tags[0] == "answer":
+                    answer += tags[1]
+                elif tags[0] == "context_source":
+                    context_source += tags[1]
+
+        logger.info({"Answer: ", answer})
+        logger.info({"context_source: ", context_source})
+
+        return answer, context_source, filtered_document, None, 200
     except RateLimitError as e:
         error_message = f"OpenAI API request exceeded rate limit: {e}"
         status_code = 500
@@ -115,7 +130,7 @@ def get_formatted_documents(documents: List[Tuple[Document, Any]]):
     sources = ""
     for document, score in documents:
         sources += f"""
-            > {document.page_content} \n >> context_source: [filename: {document.metadata['file_name']},  page: {document.metadata['page_label']}; ]\n\n
+            > {document.page_content} \n > context_source: [filename# {document.metadata['file_name']},  page# {document.metadata['page_label']}]\n\n
             """
     return sources
 
@@ -215,7 +230,7 @@ def getSystemRulesForTeacher():
     Children vary in their learning abilities and learning styles.Manage multi-age groupingThe multi-age groupings benefit both younger and older children 
     in the classroom. In such heterogeneous groups, children learn from each other and thus, facilitate cooperative learning skills. Therefore, a class of multi-age group children may be managed to get maximum benefits from them and for them. 
     Chapter 3.indd   31Chapter 3.indd   31 24 Apr 2023   16:38:5924 Apr 2023   16:38:59 
-     >> context_source: [filename: unmukh-teacher-handbook.pdf,  page: 49; ]
+     > context_source: [filename# unmukh-teacher-handbook.pdf,  page# 49]
      
      > APB39
     NISHTHA (FLN)
@@ -231,7 +246,7 @@ def getSystemRulesForTeacher():
     • Why is Preeti lagging in studies?
     • What adjustment can Preeti’s teacher put in place to help her with her school work/
     studies? 
-     >> context_source: [filename: Course 03 Understanding Learners_ How Children Learn_.pdf,  page: 39; ]
+     > context_source: [filename# Course 03 Understanding Learners_ How Children Learn_.pdf,  page# 39]
    
     
    
@@ -260,7 +275,7 @@ def getSystemRulesForTeacher():
     in the classroom. In such heterogeneous groups, children learn from each other and thus, facilitate cooperative learning skills. Therefore, a class of multi-age group children may be managed to get maximum benefits from them and for them. 
     Chapter 3.indd   31Chapter 3.indd   31 24 Apr 2023   16:38:5924 Apr 2023   16:38:59 
     > answer: When dealing with behavioral issues in children, it is important to approach the situation with empathy and understanding. Here are some strategies to address behavioral issues:\n\n1. Positive Guidance: Use positive reinforcement and praise to encourage good behavior. Emphasize and appreciate the right behavior instead of criticizing the wrong behavior.\n\n2. Clear Rules and Expectations: Clearly communicate the rules and expectations to the child. Make sure they understand what is expected of them and the consequences of breaking the rules.\n\n3. Age-Appropriate Explanations: Use age-appropriate explanations and language to help the child understand why certain behaviors are not acceptable and the impact of their actions on others.\n\n4. Consistency: Be consistent with your approach and follow through with consequences when rules are broken. This helps children understand the connection between their behavior and the consequences.\n\n5. Collaborative Problem-Solving: Involve the child in problem-solving and finding solutions to their behavioral issues. Encourage them to think of alternative ways to behave and provide support and guidance in finding positive solutions.\n\n6. Supportive Environment: Create a safe and supportive environment where children feel heard and valued. Encourage interactions with other children and promote positive social interactions.\n\n7. Communication with Parents: Regularly communicate with parents and involve them in addressing behavioral issues. Work together as a team to provide consistent guidance and support to the child.\n\nRemember, behavior is often a form of communication, and children may act out due to various factors such as lack of understanding, emotional needs, or developmental challenges. It is important to approach behavioral issues with patience, empathy, and a focus on positive guidance.
-    >> context_source: [filename: unmukh-teacher-handbook.pdf,  page: 49; ] 
+    > context_source: [filename# unmukh-teacher-handbook.pdf,  page# 49] 
     
    
    
@@ -315,7 +330,7 @@ def getSystemRulesForParent():
     Children vary in their learning abilities and learning styles.Manage multi-age groupingThe multi-age groupings benefit both younger and older children 
     in the classroom. In such heterogeneous groups, children learn from each other and thus, facilitate cooperative learning skills. Therefore, a class of multi-age group children may be managed to get maximum benefits from them and for them. 
     Chapter 3.indd   31Chapter 3.indd   31 24 Apr 2023   16:38:5924 Apr 2023   16:38:59 
-     >> context_source: [filename: unmukh-teacher-handbook.pdf,  page: 49; ]
+     > context_source: [filename# unmukh-teacher-handbook.pdf,  page# 49]
      
      > APB39
     NISHTHA (FLN)
@@ -331,7 +346,7 @@ def getSystemRulesForParent():
     • Why is Preeti lagging in studies?
     • What adjustment can Preeti’s teacher put in place to help her with her school work/
     studies? 
-     >> context_source: [filename: Course 03 Understanding Learners_ How Children Learn_.pdf,  page: 39; ]
+     > context_source: [filename# Course 03 Understanding Learners_ How Children Learn_.pdf,  page# 39]
    
     
    
@@ -360,7 +375,7 @@ def getSystemRulesForParent():
     in the classroom. In such heterogeneous groups, children learn from each other and thus, facilitate cooperative learning skills. Therefore, a class of multi-age group children may be managed to get maximum benefits from them and for them. 
     Chapter 3.indd   31Chapter 3.indd   31 24 Apr 2023   16:38:5924 Apr 2023   16:38:59 
     > answer: When dealing with behavioral issues in children, it is important to approach the situation with empathy and understanding. Here are some strategies to address behavioral issues:\n\n1. Positive Guidance: Use positive reinforcement and praise to encourage good behavior. Emphasize and appreciate the right behavior instead of criticizing the wrong behavior.\n\n2. Clear Rules and Expectations: Clearly communicate the rules and expectations to the child. Make sure they understand what is expected of them and the consequences of breaking the rules.\n\n3. Age-Appropriate Explanations: Use age-appropriate explanations and language to help the child understand why certain behaviors are not acceptable and the impact of their actions on others.\n\n4. Consistency: Be consistent with your approach and follow through with consequences when rules are broken. This helps children understand the connection between their behavior and the consequences.\n\n5. Collaborative Problem-Solving: Involve the child in problem-solving and finding solutions to their behavioral issues. Encourage them to think of alternative ways to behave and provide support and guidance in finding positive solutions.\n\n6. Supportive Environment: Create a safe and supportive environment where children feel heard and valued. Encourage interactions with other children and promote positive social interactions.\n\n7. Communication with Parents: Regularly communicate with parents and involve them in addressing behavioral issues. Work together as a team to provide consistent guidance and support to the child.\n\nRemember, behavior is often a form of communication, and children may act out due to various factors such as lack of understanding, emotional needs, or developmental challenges. It is important to approach behavioral issues with patience, empathy, and a focus on positive guidance.
-    >> context_source: [filename: unmukh-teacher-handbook.pdf,  page: 49; ] 
+    > context_source: [filename# unmukh-teacher-handbook.pdf,  page# 49] 
     
    
    
