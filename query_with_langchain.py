@@ -67,9 +67,11 @@ def query_rstory_gpt3(index_id, query):
     logger.debug(f"Query ===> {query}")
     try:
         search_index = Marqo(marqoClient, index_id, searchable_attributes=["text"])
-        documents = search_index.similarity_search_with_score(query, k=2)
+        top_docs_to_fetch = get_config_value('database', 'TOP_DOCS_TO_FETCH', "1")
+        documents = search_index.similarity_search_with_score(query, k=int(top_docs_to_fetch))
         logger.info(f"Marqo documents : {str(documents)}")
-        filtered_document = get_score_filtered_documents(documents, 0.75)
+        min_score = get_config_value('database', 'DOCS_MIN_SCORE', "80")
+        filtered_document = get_score_filtered_documents(documents, int(min_score))
         logger.debug(f"filtered documents : {str(filtered_document)}")
         contexts = get_formatted_documents(filtered_document)
         if not documents or not contexts:
