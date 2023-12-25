@@ -20,7 +20,7 @@ def querying_with_langchain_gpt3(index_id, query, audience_type ):
     logger.debug(f"Query ===> {query}")
     try:
         search_index = Marqo(marqoClient, index_id, searchable_attributes=["text"])
-        documents = search_index.similarity_search_with_score(query, k=2)
+        documents = search_index.similarity_search_with_score(query, k=5)
         logger.info(f"Marqo documents : {str(documents)}")
         filtered_document = get_score_filtered_documents(documents, 0.75)
         logger.debug(f"filtered documents : {str(filtered_document)}")
@@ -60,7 +60,7 @@ def query_rstory_gpt3(index_id, query):
     logger.debug(f"Query ===> {query}")
     try:
         search_index = Marqo(marqoClient, index_id, searchable_attributes=["text"])
-        documents = search_index.similarity_search_with_score(query, k=2)
+        documents = search_index.similarity_search_with_score(query, k=5)
         logger.info(f"Marqo documents : {str(documents)}")
         filtered_document = get_score_filtered_documents(documents, 0.75)
         logger.debug(f"filtered documents : {str(filtered_document)}")
