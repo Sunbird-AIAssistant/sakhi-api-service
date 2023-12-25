@@ -1,23 +1,19 @@
-import os.path
-import configparser
 from enum import Enum
+
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from dotenv import load_dotenv
+from cloud_storage_oci import *
 from io_processing import *
 from query_with_langchain import *
-from cloud_storage_oci import *
-from logger import logger
-from utils import *
-from dotenv import load_dotenv
 from telemetry_middleware import TelemetryMiddleware
-
-config = configparser.ConfigParser()
-config.read("config.ini")
+from config_util import get_config_value
+from utils import *
 
 app = FastAPI(title="Sakhi API Service",
-            #   docs_url=None,  # Swagger UI: disable it by setting docs_url=None
-              redoc_url=None, # ReDoc : disable it by setting docs_url=None
+              #   docs_url=None,  # Swagger UI: disable it by setting docs_url=None
+              redoc_url=None,  # ReDoc : disable it by setting docs_url=None
               swagger_ui_parameters={"defaultModelsExpandDepth": -1},
               description='',
               version="1.0.0"
@@ -31,24 +27,29 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.on_event("startup")
 async def startup_event():
     logger.info('Invoking startup_event')
     load_dotenv()
     logger.info('startup_event : Engine created')
 
+
 @app.on_event("shutdown")
 async def shutdown_event():
     logger.info('Invoking shutdown_event')
     logger.info('shutdown_event : Engine closed')
 
+
 class AudienceType(str, Enum):
     TEACHER = "teacher"
     PARENT = "parent"
 
+
 class DropdownOutputFormat(str, Enum):
     TEXT = "text"
     AUDIO = "audio"
+
 
 class DropDownInputLanguage(str, Enum):
     en = "en"
@@ -63,40 +64,48 @@ class DropDownInputLanguage(str, Enum):
     ta = "ta"
     te = "te"
 
+
 class OutputResponse(BaseModel):
     text: str
     audio: str = None
     language: DropDownInputLanguage
     format: DropdownOutputFormat
 
+
 class ResponseForQuery(BaseModel):
     output: OutputResponse
-    
+
+
 class HealthCheck(BaseModel):
     """Response model to validate and return when performing a health check."""
 
     status: str = "OK"
 
+
 class QueryInputModel(BaseModel):
     language: DropDownInputLanguage
-    text:str = None
-    audio:str = None
+    text: str = None
+    audio: str = None
     audienceType: AudienceType = AudienceType.PARENT
 
 
 class QueryOuputModel(BaseModel):
     format: DropdownOutputFormat
 
+
 class QueryModel(BaseModel):
     input: QueryInputModel
     output: QueryOuputModel
 
+
 # Telemetry API logs middleware
 app.add_middleware(TelemetryMiddleware)
+
 
 @app.get("/", include_in_schema=False)
 async def root():
     return {"message": "Welcome to Sakhi API Service"}
+
 
 @app.get(
     "/health",
@@ -119,10 +128,11 @@ def get_health() -> HealthCheck:
     """
     return HealthCheck(status="OK")
 
-@app.post("/v1/query", tags=["Q&A over Document Store"],  include_in_schema=True)
+
+@app.post("/v1/query", tags=["Q&A over Document Store"], include_in_schema=True)
 async def query(request: QueryModel) -> ResponseForQuery:
     load_dotenv()
-    indices = json.loads(config['marqo_index']['indices'])
+    indices = json.loads(get_config_value('marqo_index', 'indices', None))
     language = 'or' if request.input.language.name == DropDownInputLanguage.ori.name else request.input.language.name
     audience_type = request.input.audienceType.name
     index_id = indices.get(audience_type.lower())
@@ -136,20 +146,21 @@ async def query(request: QueryModel) -> ResponseForQuery:
     answer = None
     audio_output_url = None
     source_text = None
-    logger.info({"label": "query", "query_text":query_text, "index_id": index_id, "audience_type": audience_type, "input_language": language, "output_format": output_format, "audio_url": audio_url})
-    
+    logger.info({"label": "query", "query_text": query_text, "index_id": index_id, "audience_type": audience_type, "input_language": language, "output_format": output_format, "audio_url": audio_url})
+
     if query_text is None and audio_url is None:
         query_text = None
         error_message = "Either 'Query Text' or 'Audio URL' should be present"
         status_code = 422
     else:
         if query_text is not None:
-            text, error_message =   process_incoming_text(query_text, language)
+            text, error_message = process_incoming_text(query_text, language)
             if output_format == "AUDIO":
                 is_audio = True
         else:
             if not is_url(audio_url) and not is_base64(audio_url):
-                logger.error({"uuid_number":index_id, "query":query_text, "input_language": language, "output_format": output_format, "audio_url": audio_url, "status_code": status.HTTP_422_UNPROCESSABLE_ENTITY, "error_message": "Invalid audio input!"})
+                logger.error(
+                    {"uuid_number": index_id, "query": query_text, "input_language": language, "output_format": output_format, "audio_url": audio_url, "status_code": status.HTTP_422_UNPROCESSABLE_ENTITY, "error_message": "Invalid audio input!"})
                 raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid audio input!")
             query_text, text, error_message = process_incoming_voice(audio_url, language)
             is_audio = True
@@ -182,17 +193,18 @@ async def query(request: QueryModel) -> ResponseForQuery:
         answer = answer + sources
 
     if status_code != 200:
-        logger.error({"uuid_number":index_id, "query":query_text, "input_language": language, "output_format": output_format, "audio_url": audio_url, "status_code": status_code, "error_message": error_message})
+        logger.error({"uuid_number": index_id, "query": query_text, "input_language": language, "output_format": output_format, "audio_url": audio_url, "status_code": status_code, "error_message": error_message})
         raise HTTPException(status_code=status_code, detail=error_message)
 
     response = ResponseForQuery(output=OutputResponse(text=regional_answer, audio=audio_output_url, language=language, format=output_format.lower()))
     logger.info(response)
     return response
 
-@app.post("/v1/query_rstory", tags=["Q&A over Document Store"],  include_in_schema=True)
+
+@app.post("/v1/query_rstory", tags=["Q&A over Document Store"], include_in_schema=True)
 async def query_rstory(request: QueryModel) -> ResponseForQuery:
     load_dotenv()
-    indices = json.loads(config['marqo_index']['indices'])
+    indices = json.loads(get_config_value('marqo_index', 'indices', None))
     index_id = indices.get("rstory")
     language = 'or' if request.input.language.name == DropDownInputLanguage.ori.name else request.input.language.name
     output_format = request.output.format.name
@@ -205,20 +217,21 @@ async def query_rstory(request: QueryModel) -> ResponseForQuery:
     answer = None
     audio_output_url = None
     source_text = None
-    logger.info({"label": "query", "query_text":query_text, "index_id": index_id, "input_language": language, "output_format": output_format, "audio_url": audio_url})
-    
+    logger.info({"label": "query", "query_text": query_text, "index_id": index_id, "input_language": language, "output_format": output_format, "audio_url": audio_url})
+
     if query_text is None and audio_url is None:
         query_text = None
         error_message = "Either 'Query Text' or 'Audio URL' should be present"
         status_code = 422
     else:
         if query_text is not None:
-            text, error_message =   process_incoming_text(query_text, language)
+            text, error_message = process_incoming_text(query_text, language)
             if output_format == "AUDIO":
                 is_audio = True
         else:
             if not is_url(audio_url) and not is_base64(audio_url):
-                logger.error({"uuid_number":index_id, "query":query_text, "input_language": language, "output_format": output_format, "audio_url": audio_url, "status_code": status.HTTP_422_UNPROCESSABLE_ENTITY, "error_message": "Invalid audio input!"})
+                logger.error(
+                    {"uuid_number": index_id, "query": query_text, "input_language": language, "output_format": output_format, "audio_url": audio_url, "status_code": status.HTTP_422_UNPROCESSABLE_ENTITY, "error_message": "Invalid audio input!"})
                 raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid audio input!")
             query_text, text, error_message = process_incoming_voice(audio_url, language)
             is_audio = True
@@ -251,7 +264,7 @@ async def query_rstory(request: QueryModel) -> ResponseForQuery:
         answer = answer + sources
 
     if status_code != 200:
-        logger.error({"uuid_number":index_id, "query":query_text, "input_language": language, "output_format": output_format, "audio_url": audio_url, "status_code": status_code, "error_message": error_message})
+        logger.error({"uuid_number": index_id, "query": query_text, "input_language": language, "output_format": output_format, "audio_url": audio_url, "status_code": status_code, "error_message": error_message})
         raise HTTPException(status_code=status_code, detail=error_message)
 
     response = ResponseForQuery(output=OutputResponse(text=regional_answer, audio=audio_output_url, language=language, format=output_format.lower()))

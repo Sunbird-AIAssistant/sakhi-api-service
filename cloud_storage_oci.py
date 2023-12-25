@@ -1,23 +1,26 @@
 import boto3
 from botocore.exceptions import ClientError
 import os
+
+from config_util import get_config_value
 from logger import logger
 from dotenv import load_dotenv
 
 load_dotenv()
 # Create S3 client for OCI object storage
 s3_client = boto3.client(
- 's3',
- region_name=os.environ["OCI_REGION_NAME"],
- aws_secret_access_key=os.environ["OCI_SECRET_ACCESS_KEY"],
- aws_access_key_id=os.environ["OCI_ACCESS_KEY_ID"],
- endpoint_url=os.environ["OCI_ENDPOINT_URL"]
+    's3',
+    region_name=get_config_value('cloud', 'OCI_REGION_NAME', None),
+    aws_secret_access_key=get_config_value('cloud', 'OCI_SECRET_ACCESS_KEY', None),
+    aws_access_key_id=get_config_value('cloud', 'OCI_ACCESS_KEY_ID', None),
+    endpoint_url=get_config_value('cloud', 'OCI_ENDPOINT_URL', None),
 )
 
 # OCI Bucket Name
-bucket_name = os.environ["OCI_BUCKET_NAME"]
+bucket_name = get_config_value('cloud', 'OCI_BUCKET_NAME', None),
 
-def upload_file_object(file_name, object_name = None):
+
+def upload_file_object(file_name, object_name=None):
     """Upload a file to an OCI bucket
 
     :param file_name: File to upload    
@@ -37,7 +40,8 @@ def upload_file_object(file_name, object_name = None):
         return False
     return True
 
-def download_file_object(file_name, object_name = None):
+
+def download_file_object(file_name, object_name=None):
     """Download a file to an OCI bucket
 
     :param file_name: The path to the file to download to
@@ -56,6 +60,7 @@ def download_file_object(file_name, object_name = None):
         logger.error(f"Exception downloading a file: {e}", exc_info=True)
         return False
     return True
+
 
 def create_presigned_url(object_name, expiration=3600):
     """Generate a presigned URL to share an OCI object
@@ -78,6 +83,7 @@ def create_presigned_url(object_name, expiration=3600):
     # The response contains the presigned URL
     return response
 
+
 def give_public_url(file_name: str):
     """
     Generates the full path to a file in OCI Object Storage.
@@ -89,7 +95,7 @@ def give_public_url(file_name: str):
         The full path to the file.
     """
     try:
-        oci_endpoint_url = os.environ["OCI_ENDPOINT_URL"]
+        oci_endpoint_url = get_config_value('cloud', 'OCI_ENDPOINT_URL', None)
         public_url = f"{oci_endpoint_url}{bucket_name}/{file_name}"
         return public_url, None
     except Exception as e:

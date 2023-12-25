@@ -1,12 +1,15 @@
-import requests
 import time
-import os
 import uuid
+
+import requests
+
+from config_util import get_config_value
 from logger import logger
 
-telemetryURL = os.environ.get("TELEMETRY_ENDPOINT_URL", "")
-ENV_NAME = os.environ.get("SERVICE_ENVIRONMENT","dev")
-TELEMETRY_LOG_ENABLED = os.environ.get("TELEMETRY_LOG_ENABLED", "true").lower() == "true"
+telemetryURL = get_config_value('telemetry', 'TELEMETRY_ENDPOINT_URL', "")
+ENV_NAME = get_config_value('telemetry', 'SERVICE_ENVIRONMENT', "dev")
+TELEMETRY_LOG_ENABLED = get_config_value('telemetry', 'TELEMETRY_LOG_ENABLED', "true").lower()
+
 
 class TelemetryLogger:
     """
@@ -24,13 +27,13 @@ class TelemetryLogger:
 
         **kwargs:** Keyword arguments containing the event data.
         """
-        
+
         logger.info(f"Telemetry event: {event}")
-        
+
         if not TELEMETRY_LOG_ENABLED:
             return
-        
-        self.events.append(event)   
+
+        self.events.append(event)
         # Send logs if exceeding threshold
         if len(self.events) >= self.threshold:
             self.send_logs()
@@ -41,11 +44,11 @@ class TelemetryLogger:
         """
         try:
             data = {
-                    "id": "api.djp.telemetry",
-                    "ver": "3.1",
-                    "params": {"msgid": str(uuid.uuid4())},
-                    "ets": int(time.time() * 1000),
-                    "events": self.events
+                "id": "api.djp.telemetry",
+                "ver": "3.1",
+                "params": {"msgid": str(uuid.uuid4())},
+                "ets": int(time.time() * 1000),
+                "events": self.events
             }
             headers = {"Content-Type": "application/json"}
             response = requests.post(self.url + "/v1/telemetry", json=data, headers=headers)
@@ -55,7 +58,7 @@ class TelemetryLogger:
             # Reset captured events after sending
             self.events = []
         except requests.exceptions.RequestException as e:
-            logger.error(f"Error sending telemetry log: {e}", exc_info=True)    
+            logger.error(f"Error sending telemetry log: {e}", exc_info=True)
 
     def prepare_log_event(self, eventInput: dict, etype="api_access", elevel="INFO", message=""):
         """
@@ -80,7 +83,7 @@ class TelemetryLogger:
             },
             "context": {
                 "channel": "ejp",
-                 "pdata": {
+                "pdata": {
                     "id": "ejp.sakhi.api.service",
                     "ver": "1.0",
                     "pid": ""

@@ -1,14 +1,16 @@
 import json
-import base64
 import os
-import requests
-from pydub import AudioSegment
-from google.cloud import texttospeech, speech, translate
-from utils import *
 import time
-from telemetry_logger import TelemetryLogger
 
-telemetryLogger =  TelemetryLogger()
+import requests
+from google.cloud import texttospeech, speech, translate
+from pydub import AudioSegment
+
+from config_util import get_config_value
+from telemetry_logger import TelemetryLogger
+from utils import *
+
+telemetryLogger = TelemetryLogger()
 
 asr_mapping = {
     "bn": "ai4bharat/conformer-multilingual-indo_aryan-gpu--t4",
@@ -46,11 +48,13 @@ tts_mapping = {
     "te": "ai4bharat/indic-tts-coqui-dravidian-gpu--t4"
 }
 
+
 class RequestError(Exception):
     def __init__(self, response):
         self.response = response
 
-def log_success_telemetry_event(url, method,  payload, process_time, status_code):
+
+def log_success_telemetry_event(url, method, payload, process_time, status_code):
     event: dict = {
         "status_code": status_code,
         "duration": round(process_time * 1000),
@@ -58,10 +62,11 @@ def log_success_telemetry_event(url, method,  payload, process_time, status_code
         "method": method,
         "url": url
     }
-    event = telemetryLogger.prepare_log_event(eventInput=event,etype="api_call", elevel="INFO", message="success")
+    event = telemetryLogger.prepare_log_event(eventInput=event, etype="api_call", elevel="INFO", message="success")
     telemetryLogger.add_event(event)
 
-def log_failed_telemetry_event(url, method,  payload, process_time, status_code, error):
+
+def log_failed_telemetry_event(url, method, payload, process_time, status_code, error):
     event: dict = {
         "status_code": status_code,
         "duration": round(process_time * 1000),
@@ -70,8 +75,9 @@ def log_failed_telemetry_event(url, method,  payload, process_time, status_code,
         "url": url
     }
     error = error.replace("'", "")
-    event = telemetryLogger.prepare_log_event(eventInput=event,etype="api_call", elevel="ERROR", message=error)
+    event = telemetryLogger.prepare_log_event(eventInput=event, etype="api_call", elevel="ERROR", message=error)
     telemetryLogger.add_event(event)
+
 
 def get_encoded_string(audio):
     if is_url(audio):
@@ -97,7 +103,7 @@ def get_encoded_string(audio):
     encoded_string = base64.b64encode(wav_file_content)
     encoded_string = str(encoded_string, 'ascii', 'ignore')
     os.remove(local_filename)
-    os.remove("temp.wav")   
+    os.remove("temp.wav")
     return encoded_string, wav_file_content
 
 
@@ -116,7 +122,7 @@ def google_speech_to_text(wav_file_content, input_language):
 
 def speech_to_text(encoded_string, input_language):
     start_time = time.time()
-    url = os.environ["BHASHINI_ENDPOINT_URL"]
+    url = get_config_value('translator', 'BHASHINI_ENDPOINT_URL', None)
     payload = {
         "pipelineTasks": [
             {
@@ -138,7 +144,7 @@ def speech_to_text(encoded_string, input_language):
         }
     }
     headers = {
-        'Authorization': os.environ["BHASHINI_API_KEY"],
+        'Authorization': get_config_value('translator', 'BHASHINI_API_KEY', None),
         'Content-Type': 'application/json'
     }
 
@@ -171,38 +177,39 @@ def google_translate_text(text, source, destination, project_id="indian-legal-be
     )
     return response.translations[0].translated_text
 
+
 def indic_translation(text, source, destination):
     if source == destination:
         return text
     try:
         start_time = time.time()
-        url = os.environ["BHASHINI_ENDPOINT_URL"]
+        url = get_config_value('translator', 'BHASHINI_ENDPOINT_URL', None)
         payload = {
             "pipelineTasks": [
                 {
-                "taskType": "tts",
-                "config": {
-                    "language": {
-                        "sourceLanguage": source,
-                        "targetLanguage": destination
-                    },
-                    "serviceId": translation_serviceId
-                }
+                    "taskType": "tts",
+                    "config": {
+                        "language": {
+                            "sourceLanguage": source,
+                            "targetLanguage": destination
+                        },
+                        "serviceId": translation_serviceId
+                    }
                 }
             ],
             "inputData": {
                 "input": [
-                {
-                    "source": text
-                }
+                    {
+                        "source": text
+                    }
                 ]
-        }
+            }
         }
         headers = {
-            'Authorization': os.environ["BHASHINI_API_KEY"],
+            'Authorization': get_config_value('translator', 'BHASHINI_API_KEY', None),
             'Content-Type': 'application/json'
         }
-    
+
         response = requests.request("POST", url, headers=headers, data=json.dumps(payload))
         process_time = time.time() - start_time
         response.raise_for_status()
@@ -214,6 +221,7 @@ def indic_translation(text, source, destination):
         raise RequestError(e.response) from e
         # indic_text = google_translate_text(text, source, destination)
     return indic_text
+
 
 def google_text_to_speech(text, language):
     try:
@@ -239,7 +247,7 @@ def google_text_to_speech(text, language):
 def text_to_speech(language, text, gender='female'):
     try:
         start_time = time.time()
-        url = os.environ["BHASHINI_ENDPOINT_URL"]
+        url = get_config_value('translator', 'BHASHINI_ENDPOINT_URL', None)
         payload = {
             "pipelineTasks": [
                 {
@@ -267,7 +275,7 @@ def text_to_speech(language, text, gender='female'):
             }
         }
         headers = {
-            'Authorization': os.environ["BHASHINI_API_KEY"],
+            'Authorization': get_config_value('translator', 'BHASHINI_API_KEY', None),
             'Content-Type': 'application/json'
         }
         response = requests.request("POST", url, headers=headers, data=json.dumps(payload))
