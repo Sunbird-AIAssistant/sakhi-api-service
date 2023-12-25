@@ -92,7 +92,7 @@ def query_rstory_gpt3(index_id, query):
         logger.debug(f"filtered documents : {str(filtered_document)}")
         contexts = get_formatted_documents(filtered_document)
         if not documents or not contexts:
-            return "I'm sorry, but I don't have enough information to provide a specific answer for your question. Please provide more information or context about what you are referring to.", None, None, None, 200
+            return "I'm sorry, but I don't have enough information to provide a specific answer for your question. Please provide more information or context about what you are referring to.", None, None, 200
         system_rules = getStoryPromptTemplate()
         system_rules = system_rules.format(contexts=contexts)
         logger.info("==== System Rules ====")
@@ -196,7 +196,7 @@ def getSystemRulesForTeacher():
         - Always return the 'context_source' of the most relevant document chosen in the 'answer' at the end.
         - Your answer must be firmly rooted in the information present in the given the most relevant document.
         - answer format should strictly follow the format given in the 'Example of answer' section below.
-        - If no document is given, then you should not answer the question.
+        - If no relevant document is given, then you should answer "> source: None. > answer: I'm sorry, but I don't have enough information to provide a specific answer for your question. Please provide more information or context about what you are referring to. > context_source: [filename# ,  page# ]'.
         - Your answer should not be too long and not more than two paragraphs. 
         - If the question is “how to” do something, your answer should be an activity. 
         - Your answer should be in the context of a Teacher engaging with students in a classroom setting
@@ -296,7 +296,7 @@ def getSystemRulesForParent():
         - Always return the 'context_source' of the most relevant document chosen in the 'answer' at the end.
         - Your answer must be firmly rooted in the information present in the given the most relevant document.
         - answer format should strictly follow the format given in the 'Example of answer' section below.
-        - If no document is given, then you should not answer the question.
+        - If no relevant document is given, then you should answer "> source: None. > answer: I'm sorry, but I don't have enough information to provide a specific answer for your question. Please provide more information or context about what you are referring to. > context_source: [filename# ,  page# ]'.
         - Your answer should not be too long and not more than two paragraphs. 
         - If the question is “how to” do something, your answer should be an activity. 
         - Your answer should be in the context of a Parent engaging with students in a classroom setting
