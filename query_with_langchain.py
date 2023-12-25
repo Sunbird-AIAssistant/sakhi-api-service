@@ -24,10 +24,10 @@ def querying_with_langchain_gpt3(index_id, query, audience_type):
     logger.debug(f"Query ===> {query}")
     try:
         search_index = Marqo(marqoClient, index_id, searchable_attributes=["text"])
-        top_docs_to_fetch = get_config_value('database', 'TOP_DOCS_TO_FETCH', "1")
+        top_docs_to_fetch = get_config_value('database', 'TOP_DOCS_TO_FETCH', "10")
         documents = search_index.similarity_search_with_score(query, k=int(top_docs_to_fetch))
         logger.info(f"Marqo documents : {str(documents)}")
-        min_score = get_config_value('database', 'DOCS_MIN_SCORE', "0.75")
+        min_score = get_config_value('database', 'DOCS_MIN_SCORE', "0.7")
         filtered_document = get_score_filtered_documents(documents, float(min_score))
         logger.debug(f"filtered documents : {str(filtered_document)}")
         contexts = get_formatted_documents(filtered_document)
@@ -40,8 +40,9 @@ def querying_with_langchain_gpt3(index_id, query, audience_type):
         logger.info(f"System Rules : {system_rules}")
         logger.debug(system_rules)
         client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+        gpt_model = get_config_value('llm', 'gpt_model', "gpt-4")
         res = client.chat.completions.create(
-            model="gpt-4",
+            model=gpt_model,
             messages=[
                 {"role": "system", "content": system_rules},
                 {"role": "user", "content": query}
@@ -68,10 +69,10 @@ def query_rstory_gpt3(index_id, query):
     logger.debug(f"Query ===> {query}")
     try:
         search_index = Marqo(marqoClient, index_id, searchable_attributes=["text"])
-        top_docs_to_fetch = get_config_value('database', 'TOP_DOCS_TO_FETCH', "1")
+        top_docs_to_fetch = get_config_value('database', 'TOP_DOCS_TO_FETCH', "10")
         documents = search_index.similarity_search_with_score(query, k=int(top_docs_to_fetch))
         logger.info(f"Marqo documents : {str(documents)}")
-        min_score = get_config_value('database', 'DOCS_MIN_SCORE', "0.80")
+        min_score = get_config_value('database', 'DOCS_MIN_SCORE', "0.7")
         filtered_document = get_score_filtered_documents(documents, float(min_score))
         logger.debug(f"filtered documents : {str(filtered_document)}")
         contexts = get_formatted_documents(filtered_document)
@@ -82,8 +83,9 @@ def query_rstory_gpt3(index_id, query):
         logger.info("==== System Rules ====")
         logger.debug(system_rules)
         client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+        gpt_model = get_config_value('llm', 'gpt_model', "gpt-4")
         res = client.chat.completions.create(
-            model="gpt-4",
+            model=gpt_model,
             messages=[
                 {"role": "system", "content": system_rules},
                 {"role": "user", "content": query},
