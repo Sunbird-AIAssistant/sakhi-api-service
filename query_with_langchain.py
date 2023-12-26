@@ -34,7 +34,7 @@ def querying_with_langchain_gpt3(index_id, query, audience_type ):
         logger.debug(system_rules)
         client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
         res = client.chat.completions.create(
-            model="gpt-3.5-turbo-16k",
+            model="gpt-4",
             messages=[
                 {"role": "system", "content": system_rules},
                 {"role": "user", "content": query}
@@ -73,7 +73,7 @@ def query_rstory_gpt3(index_id, query):
         logger.debug(system_rules)
         client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
         res = client.chat.completions.create(
-            model="gpt-3.5-turbo-16k",
+            model="gpt-4",
             messages=[
                 {"role": "system", "content": system_rules},
                 {"role": "user", "content": query},
