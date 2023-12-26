@@ -305,79 +305,71 @@ def getSystemRulesForParent():
         
     Example of 'question': 
     ----------------------
-    'a child in my class always cries and disturbs my planning. what should I do'
+    'My child cries while going to school. what should I do'
     
     
     Example of 'documents':
     -----------------------
-    > Methods and Materials 31
-    Pedagogical  concerns
-    During learning-teaching process certain issues emerge, and 
-    for better implementation of the curriculum they need to be addressed. Some of the concerns related to early learning and development are:
-    Dealing with behaviour issues 
-    Every group of children consists of a few children with 
-    behaviour concerns which could be disturbing, uncomfortable and disruptive in the classroom. Some of the behaviour issues could be repetitive habits such as nail biting, scratching, picking nose, and others like withdrawn behaviour, overactive behaviour, destructive behaviour, inappropriate expressions such as excessive crying and restlessness and other more serious behaviour deviations such as aggressive behaviour, and anti-social behaviour.
-    What teachers need to do?
-    • Teacher needs to try to recognise these behaviours as early as 
-    possible. 
-    • Teacher needs to provide positive guidance to correct behaviours using interactive approach, e.g., emphasise and appreciate the right/expected behaviour rather than criticise the wrong behaviour.
-    • Teacher needs to give age-appropriate explanations to children
-    • Teacher must be supportive, value each child and not belittle them.
-    • Teacher needs to seek and get cooperation of other children to help the concerned child.
-    • Teacher needs to coordinate with parents to help the child.
-    • Teacher needs to draw attention of the child frequently to minimise their disturbing behaviour.
-    • Permit the withdrawn child to involve in the activities as per her/his limitations, but keep the child engaged at some level.
-    • If possible, teacher could seek the assistance of specialists and educators to help these children better.
-    Handle variation in learning
-    Children vary in their learning abilities and learning styles.Manage multi-age groupingThe multi-age groupings benefit both younger and older children 
-    in the classroom. In such heterogeneous groups, children learn from each other and thus, facilitate cooperative learning skills. Therefore, a class of multi-age group children may be managed to get maximum benefits from them and for them. 
-    Chapter 3.indd   31Chapter 3.indd   31 24 Apr 2023   16:38:5924 Apr 2023   16:38:59 
-     > context_source: [filename# unmukh-teacher-handbook.pdf,  page# 49]
+    > them aware of developmental milestones, dangers of pushing a child beyond what they are ready for, social, emotional, and 
+    nutritional needs of the child, significance of play and early 
+    stimulation in child’s development, pedagogy used in Balvatika, 
+    significance of teaching in mother tongue, role of parent and 
+    community in child development.
+    Advice to Parents and Families 
+    • The child must be brought to school regularly and on time.
+    • The school authorities must be informed about the identity of the person who will be bringing and taking the child from the school.
+    • Seek proper permission from school to take the child early.
+    • Meet the teachers to discuss the child’s progress or problems, if any.
+    • Keep a regular check on the notices regarding school activities and holidays.
+    • Attend parent-teacher meetings regularly.
+    Chapter 5.indd   66Chapter 5.indd   66 24 Apr 2023   16:40:0424 Apr 2023   16:40:04 
+    > context_source: [filename# unmukh-teacher-handbook.pdf,  page# 84]
      
-     > APB39
-    NISHTHA (FLN)
-    5.3 Activity 6: Try Yourself 
-    Preeti is a 10 year old girl with hearing impairment. She wears hearing aids but relies more 
-    on lip reading for understanding. As there are 30 children in her class, it usually gets noisy. 
-    A special teacher comes twice a week to help her and work with the teacher. However, 
-    the class teacher has noticed that Preeti loses concentration and becomes nervous. The 
-    teacher has also found her lagging in studies. Answer the following questions.
-    • What are some of the challenges Preeti may experience in the classroom and the 
-    playground?
-    • What could be the reason for her to lose concentration?
-    • Why is Preeti lagging in studies?
-    • What adjustment can Preeti’s teacher put in place to help her with her school work/
-    studies? 
-     > context_source: [filename# Course 03 Understanding Learners_ How Children Learn_.pdf,  page# 39]
+    
+    > 219
+    National Curriculum Framework for Foundational Stage
+    10.4 Section 10.4  
+      Role of Parents and Community
+    10.4.1 Parents and Family
+    Parents and family are co-partners with the school in the child’s learning and develop-
+    ment. In the early years, it is even more important for parents to understand and support 
+    what happens in school as well as for Teachers to understand the child’s situation at home 
+    so that they can take cognizance of it in their interactions with the child.
+    Relationships with parents and families may be built and sustained with focus. Communication 
+    with parents needs to be frequent and ongoing, with parents being treated as equal partners in 
+    the process, not as people who are talked down to or only reported to. Parents need to be kept 
+    abreast of the child’s progress. This could be done by inviting parents to school regularly for 
+    discussions about their child’s learning, and by the Teacher conducting home visits. The meet- 
+    > context_source: [filename# NCF FS.pdf,  page# 219]
+     
+    > abreast of the child’s progress. This could be done by inviting parents to school regularly for 
+    discussions about their child’s learning, and by the Teacher conducting home visits. The meet-
+    ings also provide space to elicit their views about the school’s functioning. Parents may solicit 
+    meetings with Teachers as and when required.
+    A shared understanding would be useful, especially of the importance of child development in 
+    the early years, different domains of development and learning, the need for stimulation and 
+    engagement in a conducive and safe home environment, the importance of basic health and nu-
+    trition, the effects of deprivation and child abuse, and the importance of the family and Teachers 
+    in the child’s development.
+    Parents and family can individually contribute to the school in several ways. Illustratively: partic-
+    ipate in special celebrations, important days of the school, and school events; help with organis- 
+    > context_source: [filename# NCF FS.pdf,  page# 219]
    
     
    
     Example of 'answer': 
     --------------------
-    > source_document: Methods and Materials 31
-    Pedagogical  concerns
-    During learning-teaching process certain issues emerge, and 
-    for better implementation of the curriculum they need to be addressed. Some of the concerns related to early learning and development are:
-    Dealing with behaviour issues 
-    Every group of children consists of a few children with 
-    behaviour concerns which could be disturbing, uncomfortable and disruptive in the classroom. Some of the behaviour issues could be repetitive habits such as nail biting, scratching, picking nose, and others like withdrawn behaviour, overactive behaviour, destructive behaviour, inappropriate expressions such as excessive crying and restlessness and other more serious behaviour deviations such as aggressive behaviour, and anti-social behaviour.
-    What teachers need to do?
-    • Teacher needs to try to recognise these behaviours as early as 
-    possible. 
-    • Teacher needs to provide positive guidance to correct behaviours using interactive approach, e.g., emphasise and appreciate the right/expected behaviour rather than criticise the wrong behaviour.
-    • Teacher needs to give age-appropriate explanations to children
-    • Teacher must be supportive, value each child and not belittle them.
-    • Teacher needs to seek and get cooperation of other children to help the concerned child.
-    • Teacher needs to coordinate with parents to help the child.
-    • Teacher needs to draw attention of the child frequently to minimise their disturbing behaviour.
-    • Permit the withdrawn child to involve in the activities as per her/his limitations, but keep the child engaged at some level.
-    • If possible, teacher could seek the assistance of specialists and educators to help these children better.
-    Handle variation in learning
-    Children vary in their learning abilities and learning styles.Manage multi-age groupingThe multi-age groupings benefit both younger and older children 
-    in the classroom. In such heterogeneous groups, children learn from each other and thus, facilitate cooperative learning skills. Therefore, a class of multi-age group children may be managed to get maximum benefits from them and for them. 
-    Chapter 3.indd   31Chapter 3.indd   31 24 Apr 2023   16:38:5924 Apr 2023   16:38:59 
-    > answer: When dealing with behavioral issues in children, it is important to approach the situation with empathy and understanding. Here are some strategies to address behavioral issues:\n\n1. Positive Guidance: Use positive reinforcement and praise to encourage good behavior. Emphasize and appreciate the right behavior instead of criticizing the wrong behavior.\n\n2. Clear Rules and Expectations: Clearly communicate the rules and expectations to the child. Make sure they understand what is expected of them and the consequences of breaking the rules.\n\n3. Age-Appropriate Explanations: Use age-appropriate explanations and language to help the child understand why certain behaviors are not acceptable and the impact of their actions on others.\n\n4. Consistency: Be consistent with your approach and follow through with consequences when rules are broken. This helps children understand the connection between their behavior and the consequences.\n\n5. Collaborative Problem-Solving: Involve the child in problem-solving and finding solutions to their behavioral issues. Encourage them to think of alternative ways to behave and provide support and guidance in finding positive solutions.\n\n6. Supportive Environment: Create a safe and supportive environment where children feel heard and valued. Encourage interactions with other children and promote positive social interactions.\n\n7. Communication with Parents: Regularly communicate with parents and involve them in addressing behavioral issues. Work together as a team to provide consistent guidance and support to the child.\n\nRemember, behavior is often a form of communication, and children may act out due to various factors such as lack of understanding, emotional needs, or developmental challenges. It is important to approach behavioral issues with patience, empathy, and a focus on positive guidance.
-    > context_source: [filename# unmukh-teacher-handbook.pdf,  page# 49] 
+    > source_document: National Curriculum Framework for Foundational Stage
+    Parents and family are co-partners with the school in the child’s learning and development. In the early years, 
+    it is even more important for parents to understand and support what happens in school as well as for Teachers 
+    to understand the child’s situation at home so that they can take cognizance of it in their interactions with 
+    the child. Relationships with parents and families may be built and sustained with focus. Communication with 
+    parents needs to be frequent and ongoing, with parents being treated as equal partners in the process, not 
+    as people who are talked down to or only reported to. Parents need to be kept abreast of the child’s progress. 
+    This could be done by inviting parents to school regularly for discussions about their child’s learning, 
+    and by the Teacher conducting home visits.
+    > answer: If your child is crying while going to school, it can be due to various factors like separation anxiety, fear, or discomfort. Here's what you can do:\n\n1. Communicate: Talk to your child about their feelings in a compassionate and understanding manner. Find out if there are any specific issues or fears they have about school.\n\n2. Familiarize: Regularly visit the school with your child to make the environment familiar and less intimidating. Participate in school activities or events so that your child can see the school as a positive and fun environment.\n\n3. Support: Support your child in making friends or connecting with teachers which can make school more enjoyable for them. \n\n4. Collaborate: Maintain regular communication with your child's teacher to discuss their progress and any problems they might be having. Teachers can provide valuable insight and potentially help address the issue.\n\n5. Gradual Separation: If your child is dealing with separation anxiety, try practising short periods of separation, followed by positive reunions. Slowly increase the time of separation to help them adjust.\n\n6. Home Visits: It can provide comfort to your child. If possible, arrange for teachers to conduct home visits. It will create a bond and familiarity between the child and the teacher, providing comfort to the child.\n\nRemember, children adjust at their own pace so it's important to be patient, loving and supportive during this transition.
+    > context_source: [filename# NCF FS.pdf,  page# 219]
     
    
    
