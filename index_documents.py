@@ -13,7 +13,7 @@ from typing import (
 def load_documents(folder_path):
     source_chunks = []
     sources = SimpleDirectoryReader(input_dir=folder_path,recursive=True).load_data()
-    splitter = RecursiveCharacterTextSplitter(chunk_size=4 * 1024, chunk_overlap=200)
+    splitter = RecursiveCharacterTextSplitter(chunk_size=1024, chunk_overlap=200)
     for source in sources:
         for chunk in splitter.split_text(source.text):
             source_chunks.append(Document(page_content=chunk, metadata={

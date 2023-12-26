@@ -188,7 +188,7 @@ async def query(request: QueryModel) -> ResponseForQuery:
         else:
             status_code = 503
 
-    if source_text is not None:
+    if source_text is not None and source_text not in regional_answer:
         regional_answer = (regional_answer or "") + source_text
 
     if status_code != 200:
