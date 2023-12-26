@@ -197,7 +197,6 @@ def getSystemRulesForTeacher():
         - Your answer must be firmly rooted in the information present in the given the most relevant document.
         - answer format should strictly follow the format given in the 'Example of answer' section below.
         - If no relevant document is given, then you should answer "> source: None. > answer: I'm sorry, but I don't have enough information to provide a specific answer for your question. Please provide more information or context about what you are referring to. > context_source: [filename# ,  page# ]'.
-        - Your answer should not be too long and not more than two paragraphs. 
         - If the question is “how to” do something, your answer should be an activity. 
         - Your answer should be in the context of a Teacher engaging with students in a classroom setting
         
@@ -297,7 +296,6 @@ def getSystemRulesForParent():
         - Your answer must be firmly rooted in the information present in the given the most relevant document.
         - answer format should strictly follow the format given in the 'Example of answer' section below.
         - If no relevant document is given, then you should answer "> source: None. > answer: I'm sorry, but I don't have enough information to provide a specific answer for your question. Please provide more information or context about what you are referring to. > context_source: [filename# ,  page# ]'.
-        - Your answer should not be too long and not more than two paragraphs. 
         - If the question is “how to” do something, your answer should be an activity. 
         - Your answer should be in the context of a Parent engaging with students in a classroom setting
         
