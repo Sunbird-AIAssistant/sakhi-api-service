@@ -1,8 +1,6 @@
 import boto3
 from botocore.exceptions import ClientError
 import os
-
-from config_util import get_config_value
 from logger import logger
 from dotenv import load_dotenv
 
@@ -10,20 +8,20 @@ load_dotenv()
 # Create S3 client for OCI object storage
 s3_client = boto3.client(
     's3',
-    region_name=get_config_value('cloud', 'OCI_REGION_NAME', None),
-    aws_secret_access_key=get_config_value('cloud', 'OCI_SECRET_ACCESS_KEY', None),
-    aws_access_key_id=get_config_value('cloud', 'OCI_ACCESS_KEY_ID', None),
-    endpoint_url=get_config_value('cloud', 'OCI_ENDPOINT_URL', None),
+    region_name=os.environ["OCI_REGION_NAME"],
+    aws_secret_access_key=os.environ["OCI_SECRET_ACCESS_KEY"],
+    aws_access_key_id=os.environ["OCI_ACCESS_KEY_ID"],
+    endpoint_url=os.environ["OCI_ENDPOINT_URL"]
 )
 
 # OCI Bucket Name
-bucket_name = get_config_value('cloud', 'OCI_BUCKET_NAME', None),
+bucket_name = os.environ["OCI_BUCKET_NAME"]
 
 
 def upload_file_object(file_name, object_name=None):
     """Upload a file to an OCI bucket
 
-    :param file_name: File to upload    
+    :param file_name: File to upload
     :param object_name: S3 object name. If not specified then file_name is used
     :return: True if file was uploaded, else False
     """
@@ -95,7 +93,7 @@ def give_public_url(file_name: str):
         The full path to the file.
     """
     try:
-        oci_endpoint_url = get_config_value('cloud', 'OCI_ENDPOINT_URL', None)
+        oci_endpoint_url = os.environ["OCI_ENDPOINT_URL"]
         public_url = f"{oci_endpoint_url}{bucket_name}/{file_name}"
         return public_url, None
     except Exception as e:

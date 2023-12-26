@@ -164,12 +164,13 @@ async def query(request: QueryModel) -> ResponseForQuery:
                 raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid audio input!")
             query_text, text, error_message = process_incoming_voice(audio_url, language)
             is_audio = True
-
+        logger.info({"Query": text})
         if text is not None:
             answer, source_text, paraphrased_query, error_message, status_code = querying_with_langchain_gpt3(index_id, text, audience_type)
 
             if len(answer) != 0:
                 regional_answer, error_message = process_outgoing_text(answer, language)
+                logger.info({"regional_answer": regional_answer})
                 if regional_answer is not None:
                     if is_audio:
                         output_file, error_message = process_outgoing_voice(regional_answer, language)
