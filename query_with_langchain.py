@@ -58,8 +58,8 @@ def querying_with_langchain_gpt3(index_id, query, audience_type):
         for response_tag in response_tags:
             if response_tag.strip():
                 tags = response_tag.split(":")
-                if tags[0] == "answer":
-                    answer += tags[1]
+                if tags[0] == "answer" and len(tags) >= 2:
+                    answer = concatenate_elements(tags)
                 elif tags[0] == "context_source":
                     context_source += tags[1]
 
@@ -394,3 +394,10 @@ def getSystemPromptTemplate(type):
         return getSystemRulesForParent()
     else:
         return getSystemRulesForParent()
+
+
+def concatenate_elements(arr):
+    # Concatenate elements from index 1 to n
+    separator = ': '
+    result = separator.join(arr[1:])
+    return result
