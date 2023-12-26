@@ -190,7 +190,7 @@ async def query(request: QueryModel) -> ResponseForQuery:
             status_code = 503
 
     if source_text is not None and source_text not in regional_answer:
-        regional_answer = (regional_answer or "") + "Source:\n" + source_text.replace("filename# ", "").replace("#",":")
+        regional_answer = (regional_answer or "") + "\nSource:\n" + source_text.replace("filename# ", "").replace("#",":")
 
     if status_code != 200:
         logger.error({"uuid_number": index_id, "query": query_text, "input_language": language, "output_format": output_format, "audio_url": audio_url, "status_code": status_code, "error_message": error_message})
