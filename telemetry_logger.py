@@ -1,14 +1,12 @@
-import time
-import uuid
-
 import requests
-
-from config_util import get_config_value
+import time
+import os
+import uuid
 from logger import logger
 
-telemetryURL = get_config_value('telemetry', 'TELEMETRY_ENDPOINT_URL', "")
-ENV_NAME = get_config_value('telemetry', 'SERVICE_ENVIRONMENT', "dev")
-TELEMETRY_LOG_ENABLED = get_config_value('telemetry', 'TELEMETRY_LOG_ENABLED', "true").lower()
+telemetryURL = os.environ.get("TELEMETRY_ENDPOINT_URL", "")
+ENV_NAME = os.environ.get("SERVICE_ENVIRONMENT", "dev")
+TELEMETRY_LOG_ENABLED = os.environ.get("TELEMETRY_LOG_ENABLED", "true").lower() == "true"
 
 
 class TelemetryLogger:
@@ -62,7 +60,7 @@ class TelemetryLogger:
 
     def prepare_log_event(self, eventInput: dict, etype="api_access", elevel="INFO", message=""):
         """
-        Prepare a telemetry event dictionary with the specified values. 
+        Prepare a telemetry event dictionary with the specified values.
         Args:
             eventInput: Event Input.
             etype: Event type (default: "api_access").
