@@ -52,16 +52,20 @@ def querying_with_langchain_gpt3(index_id, query, audience_type):
         response = message["content"]
         logger.info({"label": "openai_response", "response": response})
 
-        response_tags = response.split("> ")
-        answer: str = ""
-        context_source: str = ""
-        for response_tag in response_tags:
-            if response_tag.strip():
-                tags = response_tag.split(":")
-                if tags[0] == "answer" and len(tags) >= 2:
-                    answer = concatenate_elements(tags)
-                elif tags[0] == "context_source":
-                    context_source += tags[1]
+        if("> answer" in response):
+            response_tags = response.split("> ")
+            answer: str = ""
+            context_source: str = ""
+            for response_tag in response_tags:
+                if response_tag.strip():
+                    tags = response_tag.split(":")
+                    if tags[0] == "answer" and len(tags) >= 2:
+                        answer = concatenate_elements(tags)
+                    elif tags[0] == "context_source":
+                        context_source += tags[1]
+        else:
+            answer: str = response
+            context_source: str = ""
 
         logger.info({"Answer: ", answer})
         logger.info({"context_source: ", context_source})
@@ -109,7 +113,7 @@ def query_rstory_gpt3(index_id, query):
         message = res.choices[0].message.model_dump()
         response = message["content"]
         logger.info({"label": "openai_response", "response": response})
-        return response, documents, None, None, 200
+        return response, "", documents, None, 200
     except RateLimitError as e:
         error_message = f"OpenAI API request exceeded rate limit: {e}"
         status_code = 500
