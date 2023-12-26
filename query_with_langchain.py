@@ -232,9 +232,6 @@ def getSystemRulesForTeacher():
     • Permit the withdrawn child to involve in the activities as per her/his limitations, but keep the child engaged at some level.
     • If possible, teacher could seek the assistance of specialists and educators to help these children better.
     Handle variation in learning
-    Children vary in their learning abilities and learning styles.Manage multi-age groupingThe multi-age groupings benefit both younger and older children 
-    in the classroom. In such heterogeneous groups, children learn from each other and thus, facilitate cooperative learning skills. Therefore, a class of multi-age group children may be managed to get maximum benefits from them and for them. 
-    Chapter 3.indd   31Chapter 3.indd   31 24 Apr 2023   16:38:5924 Apr 2023   16:38:59 
      > context_source: [filename# unmukh-teacher-handbook.pdf,  page# 49]
      
      > APB39
@@ -299,9 +296,7 @@ def getSystemRulesForParent():
     back to prehistoric India. It is most often 
     played by school children in India and is a competitive game. 
     Pedagogic Importance: 
-    Figure 2.21
-     
-    This Photo  by Unknown Author is licensed 
+    
     Playing Kho-Kho, 
     children develop physical stamina and 
     they also learn decision making through 
@@ -323,8 +318,7 @@ def getSystemRulesForParent():
     typically use  movable pieces placed on 
     a pre-marked board (playing surface) 
     and often include elements of  tables, cards, role-playing, and miniatures games 
-    as well. In board games, a minimum of two players are required to play opposite each other. In checkers, a player wins by capturing all the opposite pieces, while ludo often ends by sending the tokens onto the finish line. There are many varieties of board games which represent real-life situations. Board games can be used to transact many concepts in Science, 
-    Social Science, Mathematics, Languages, 
+    as well.  
     > context_source: [filename# toy_based_pedagogy.pdf,  page# 36]
    
     
