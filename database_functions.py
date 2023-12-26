@@ -1,16 +1,19 @@
-import asyncpg
-import os
 from datetime import datetime
+
+import asyncpg
 import pytz
+
+from config_util import get_config_value
 
 
 async def create_engine(timeout=60):
     engine = await asyncpg.create_pool(
-        host=os.getenv('DATABASE_IP'),
-        port=os.getenv('DATABASE_PORT'),
-        user=os.getenv('DATABASE_USERNAME'),
-        password=os.getenv('DATABASE_PASSWORD'),
-        database=os.getenv('DATABASE_NAME'), max_inactive_connection_lifetime=timeout,
+        host=get_config_value('database', 'DATABASE_IP', None),
+        port=get_config_value('database', 'DATABASE_PORT', None),
+        user=get_config_value('database', 'DATABASE_USERNAME', None),
+        password=get_config_value('database', 'DATABASE_PASSWORD', None),
+        database=get_config_value('database', 'DATABASE_NAME', None),
+        max_inactive_connection_lifetime=timeout,
         max_size=20,
         min_size=10
     )
@@ -52,6 +55,7 @@ async def create_schema(engine):
             );
         ''')
 
+
 async def insert_qa_voice_logs(engine, uuid_number, input_language, output_format, query, query_in_english,
                                paraphrased_query, response, response_in_english, audio_output_link, source_text,
                                error_message):
@@ -67,8 +71,9 @@ async def insert_qa_voice_logs(engine, uuid_number, input_language, output_forma
             response_in_english, audio_output_link, source_text, error_message, datetime.now(pytz.UTC)
         )
 
+
 async def insert_sb_qa_logs(engine, model_name, uuid_number, question_id, query, paraphrased_query, response, source_text,
-                         error_message):
+                            error_message):
     async with engine.acquire() as connection:
         await connection.execute(
             '''
