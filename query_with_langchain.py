@@ -201,7 +201,7 @@ def getSystemRulesForTeacher():
         - Always return the 'context_source' of the most relevant document chosen in the 'answer' at the end.
         - Your answer must be firmly rooted in the information present in the given the most relevant document.
         - answer format should strictly follow the format given in the 'Example of answer' section below.
-        - If no relevant document is given, then you should answer "> source: None. > answer: I'm sorry, but I don't have enough information to provide a specific answer for your question. Please provide more information or context about what you are referring to. > context_source: [filename# ,  page# ]'.
+        - If no relevant document is given, then you should answer "> answer: I'm sorry, but I don't have enough information to provide a specific answer for your question. Please provide more information or context about what you are referring to. > context_source: [filename# ,  page# ]'.
         - If the question is “how to” do something, your answer should be an activity. 
         - Your answer should be in the context of a Teacher engaging with students in a classroom setting
         
@@ -256,28 +256,6 @@ def getSystemRulesForTeacher():
    
     Example of 'answer': 
     --------------------
-    > source_document: Methods and Materials 31
-    Pedagogical  concerns
-    During learning-teaching process certain issues emerge, and 
-    for better implementation of the curriculum they need to be addressed. Some of the concerns related to early learning and development are:
-    Dealing with behaviour issues 
-    Every group of children consists of a few children with 
-    behaviour concerns which could be disturbing, uncomfortable and disruptive in the classroom. Some of the behaviour issues could be repetitive habits such as nail biting, scratching, picking nose, and others like withdrawn behaviour, overactive behaviour, destructive behaviour, inappropriate expressions such as excessive crying and restlessness and other more serious behaviour deviations such as aggressive behaviour, and anti-social behaviour.
-    What teachers need to do?
-    • Teacher needs to try to recognise these behaviours as early as 
-    possible. 
-    • Teacher needs to provide positive guidance to correct behaviours using interactive approach, e.g., emphasise and appreciate the right/expected behaviour rather than criticise the wrong behaviour.
-    • Teacher needs to give age-appropriate explanations to children
-    • Teacher must be supportive, value each child and not belittle them.
-    • Teacher needs to seek and get cooperation of other children to help the concerned child.
-    • Teacher needs to coordinate with parents to help the child.
-    • Teacher needs to draw attention of the child frequently to minimise their disturbing behaviour.
-    • Permit the withdrawn child to involve in the activities as per her/his limitations, but keep the child engaged at some level.
-    • If possible, teacher could seek the assistance of specialists and educators to help these children better.
-    Handle variation in learning
-    Children vary in their learning abilities and learning styles.Manage multi-age groupingThe multi-age groupings benefit both younger and older children 
-    in the classroom. In such heterogeneous groups, children learn from each other and thus, facilitate cooperative learning skills. Therefore, a class of multi-age group children may be managed to get maximum benefits from them and for them. 
-    Chapter 3.indd   31Chapter 3.indd   31 24 Apr 2023   16:38:5924 Apr 2023   16:38:59 
     > answer: When dealing with behavioral issues in children, it is important to approach the situation with empathy and understanding. Here are some strategies to address behavioral issues:\n\n1. Positive Guidance: Use positive reinforcement and praise to encourage good behavior. Emphasize and appreciate the right behavior instead of criticizing the wrong behavior.\n\n2. Clear Rules and Expectations: Clearly communicate the rules and expectations to the child. Make sure they understand what is expected of them and the consequences of breaking the rules.\n\n3. Age-Appropriate Explanations: Use age-appropriate explanations and language to help the child understand why certain behaviors are not acceptable and the impact of their actions on others.\n\n4. Consistency: Be consistent with your approach and follow through with consequences when rules are broken. This helps children understand the connection between their behavior and the consequences.\n\n5. Collaborative Problem-Solving: Involve the child in problem-solving and finding solutions to their behavioral issues. Encourage them to think of alternative ways to behave and provide support and guidance in finding positive solutions.\n\n6. Supportive Environment: Create a safe and supportive environment where children feel heard and valued. Encourage interactions with other children and promote positive social interactions.\n\n7. Communication with Parents: Regularly communicate with parents and involve them in addressing behavioral issues. Work together as a team to provide consistent guidance and support to the child.\n\nRemember, behavior is often a form of communication, and children may act out due to various factors such as lack of understanding, emotional needs, or developmental challenges. It is important to approach behavioral issues with patience, empathy, and a focus on positive guidance.
     > context_source: [filename# unmukh-teacher-handbook.pdf,  page# 49] 
     
@@ -300,7 +278,7 @@ def getSystemRulesForParent():
         - Your answer must be firmly rooted in the information present in the given the most relevant document.
         - Always return the 'context_source' of the most relevant document chosen in the 'answer' at the end.
         - answer format should strictly follow the format given in the 'Example of answer' section below.
-        - If no relevant document is given, then you should answer "> source: None. > answer: I'm sorry, but I don't have enough information to provide a specific answer for your question. Please provide more information or context about what you are referring to. > context_source: [filename# ,  page# ]'.
+        - If no relevant document is given, then you should answer "> answer: I'm sorry, but I don't have enough information to provide a specific answer for your question. Please provide more information or context about what you are referring to. > context_source: [filename# ,  page# ]'.
         - If the question is “how to” do something, your answer should be an activity. 
         - Your answer should be in the context of a Parent engaging with his/her kid.
         
@@ -351,8 +329,7 @@ def getSystemRulesForParent():
    
     Example of 'answer': 
     --------------------
-    > source_document: Toy-Based Pedagogy
-    One game that children can play using two sticks is Gilli Danda. This thrilling game, which originated in India, requires a smaller oval-shaped wooden piece known as Gilli, and a longer stick known as Danda. The player uses the Danda to hit the Gilli at the raised end, which then flips.\n> answer: You can play a game called Gilli Danda with your child. Here's how to play:
+    > answer: You can play a game called Gilli Danda with your child. Here's how to play:
     1. Arrange two sticks - one smaller, oval-shaped stick known as Gilli and the other, a longer stick, known as Danda.
     2. The objective is to use Danda to hit the Gilli at its raised end, which will then flip.
     This game does not only provide fun but also aids in developing the child's hand-eye coordination and decision-making skills. It can also be a way for them to learn about traditional games from India.
