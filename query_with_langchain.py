@@ -183,7 +183,7 @@ def getStoryPromptTemplate():
             
         Given the following contexts:
         ----------------------------                
-        {context}
+        {contexts}
         
         All answers should be in MARKDOWN (.md) Format:"""
     return system_rules
