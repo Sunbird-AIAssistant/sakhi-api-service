@@ -31,7 +31,7 @@ def upload_file_object(file_name, object_name=None):
         object_name = os.path.basename(file_name)
 
     try:
-        s3_client.upload_file(file_name, bucket_name, object_name, ExtraArgs={'ACL': 'public-read'})
+        s3_client.upload_file(file_name, bucket_name, object_name, ExtraArgs={'ACL': 'public-read', "ContentType": "audio/mpeg"})
         logger.info(f"File uploaded to OCI Object Storage bucket: {bucket_name}")
     except ClientError as e:
         logger.error(f"Exception uploading a file: {e}", exc_info=True)
