@@ -13,7 +13,7 @@ from typing import (
 def load_documents(folder_path):
     source_chunks = []
     sources = SimpleDirectoryReader(input_dir=folder_path,recursive=True).load_data()
-    splitter = RecursiveCharacterTextSplitter(chunk_size=4 * 1024, chunk_overlap=200)
+    splitter = RecursiveCharacterTextSplitter(chunk_size=1024, chunk_overlap=200)
     for source in sources:
         for chunk in splitter.split_text(source.text):
             source_chunks.append(Document(page_content=chunk, metadata={
@@ -72,7 +72,20 @@ def main():
     except:
         print("Index does not exist. Creating new index")
 
-    marqo_client.create_index(MARQO_INDEX_NAME)
+    index_settings = {
+        "index_defaults": {
+            "treat_urls_and_pointers_as_images": False,
+            "model": "flax-sentence-embeddings/all_datasets_v4_mpnet-base",
+            "normalize_embeddings": True,
+            "text_preprocessing": {
+                "split_length": 3,
+                "split_overlap": 1,
+                "split_method": "sentence"
+            }
+        }
+    }
+
+    marqo_client.create_index(MARQO_INDEX_NAME, settings_dict=index_settings)
     print(f"Index {MARQO_INDEX_NAME} created.")
 
     print("Loading documents...")
