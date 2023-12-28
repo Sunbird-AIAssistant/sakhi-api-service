@@ -24,7 +24,7 @@ def querying_with_langchain_gpt3(index_id, query, audience_type):
     logger.debug(f"Query ===> {query}")
     try:
         search_index = Marqo(marqoClient, index_id, searchable_attributes=["text"])
-        top_docs_to_fetch = get_config_value("database", "TOP_DOCS_TO_FETCH", "4")
+        top_docs_to_fetch = get_config_value("database", "TOP_DOCS_TO_FETCH", "2")
 
         documents = search_index.similarity_search_with_score(query, k=20)
         logger.info(f"Marqo documents : {str(documents)}")
