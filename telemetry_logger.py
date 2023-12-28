@@ -133,16 +133,20 @@ class TelemetryLogger:
             {"duration": int(eventInput.get("duration"))}
         ]
         flattened_dict = self.__flatten_dict(eventInput.get("body", {}))
-        for item in flattened_dict.items():
-            eventEDataParams.append({item[0]: item[1]})
+        if bool(flattened_dict):
+            for item in flattened_dict.items():
+                eventEDataParams.append({item[0]: item[1]})
+
         return eventEDataParams
 
     def __flatten_dict(self, d, parent_key='', sep='_'):
         flattened = {}
-        for k, v in d.items():
-            new_key = f"{parent_key}{sep}{k}" if parent_key else k
-            if isinstance(v, dict):
-                flattened.update(self.__flatten_dict(v, new_key, sep=sep))
-            else:
-                flattened[new_key] = v
+        if bool(d):
+            for k, v in d.items():
+                new_key = f"{parent_key}{sep}{k}" if parent_key else k
+                if isinstance(v, dict):
+                    flattened.update(self.__flatten_dict(v, new_key, sep=sep))
+                else:
+                    flattened[new_key] = v
+
         return flattened
