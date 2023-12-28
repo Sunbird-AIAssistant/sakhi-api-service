@@ -62,7 +62,7 @@ def querying_with_langchain_gpt3(index_id, query, audience_type):
                 if response_tag.strip():
                     tags = response_tag.split(":")
                     if tags[0] == "answer" and len(tags) >= 2:
-                        answer = concatenate_elements(tags)
+                        answer = concatenate_elements(tags).strip()
                     elif tags[0] == "context_source":
                         context_source += tags[1]
         else:
@@ -218,8 +218,7 @@ def getSystemRulesForTeacher():
     ----------------------------
     {contexts}
     
-    
-    '"""
+    """
     return system_rules
 
 
