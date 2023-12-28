@@ -43,7 +43,6 @@ def querying_with_langchain_gpt3(index_id, query, audience_type):
         logger.debug(system_rules)
         client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
         gpt_model = get_config_value("llm", "gpt_model", "gpt-4")
-        logger.info(f"gpt_model :::::::::::::::: {gpt_model}")
         res = client.chat.completions.create(
             model=gpt_model,
             messages=[
