@@ -218,8 +218,7 @@ def getSystemRulesForTeacher():
     ----------------------------
     {contexts}
     
-    
-    '"""
+    """
     return system_rules
 
 
