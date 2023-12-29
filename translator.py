@@ -81,12 +81,12 @@ def log_failed_telemetry_event(url, method, payload, process_time, status_code, 
 
 def get_encoded_string(audio):
     if is_url(audio):
-        local_filename = "local_file.mp3"
+        local_filename = generate_temp_filename("mp3")
         with requests.get(audio) as r:
             with open(local_filename, 'wb') as f:
                 f.write(r.content)
     elif is_base64(audio):
-        local_filename = "local_file.mp3"
+        local_filename = generate_temp_filename("mp3")
         decoded_audio_content = base64.b64decode(audio)
         output_mp3_file = open(local_filename, "wb")
         output_mp3_file.write(decoded_audio_content)
@@ -97,13 +97,14 @@ def get_encoded_string(audio):
     given_audio = AudioSegment.from_file(local_filename)
     given_audio = given_audio.set_frame_rate(16000)
     given_audio = given_audio.set_channels(1)
-    given_audio.export("temp.wav", format="wav", codec="pcm_s16le")
-    with open("temp.wav", "rb") as wav_file:
+    tmp_wav_filename = generate_temp_filename("wav")
+    given_audio.export(tmp_wav_filename, format="wav", codec="pcm_s16le")
+    with open(tmp_wav_filename, "rb") as wav_file:
         wav_file_content = wav_file.read()
     encoded_string = base64.b64encode(wav_file_content)
     encoded_string = str(encoded_string, 'ascii', 'ignore')
     os.remove(local_filename)
-    os.remove("temp.wav")
+    os.remove(tmp_wav_filename)
     return encoded_string, wav_file_content
 
 
