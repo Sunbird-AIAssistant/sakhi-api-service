@@ -1,5 +1,6 @@
 import base64
 import binascii
+import uuid
 from urllib.parse import urlparse
 
 
@@ -18,3 +19,6 @@ def is_url(string):
         return all([result.scheme, result.netloc])
     except ValueError:
         return False
+    
+def generate_temp_filename(ext, prefix = "temp"):
+    return f"{prefix}_{uuid.uuid4()}.{ext}"
