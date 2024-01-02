@@ -114,8 +114,9 @@ def main():
 
         print("============ INDEX DONE =============")
 
-    if __name__ == "__main__":
-        main()
 
+if __name__ == "__main__":
+    main()
+    
 # RUN
 # python3 index_documents.py --marqo_url=http://0.0.0.0:8882 --index_name=sakhi_activity --folder_path=input_data
