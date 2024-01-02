@@ -212,11 +212,9 @@ async def query_rstory(request: QueryModel) -> ResponseForQuery:
     query_text = request.input.text
     is_audio = False
     text = None
-    paraphrased_query = None
     regional_answer = None
     answer = None
     audio_output_url = None
-    source_text = None
     logger.info({"label": "query", "query_text": query_text, "index_id": index_id, "input_language": language, "output_format": output_format, "audio_url": audio_url})
 
     if query_text is None and audio_url is None:
@@ -237,7 +235,7 @@ async def query_rstory(request: QueryModel) -> ResponseForQuery:
             is_audio = True
 
         if text is not None:
-            answer, source_text, paraphrased_query, error_message, status_code = query_rstory_gpt3(index_id, text)
+            answer, error_message, status_code = query_rstory_gpt3(index_id, text)
             if len(answer) != 0:
                 regional_answer, error_message = process_outgoing_text(answer, language)
                 if regional_answer is not None:
@@ -257,9 +255,6 @@ async def query_rstory(request: QueryModel) -> ResponseForQuery:
                     status_code = 503
         else:
             status_code = 503
-
-    if source_text is not None:
-        regional_answer = (regional_answer or "") + source_text
 
     if status_code != 200:
         logger.error({"uuid_number": index_id, "query": query_text, "input_language": language, "output_format": output_format, "audio_url": audio_url, "status_code": status_code, "error_message": error_message})

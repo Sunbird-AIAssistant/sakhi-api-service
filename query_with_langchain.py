@@ -90,15 +90,16 @@ def query_rstory_gpt3(index_id, query):
     logger.debug(f"Query ===> {query}")
     try:
         search_index = Marqo(marqoClient, index_id, searchable_attributes=["text"])
-        top_docs_to_fetch = get_config_value("database", "TOP_DOCS_TO_FETCH", "7")
-        documents = search_index.similarity_search_with_score(query, k=int(top_docs_to_fetch))
+        top_docs_to_fetch = get_config_value("database", "TOP_DOCS_TO_FETCH", "3")
+        documents = search_index.similarity_search_with_score(query, k=20)
         logger.info(f"Marqo documents : {str(documents)}")
         min_score = get_config_value("database", "DOCS_MIN_SCORE", "0.7")
         filtered_document = get_score_filtered_documents(documents, float(min_score))
+        filtered_document = filtered_document[:int(top_docs_to_fetch)]
         logger.debug(f"filtered documents : {str(filtered_document)}")
         contexts = get_formatted_documents(filtered_document)
         if not documents or not contexts:
-            return "I'm sorry, but I don't have enough information to provide a specific answer for your question. Please provide more information or context about what you are referring to.", None, None, 200
+            return "I'm sorry, but I don't have enough information to provide a specific answer for your question. Please provide more information or context about what you are referring to.", None, 200
         system_rules = getStoryPromptTemplate()
         system_rules = system_rules.format(contexts=contexts)
         logger.info("==== System Rules ====")
@@ -115,7 +116,7 @@ def query_rstory_gpt3(index_id, query):
         message = res.choices[0].message.model_dump()
         response = message["content"]
         logger.info({"label": "openai_response", "response": response})
-        return response, "", documents, None, 200
+        return response, None, 200
     except RateLimitError as e:
         error_message = f"OpenAI API request exceeded rate limit: {e}"
         status_code = 500
@@ -125,7 +126,7 @@ def query_rstory_gpt3(index_id, query):
     except Exception as e:
         error_message = str(e.__context__) + " and " + e.__str__()
         status_code = 500
-    return "", None, None, error_message, status_code
+    return "", error_message, status_code
 
 
 def get_score_filtered_documents(documents: List[Tuple[Document, Any]], min_score=0.0):
@@ -180,12 +181,12 @@ def getStoryPromptTemplate():
         Example of context:
         ------------------
         > A TURTLE lived in a pond at the foot of a hill. Two young wild Geese, looking \nfor food, saw the Turtle, and talked with him. 
-        The next day the G eese came \nagain to visit the Turtle and they became very well acquainted. Soon they were great friends.  \n\"Friend Turtle,\" the Geese said one day, \"we have a beautiful home far away. 
+        The next day the Geese came \nagain to visit the Turtle and they became very well acquainted. Soon they were great friends.  \n\"Friend Turtle,\" the Geese said one day, \"we have a beautiful home far away. 
         We are going to fly back to it to- morrow. It will be a long but pleasant \njourney. Will you go with us?\" ........
         
         > A KING once had a lake made in the courtyard for  the young princes to play \nin. They swam about in it, and sailed their boats and rafts on it. 
         One day the \nking told them he had asked the men to put some fishes into the lake.  \nOff the boys ran to see the fishes. Now, along with the fishes, there was a Turtle. 
-        The boys were delighted with the fishes, but they had never seen a \nTurtle, and they were afraid of it, thinking it was a demon. T.....
+        The boys were delighted with the fishes, but they had never seen a \nTurtle, and they were afraid of it, thinking it was a demon. .....
             
         Given the following contexts:
         ----------------------------                
