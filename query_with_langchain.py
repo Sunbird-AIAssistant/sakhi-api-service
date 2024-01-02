@@ -9,7 +9,7 @@ import marqo
 from dotenv import load_dotenv
 from langchain.docstore.document import Document
 from langchain.vectorstores.marqo import Marqo
-from openai import OpenAI, RateLimitError, APIError, InternalServerError
+from openai import AzureOpenAI, RateLimitError, APIError, InternalServerError
 
 from config_util import get_config_value
 from logger import logger
@@ -41,7 +41,11 @@ def querying_with_langchain_gpt3(index_id, query, audience_type):
         logger.debug("==== System Rules ====")
         logger.info(f"System Rules : {system_rules}")
         logger.debug(system_rules)
-        client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+        client = AzureOpenAI(
+            azure_endpoint=os.environ["OPENAI_API_BASE"],
+            api_key=os.environ["OPENAI_API_KEY"],
+            api_version=os.environ["OPENAI_API_VERSION"]
+        )
         gpt_model = get_config_value("llm", "gpt_model", "gpt-4")
         res = client.chat.completions.create(
             model=gpt_model,
@@ -104,7 +108,12 @@ def query_rstory_gpt3(index_id, query):
         system_rules = system_rules.format(contexts=contexts)
         logger.info("==== System Rules ====")
         logger.debug(system_rules)
-        client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+        # client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+        client = AzureOpenAI(
+            azure_endpoint=os.environ["OPENAI_API_BASE"],
+            api_key=os.environ["OPENAI_API_KEY"],
+            api_version="2023-05-15"
+        )
         gpt_model = get_config_value("llm", "gpt_model", "gpt-4")
         res = client.chat.completions.create(
             model=gpt_model,
