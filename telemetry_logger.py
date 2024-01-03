@@ -14,7 +14,7 @@ class TelemetryLogger:
     A class to capture and send telemetry logs using the requests library with threshold limit.
     """
 
-    def __init__(self, url=telemetryURL, threshold=1):
+    def __init__(self, url=telemetryURL, threshold=5):
         self.url = url
         self.events = []  # Store multiple events before exceeding threshold
         self.threshold = threshold
