@@ -19,3 +19,4 @@ urllib3==1.26.15
 sse_starlette==1.6.1
 openai-whisper
 marqo
+pydantic==1.10.11

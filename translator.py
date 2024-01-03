@@ -302,3 +302,4 @@ def audio_input_to_text(audio_file, input_language):
     except:
         indic_text = google_speech_to_text(wav_file_content, input_language)
     return indic_text
+
