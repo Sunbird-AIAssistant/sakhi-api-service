@@ -83,11 +83,14 @@ To use the code, you need to follow these steps:
 
 4. You will need an OCI account to store the audio file for response.
 
-5. create another file **.env** which will hold the development credentials and add the following variables. Update the openai_api_key, OCI details, Bhashini endpoint URL and API key.
+5. create another file **.env** which will hold the development credentials and add the following variables. Update the Azure OpenAI details, OCI details, Bhashini endpoint URL and API key.
 
     ```bash
     SERVICE_ENVIRONMENT=<name_of_the_environment>
-    OPENAI_API_KEY=<your_openai_api_key>
+    OPENAI_API_BASE=<your_azure_openai_api_base_url>
+    OPENAI_API_VERSION=<your_azure_api_version>
+    OPENAI_API_KEY=<your_azure_api_key>
+    GPT_MODEL=<your_gpt_model>
     LOG_LEVEL=<log_level>  # INFO, DEBUG, ERROR
     BHASHINI_ENDPOINT_URL=<your_bhashini_api_endpoint>
     BHASHINI_API_KEY=<your_bhashini_api_key>
