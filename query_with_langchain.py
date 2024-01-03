@@ -16,6 +16,11 @@ from logger import logger
 load_dotenv()
 marqo_url = get_config_value("database", "MARQO_URL", None)
 marqoClient = marqo.Client(url=marqo_url)
+client = AzureOpenAI(
+            azure_endpoint=os.environ["OPENAI_API_BASE"],
+            api_key=os.environ["OPENAI_API_KEY"],
+            api_version=os.environ["OPENAI_API_VERSION"]
+        )
 
 
 def querying_with_langchain_gpt3(index_id, query, audience_type):
@@ -40,12 +45,7 @@ def querying_with_langchain_gpt3(index_id, query, audience_type):
         logger.debug("==== System Rules ====")
         logger.info(f"System Rules : {system_rules}")
         logger.debug(system_rules)
-        client = AzureOpenAI(
-            azure_endpoint=os.environ["OPENAI_API_BASE"],
-            api_key=os.environ["OPENAI_API_KEY"],
-            api_version=os.environ["OPENAI_API_VERSION"]
-        )
-        gpt_model = get_config_value("llm", "gpt_model", "gpt-4")
+        gpt_model = get_config_value("llm", "GPT_MODEL", "gpt-4")
         res = client.chat.completions.create(
             model=gpt_model,
             messages=[
