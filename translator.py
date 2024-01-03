@@ -153,13 +153,13 @@ def speech_to_text(encoded_string, input_language):
         response = requests.request("POST", url, headers=headers, data=json.dumps(payload))
         process_time = time.time() - start_time
         response.raise_for_status()
-        log_success_telemetry_event(url, "POST", payload, process_time, status_code=response.status_code)
+        log_success_telemetry_event(url, "POST", {"taskType": "asr"}, process_time, status_code=response.status_code)
         text = json.loads(response.text)[
             "pipelineResponse"][0]["output"][0]["source"]
         return text
     except requests.exceptions.RequestException as e:
         process_time = time.time() - start_time
-        log_failed_telemetry_event(url, "POST", payload, process_time, status_code=e.response.status_code, error=e.response.text)
+        log_failed_telemetry_event(url, "POST", {"taskType": "asr"}, process_time, status_code=e.response.status_code, error=e.response.text)
         raise RequestError(e.response) from e
 
 
@@ -188,7 +188,7 @@ def indic_translation(text, source, destination):
         payload = {
             "pipelineTasks": [
                 {
-                    "taskType": "tts",
+                    "taskType": "translation",
                     "config": {
                         "language": {
                             "sourceLanguage": source,
@@ -214,11 +214,11 @@ def indic_translation(text, source, destination):
         response = requests.request("POST", url, headers=headers, data=json.dumps(payload))
         process_time = time.time() - start_time
         response.raise_for_status()
-        log_success_telemetry_event(url, "POST", payload, process_time, status_code=response.status_code)
+        log_success_telemetry_event(url, "POST", {"taskType": "translation"}, process_time, status_code=response.status_code)
         indic_text = json.loads(response.text)["pipelineResponse"][0]["output"][0]["target"]
     except requests.exceptions.RequestException as e:
         process_time = time.time() - start_time
-        log_failed_telemetry_event(url, "POST", payload, process_time, status_code=e.response.status_code, error=e.response.text)
+        log_failed_telemetry_event(url, "POST", {"taskType": "translation"}, process_time, status_code=e.response.status_code, error=e.response.text)
         raise RequestError(e.response) from e
         # indic_text = google_translate_text(text, source, destination)
     return indic_text
@@ -282,12 +282,12 @@ def text_to_speech(language, text, gender='female'):
         response = requests.request("POST", url, headers=headers, data=json.dumps(payload))
         process_time = time.time() - start_time
         response.raise_for_status()
-        log_success_telemetry_event(url, "POST", payload, process_time, status_code=response.status_code)
+        log_success_telemetry_event(url, "POST", {"taskType": "tts"}, process_time, status_code=response.status_code)
         audio_content = response.json()["pipelineResponse"][0]['audio'][0]['audioContent']
         audio_content = base64.b64decode(audio_content)
     except requests.exceptions.RequestException as e:
         process_time = time.time() - start_time
-        log_failed_telemetry_event(url, "POST", payload, process_time, status_code=e.response.status_code, error=e.response.text)
+        log_failed_telemetry_event(url, "POST", {"taskType": "tts"}, process_time, status_code=e.response.status_code, error=e.response.text)
         audio_content = None
         # audio_content = google_text_to_speech(text, language)
     return audio_content
