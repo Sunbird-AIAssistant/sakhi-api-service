@@ -90,29 +90,29 @@ def main():
             }
         }
 
-        marqo_client.create_index(
-            MARQO_INDEX_NAME, settings_dict=index_settings)
-        print(f"Index {MARQO_INDEX_NAME} created.")
+    marqo_client.create_index(
+        MARQO_INDEX_NAME, settings_dict=index_settings)
+    print(f"Index {MARQO_INDEX_NAME} created.")
 
-        print("Loading documents...")
-        documents = load_documents(FOLDER_PATH)
+    print("Loading documents...")
+    documents = load_documents(FOLDER_PATH)
 
-        print("Total Documents ===>", len(documents))
+    print("Total Documents ===>", len(documents))
 
-        f = open("indexed_documents.txt", "w")
-        f.write(str(documents))
-        f.close()
+    f = open("indexed_documents.txt", "w")
+    f.write(str(documents))
+    f.close()
 
-        print(f"Indexing documents...")
-        formatted_documents = get_formatted_documents(documents)
-        tensor_fields = ['text']
-        _document_batch_size = 50
-        chunks = list(chunk_list(formatted_documents, _document_batch_size))
-        for chunk in chunks:
-            marqo_client.index(MARQO_INDEX_NAME).add_documents(
-                documents=chunk, client_batch_size=_document_batch_size, tensor_fields=tensor_fields)
+    print(f"Indexing documents...")
+    formatted_documents = get_formatted_documents(documents)
+    tensor_fields = ['text']
+    _document_batch_size = 50
+    chunks = list(chunk_list(formatted_documents, _document_batch_size))
+    for chunk in chunks:
+        marqo_client.index(MARQO_INDEX_NAME).add_documents(
+            documents=chunk, client_batch_size=_document_batch_size, tensor_fields=tensor_fields)
 
-        print("============ INDEX DONE =============")
+    print("============ INDEX DONE =============")
 
 
 if __name__ == "__main__":
