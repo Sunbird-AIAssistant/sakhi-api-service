@@ -94,7 +94,9 @@ def get_encoded_string(audio):
     else:
         local_filename = audio
 
-    given_audio = AudioSegment.from_file(local_filename)
+    output_file = AudioSegment.from_file(local_filename)
+    mp3_output_file = output_file.export(local_filename, format="mp3")
+    given_audio = AudioSegment.from_file(mp3_output_file)
     given_audio = given_audio.set_frame_rate(16000)
     given_audio = given_audio.set_channels(1)
     tmp_wav_filename = generate_temp_filename("wav")
