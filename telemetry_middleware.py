@@ -4,6 +4,7 @@ from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 from telemetry_logger import TelemetryLogger
 from starlette.types import Message
+from logger import logger
 
 # https://github.com/tiangolo/fastapi/issues/394 
 # Stream response does not work => https://github.com/tiangolo/fastapi/issues/394#issuecomment-994665859
@@ -25,8 +26,7 @@ class TelemetryMiddleware(BaseHTTPMiddleware):
             app
     ):
         super().__init__(app)
-
-
+        
     async def dispatch(self, request: Request, call_next):
         start_time = time.time()
         await set_body(request, await request.body())
@@ -46,6 +46,7 @@ class TelemetryMiddleware(BaseHTTPMiddleware):
                 "url": request.url
             }
             event.update(request.headers)
+            logger.info({"label": "api_call", "event": event})
             if response.status_code == 200:
                 event = telemetryLogger.prepare_log_event(eventInput=event, message="success")
             else:
