@@ -31,20 +31,19 @@ def querying_with_langchain_gpt3(index_id, query, audience_type):
         top_docs_to_fetch = get_config_value("database", "TOP_DOCS_TO_FETCH", "2")
 
         documents = search_index.similarity_search_with_score(query, k=20)
-        logger.info(f"Marqo documents : {str(documents)}")
+        logger.debug(f"Marqo documents : {str(documents)}")
         min_score = get_config_value("database", "DOCS_MIN_SCORE", "0.7")
         filtered_document = get_score_filtered_documents(documents, float(min_score))
         filtered_document = filtered_document[:int(top_docs_to_fetch)]
-        logger.debug(f"filtered documents : {str(filtered_document)}")
+        logger.info(f"Score filtered documents : {str(filtered_document)}")
         contexts = get_formatted_documents(filtered_document)
         if not documents or not contexts:
-            return "I'm sorry, but I don't have enough information to provide a specific answer for your question. Please provide more information or context about what you are referring to.", None, None, None, 200
+            return "I'm sorry, but I don't have enough information to provide a specific answer for your question. Please provide more information or context about what you are referring to.", None, None, 200
 
         system_rules = getSystemPromptTemplate(audience_type)
         system_rules = system_rules.format(contexts=contexts)
         logger.debug("==== System Rules ====")
-        logger.info(f"System Rules : {system_rules}")
-        logger.debug(system_rules)
+        logger.debug(f"System Rules : {system_rules}")
         gpt_model = get_config_value("llm", "GPT_MODEL", "gpt-4")
         res = client.chat.completions.create(
             model=gpt_model,
@@ -72,10 +71,7 @@ def querying_with_langchain_gpt3(index_id, query, audience_type):
             answer: str = response
             context_source: str = ""
 
-        logger.info({"Answer: ", answer})
-        logger.info({"context_source: ", context_source})
-
-        return answer, context_source, filtered_document, None, 200
+        return answer, context_source, None, 200
     except RateLimitError as e:
         error_message = f"OpenAI API request exceeded rate limit: {e}"
         status_code = 500
@@ -85,7 +81,7 @@ def querying_with_langchain_gpt3(index_id, query, audience_type):
     except Exception as e:
         error_message = str(e.__context__) + " and " + e.__str__()
         status_code = 500
-    return "", None, None, error_message, status_code
+    return "", None, error_message, status_code
 
 
 def get_score_filtered_documents(documents: List[Tuple[Document, Any]], min_score=0.0):
