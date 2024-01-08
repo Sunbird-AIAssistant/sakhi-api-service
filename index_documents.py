@@ -63,8 +63,7 @@ def main():
                         default="input_data"
                         )
     parser.add_argument('--fresh_index',
-                        required=True,
-                        action=argparse.BooleanOptionalAction,
+                        action='store_true',
                         help='Is the indexing fresh'
                         )
 
