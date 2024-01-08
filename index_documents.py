@@ -126,4 +126,4 @@ if __name__ == "__main__":
     
 # RUN
 # python3 index_documents.py --marqo_url=http://0.0.0.0:8882 --index_name=sakhi_activity --folder_path=input_data --fresh_index (FOR FRESH INDEXING)
-# python3 index_documents.py --marqo_url=http://0.0.0.0:8882 --index_name=sakhi_activity --folder_path=input_data --no-fresh_index (FOR ADDING DOCUMENTS)
+# python3 index_documents.py --marqo_url=http://0.0.0.0:8882 --index_name=sakhi_activity --folder_path=input_data (FOR APPENDING DOCUMENTS)
