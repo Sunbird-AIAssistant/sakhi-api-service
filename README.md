@@ -61,15 +61,15 @@ To use the code, you need to follow these steps:
 3. To injest data to marqo
 
     ```bash
-    python3 index_documents.py --marqo_url=<MARQO_URL> --index_name=<MARQO_INDEX_NAME> --folder_path=<PATH_TO_INPUT_FILE_DIRECTORY> --fresh_index
+    python3 index_documents.py --marqo_url=<MARQO_URL> --index_name=<MARQO_INDEX_NAME> --folder_path=<PATH_TO_INPUT_FILE_DIRECTORY>
     ```
 
    PATH_TO_INPUT_FILE_DIRECTORY should have only PDF, audio, video and txt file only.
-   
+
    e.g.
    ```bash
-   python3 index_documents.py --marqo_url=http://0.0.0.0:8882 --index_name=sakhi_parent_activities --folder_path=parent_pdfs --fresh_index
-   python3 index_documents.py --marqo_url=http://0.0.0.0:8882 --index_name=sakhi_teacher_activities --folder_path=teacher_pfs --fresh_index
+   python3 index_documents.py --marqo_url=http://0.0.0.0:8882 --index_name=sakhi_parent_activities --folder_path=parent_pdfs
+   python3 index_documents.py --marqo_url=http://0.0.0.0:8882 --index_name=sakhi_teacher_activities --folder_path=teacher_pfs
    ```
    Create the index by using the above command. After creating the index add the index name in `config.ini` file.
 
