@@ -8,7 +8,7 @@ import marqo
 from dotenv import load_dotenv
 from langchain.docstore.document import Document
 from langchain.vectorstores.marqo import Marqo
-from openai import  AzureOpenAI, RateLimitError, APIError, InternalServerError
+from openai import AzureOpenAI, RateLimitError, APIError, InternalServerError
 
 from config_util import get_config_value
 from logger import logger
@@ -38,7 +38,7 @@ def querying_with_langchain_gpt3(index_id, query, audience_type):
         logger.info(f"Score filtered documents : {str(filtered_document)}")
         contexts = get_formatted_documents(filtered_document)
         if not documents or not contexts:
-            return "I'm sorry, but I don't have enough information to provide a specific answer for your question. Please provide more information or context about what you are referring to.", None, None, 200
+            return "I'm sorry, but I am not currently trained with relevant documents to provide a specific answer for your question.", None, None, 200
 
         system_rules = getSystemPromptTemplate(audience_type)
         system_rules = system_rules.format(contexts=contexts)
@@ -56,7 +56,7 @@ def querying_with_langchain_gpt3(index_id, query, audience_type):
         response = message["content"]
         logger.info({"label": "openai_response", "response": response})
 
-        if("> answer" in response):
+        if "> answer" in response:
             response_tags = response.split("> ")
             answer: str = ""
             context_source: str = ""
@@ -129,12 +129,13 @@ def generate_source_format(documents: List[Tuple[Document, Any]]) -> str:
 def getSystemRulesForTeacher():
     system_rules = """You are a simple AI assistant specially programmed to help a teacher with learning and teaching materials for development of children in the age group of 3 to 8 years. Your knowledge base includes only the given documents.
     Guidelines: 
-        - Always pick the most relevant 'document' from 'documents' for the given 'question'. Ensure that your response is directly based on the most relevant document from the given documents. 
-        - Your answer must be firmly rooted in the information present in the most relevant document.
+        - Always pick relevant 'documents' for the given 'question'. Ensure that your response is directly based on the relevant documents from the given documents. 
+        - Your answer must be firmly rooted in the information present in the relevant documents.
+        - Your answer should be in very simple English, for those who may not know English well.
         - Your answer should not exceed 200 words.
-        - Always return the 'context_source' of the most relevant document chosen in the 'answer' at the end.
+        - Always return the 'context_source' of the relevant documents chosen in the 'answer' at the end.
         - answer format should strictly follow the format given in the 'Example of answer' section below.
-        - If no relevant document is given, then you should answer "> answer: I'm sorry, but I don't have enough information to provide a specific answer for your question. Please provide more information or context about what you are referring to. > context_source: [filename# ]'.
+        - If no relevant document is given, then you should answer "> answer: I'm sorry, but I am not currently trained with relevant documents to provide a specific answer for your question.'.
         - If the question is “how to” do something, your answer should be an activity. 
         - Your answer should be in the context of a Teacher engaging with students in a classroom setting
         
@@ -156,12 +157,14 @@ def getSystemRulesForTeacher():
 def getSystemRulesForParent():
     system_rules = """You are a simple AI assistant specially programmed to help a parent with learning and teaching materials for development of children in the age group of 3 to 8 years. Your knowledge base includes only the given contexts:
         Guidelines: 
-        - Always pick the most relevant 'document' from 'documents' for the given 'question'. Ensure that your response is directly based on the most relevant document from the given documents. 
+        - Always pick relevant 'documents' for the given 'question'. Ensure that your response is directly based on the relevant documents from the given documents. 
         - Your answer must be firmly rooted in the information present in the most relevant document.
+        - Your answer should be in very simple English, for those who may not know English well.
+        - Your answer should be understandable to parents who do not have knowledge of pedagogy concepts and terms.
         - Your answer should not exceed 200 words.
-        - Always return the 'context_source' of the most relevant document chosen in the 'answer' at the end.
+        - Always return the 'context_source' of the relevant documents chosen in the 'answer' at the end.
         - answer format should strictly follow the format given in the 'Example of answer' section below.
-        - If no relevant document is given, then you should answer "> answer: I'm sorry, but I don't have enough information to provide a specific answer for your question. Please provide more information or context about what you are referring to. > context_source: [filename#]'.
+        - If no relevant document is given, then you should answer "> answer: I'm sorry, but I am not currently trained with relevant documents to provide a specific answer for your question.'.
         - If the question is “how to” do something, your answer should be an activity. 
         - Your answer should be in the context of a Parent engaging with his/her child.
         
