@@ -77,18 +77,18 @@ def main():
     except:
         print("Index does not exist. Creating new index")
 
-        index_settings = {
-            "index_defaults": {
-                "treat_urls_and_pointers_as_images": False,
-                "model": "flax-sentence-embeddings/all_datasets_v4_mpnet-base",
-                "normalize_embeddings": True,
-                "text_preprocessing": {
-                    "split_length": 3,
-                    "split_overlap": 1,
-                    "split_method": "sentence"
-                }
+    index_settings = {
+        "index_defaults": {
+            "treat_urls_and_pointers_as_images": False,
+            "model": "flax-sentence-embeddings/all_datasets_v4_mpnet-base",
+            "normalize_embeddings": True,
+            "text_preprocessing": {
+                "split_length": 3,
+                "split_overlap": 1,
+                "split_method": "sentence"
             }
         }
+    }
 
     marqo_client.create_index(
         MARQO_INDEX_NAME, settings_dict=index_settings)
