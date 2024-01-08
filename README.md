@@ -63,7 +63,7 @@ To use the code, you need to follow these steps:
     ```bash
     python3 index_documents.py --marqo_url=<MARQO_URL> --index_name=<MARQO_INDEX_NAME> --folder_path=<PATH_TO_INPUT_FILE_DIRECTORY> --fresh_index
     ```
-
+   --fresh_index: This is a flag that creating a new index or overwriting an existing one. Fresh indexing typically starts from scratch without using existing data.
    PATH_TO_INPUT_FILE_DIRECTORY should have only PDF, audio, video and txt file only.
    
    e.g.
