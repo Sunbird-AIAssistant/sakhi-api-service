@@ -62,20 +62,18 @@ def main():
                         help='Path to the folder',
                         default="input_data"
                         )
+    parser.add_argument('--fresh_index',
+                        required=True,
+                        action=argparse.BooleanOptionalAction,
+                        help='Is the indexing fresh'
+                        )
 
     args = parser.parse_args()
 
     MARQO_URL = args.marqo_url
     MARQO_INDEX_NAME = args.index_name
     FOLDER_PATH = args.folder_path
-
-    # Initialize Marqo instance
-    marqo_client = marqo.Client(url=MARQO_URL)
-    try:
-        marqo_client.index(MARQO_INDEX_NAME).delete()
-        print("Existing Index successfully deleted.")
-    except:
-        print("Index does not exist. Creating new index")
+    FRESH_INDEX = args.fresh_index
 
     index_settings = {
         "index_defaults": {
@@ -90,9 +88,18 @@ def main():
         }
     }
 
-    marqo_client.create_index(
-        MARQO_INDEX_NAME, settings_dict=index_settings)
-    print(f"Index {MARQO_INDEX_NAME} created.")
+    # Initialize Marqo instance
+    marqo_client = marqo.Client(url=MARQO_URL)
+    if FRESH_INDEX:
+        try:
+            marqo_client.index(MARQO_INDEX_NAME).delete()
+            print("Existing Index successfully deleted.")
+        except:
+            print("Index does not exist. Creating new index")
+
+        marqo_client.create_index(
+            MARQO_INDEX_NAME, settings_dict=index_settings)
+        print(f"Index {MARQO_INDEX_NAME} created.")
 
     print("Loading documents...")
     documents = load_documents(FOLDER_PATH)
@@ -119,4 +126,5 @@ if __name__ == "__main__":
     main()
     
 # RUN
-# python3 index_documents.py --marqo_url=http://0.0.0.0:8882 --index_name=sakhi_activity --folder_path=input_data
+# python3 index_documents.py --marqo_url=http://0.0.0.0:8882 --index_name=sakhi_activity --folder_path=input_data --fresh_index (FOR FRESH INDEXING)
+# python3 index_documents.py --marqo_url=http://0.0.0.0:8882 --index_name=sakhi_activity --folder_path=input_data --no-fresh_index (FOR ADDING DOCUMENTS)
