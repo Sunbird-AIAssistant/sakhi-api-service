@@ -196,5 +196,5 @@ async def query(request: QueryModel, x_request_id: str = Header(None, alias="X-R
         raise HTTPException(status_code=status_code, detail=error_message)
 
     response = ResponseForQuery(output=OutputResponse(text=regional_answer, audio=audio_output_url, language=language, format=output_format.lower()))
-    logger.info({"x_request_id": x_request_id, "response":response})
+    logger.info({"x_request_id": x_request_id, "query": query_text, "text": text, "response":response})
     return response
