@@ -38,7 +38,7 @@ def querying_with_langchain_gpt3(index_id, query, audience_type):
         logger.info(f"Score filtered documents : {str(filtered_document)}")
         contexts = get_formatted_documents(filtered_document)
         if not documents or not contexts:
-            return "I'm sorry, but I am not currently trained with relevant documents to provide a specific answer for your question.", None, None, 200
+            return "I'm sorry, but I am not currently trained with relevant documents to provide a specific answer for your question.", None, 200
 
         system_rules = getSystemPromptTemplate(audience_type)
         system_rules = system_rules.format(contexts=contexts)
@@ -56,22 +56,7 @@ def querying_with_langchain_gpt3(index_id, query, audience_type):
         response = message["content"]
         logger.info({"label": "openai_response", "response": response})
 
-        if "> answer" in response:
-            response_tags = response.split("> ")
-            answer: str = ""
-            context_source: str = ""
-            for response_tag in response_tags:
-                if response_tag.strip():
-                    tags = response_tag.split(":")
-                    if tags[0] == "answer" and len(tags) >= 2:
-                        answer = concatenate_elements(tags).strip()
-                    elif tags[0] == "context_source":
-                        context_source += tags[1]
-        else:
-            answer: str = response
-            context_source: str = ""
-
-        return answer, context_source, None, 200
+        return response, None, 200
     except RateLimitError as e:
         error_message = f"OpenAI API request exceeded rate limit: {e}"
         status_code = 500
@@ -81,7 +66,7 @@ def querying_with_langchain_gpt3(index_id, query, audience_type):
     except Exception as e:
         error_message = str(e.__context__) + " and " + e.__str__()
         status_code = 500
-    return "", None, error_message, status_code
+    return "", error_message, status_code
 
 
 def get_score_filtered_documents(documents: List[Tuple[Document, Any]], min_score=0.0):
@@ -92,7 +77,7 @@ def get_formatted_documents(documents: List[Tuple[Document, Any]]):
     sources = ""
     for document, _ in documents:
         sources += f"""
-            > {document.page_content} \n > context_source: [filename# {document.metadata['file_name']},  page# {document.metadata['page_label']}]\n\n
+            > {document.page_content} \n Source: [{document.metadata['file_name']},  page# {document.metadata['page_label']}]\n\n
             """
     return sources
 
@@ -129,12 +114,13 @@ def generate_source_format(documents: List[Tuple[Document, Any]]) -> str:
 def getSystemRulesForTeacher():
     system_rules = """You are a simple AI assistant specially programmed to help a teacher with learning and teaching materials for development of children in the age group of 3 to 8 years. Your knowledge base includes only the given documents.
     Guidelines: 
-        - Always pick relevant 'documents' for the given 'question'. Ensure that your response is directly based on the relevant documents from the given documents. 
+        - Always pick relevant 'documents' for the given 'question'.
         - Your answer must be firmly rooted in the information present in the relevant documents.
-        - Your answer should be in very simple English, for those who may not know English well.
-        - Your answer should not exceed 200 words.
-        - Always return the 'context_source' of the relevant documents chosen in the 'answer' at the end.
+        - Your answer should not exceed 300 words.
+        - Always return answer for each relevant document in separate paragraphs.
+        - Always return the 'Source' of the document along with the answer at the end.
         - answer format should strictly follow the format given in the 'Example of answer' section below.
+        - Do not generate answer for a non-relevant document from the given 'documents'.
         - If no relevant document is given, then you should answer "> answer: I'm sorry, but I am not currently trained with relevant documents to provide a specific answer for your question.'.
         - If the question is “how to” do something, your answer should be an activity. 
         - Your answer should be in the context of a Teacher engaging with students in a classroom setting
@@ -142,9 +128,11 @@ def getSystemRulesForTeacher():
         
     Example of 'answer': 
     --------------------
-    > answer: When dealing with behavioral issues in children, it is important to ........
-    > context_source: [filename# unmukh-teacher-handbook.pdf,  page# 49] 
-   
+    Antakshari is a game that can be easily played in a classroom setting .....
+    Source: [vidyapravesh.pdf, page# 53]
+    The game can also be varied for different age groups or to address ..... 
+    Source: [unmukh-teacher-handbook.pdf, page# 129]
+    
    
     Given the following documents:
     ----------------------------
@@ -155,15 +143,17 @@ def getSystemRulesForTeacher():
 
 
 def getSystemRulesForParent():
-    system_rules = """You are a simple AI assistant specially programmed to help a parent with learning and teaching materials for development of children in the age group of 3 to 8 years. Your knowledge base includes only the given contexts:
+    system_rules = """You are a simple AI assistant specially programmed to help a parent with learning and teaching materials for development of children in the age group of 3 to 8 years. Your knowledge base includes only the given documents.
         Guidelines: 
-        - Always pick relevant 'documents' for the given 'question'. Ensure that your response is directly based on the relevant documents from the given documents. 
-        - Your answer must be firmly rooted in the information present in the most relevant document.
+        - Always pick relevant 'documents' for the given 'question'. 
+        - Your answer must be firmly rooted in the information present in the relevant documents.
         - Your answer should be in very simple English, for those who may not know English well.
         - Your answer should be understandable to parents who do not have knowledge of pedagogy concepts and terms.
-        - Your answer should not exceed 200 words.
-        - Always return the 'context_source' of the relevant documents chosen in the 'answer' at the end.
+        - Your answer should not exceed 300 words.
+        - Always return answer for each relevant document in separate paragraphs.
+        - Always return the 'Source' of the document along with the answer at the end.
         - answer format should strictly follow the format given in the 'Example of answer' section below.
+        - Do not generate answer for a non-relevant document from the given 'documents'.
         - If no relevant document is given, then you should answer "> answer: I'm sorry, but I am not currently trained with relevant documents to provide a specific answer for your question.'.
         - If the question is “how to” do something, your answer should be an activity. 
         - Your answer should be in the context of a Parent engaging with his/her child.
@@ -171,8 +161,10 @@ def getSystemRulesForParent():
    
     Example of 'answer': 
     --------------------
-    > answer: You can play a game called Gilli Danda with your child. Here's how to play......
-    > context_source: [filename# toy_based_pedagogy.pdf,  page# 41]
+    You can play a game called Gilli Danda with your child. Here's how to play .....
+    [toy_based_pedagogy.pdf,  page# 41]
+    You can play a game called Field hockey. Field hockey is a sport played with a .....
+    [vidya_pravesh.pdf,  page# 57]
     
    
     Given the following documents:
