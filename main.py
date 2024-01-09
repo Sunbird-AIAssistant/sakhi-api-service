@@ -1,6 +1,6 @@
 from enum import Enum
 
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, status, Header
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
@@ -130,7 +130,7 @@ def get_health() -> HealthCheck:
 
 
 @app.post("/v1/query", tags=["Q&A over Document Store"], include_in_schema=True)
-async def query(request: QueryModel) -> ResponseForQuery:
+async def query(request: QueryModel, x_request_id: str = Header(None, alias="X-Request-ID")) -> ResponseForQuery:
     load_dotenv()
     indices = json.loads(get_config_value('marqo_index', 'indices', None))
     language = 'or' if request.input.language.name == DropDownInputLanguage.ori.name else request.input.language.name
@@ -196,5 +196,5 @@ async def query(request: QueryModel) -> ResponseForQuery:
         raise HTTPException(status_code=status_code, detail=error_message)
 
     response = ResponseForQuery(output=OutputResponse(text=regional_answer, audio=audio_output_url, language=language, format=output_format.lower()))
-    logger.info(response)
+    logger.info({"x_request_id": x_request_id, "query": query_text, "text": text, "response":response})
     return response
