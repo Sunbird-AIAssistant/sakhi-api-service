@@ -20,6 +20,8 @@ async def get_body(request: Request) -> bytes:
     await set_body(request, body)
     return body
 
+telemetryLogger =  TelemetryLogger()
+
 class TelemetryMiddleware(BaseHTTPMiddleware):
     def __init__(
             self,
@@ -37,7 +39,6 @@ class TelemetryMiddleware(BaseHTTPMiddleware):
         process_time = time.time() - start_time
         response.headers["X-Process-Time"] = str(process_time)
         if "v1" in str(request.url):
-            telemetryLogger =  TelemetryLogger()
             event: dict = {
                 "status_code": response.status_code,
                 "duration": round(process_time * 1000),
