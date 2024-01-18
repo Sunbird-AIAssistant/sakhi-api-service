@@ -29,7 +29,7 @@ def querying_with_langchain_gpt3(index_id, query, audience_type):
 
     gpt_model = get_config_value("llm", "GPT_MODEL", "gpt-4")
      # intent recognition using AI
-    intent_system_rules = "Identify if the user's query is a greeting or is about the bot's persona. Always answer with 'Yes' or 'No' only"
+    intent_system_rules = "Identify if the user's query is about the bot's persona. Always answer with 'Yes' or 'No' only"
     intent_res = client.chat.completions.create(
         model=gpt_model,
         messages=[
