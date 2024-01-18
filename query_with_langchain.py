@@ -29,7 +29,7 @@ def querying_with_langchain_gpt3(index_id, query, audience_type):
 
     gpt_model = get_config_value("llm", "GPT_MODEL", "gpt-4")
      # intent recognition using AI
-    intent_system_rules = "Identify if the user's query is a greeting or is about the bot's persona or Answer Yes or No"
+    intent_system_rules = "Identify if the user's query is a greeting or is about the bot's persona. Always answer with 'Yes' or 'No' only"
     intent_res = client.chat.completions.create(
         model=gpt_model,
         messages=[
@@ -39,8 +39,8 @@ def querying_with_langchain_gpt3(index_id, query, audience_type):
     )
     intent_message = intent_res.choices[0].message.model_dump()
     intent_response = intent_message["content"]
-
-    if intent_response.lower == "yes":
+    logger.info({"label": "openai_intent_response", "intent_response": intent_response})
+    if intent_response.lower() == "yes":
         system_rules = getBotPromptTemplate(audience_type)
         logger.debug("==== System Rules ====")
         logger.debug(f"System Rules : {system_rules}")
@@ -53,7 +53,7 @@ def querying_with_langchain_gpt3(index_id, query, audience_type):
         )
         message = res.choices[0].message.model_dump()
         response = message["content"]
-        logger.info({"label": "openai_response", "response": response})
+        logger.info({"label": "openai_bot_response", "bot_response": response})
         return response, "", None, 200
     else:
         try:
@@ -110,6 +110,7 @@ def querying_with_langchain_gpt3(index_id, query, audience_type):
         except Exception as e:
             error_message = str(e.__context__) + " and " + e.__str__()
             status_code = 500
+
         return "", None, error_message, status_code
 
 
@@ -214,7 +215,7 @@ def getSystemRulesForParent():
 
 def getBotSystemRulesForTeacher():
     system_rules = """You are a simple AI assistant named 'Teacher Tara' specially programmed to help teachers with learning and teaching materials for development of children in the 
-                    age group of 3 to 8 years. Generate answer from below context within 250 words.
+                    age group of 3 to 8 years. Your knowledge base includes only the given context. Your answer should not exceed 200 words.
                     
                     Context:
                     -----------------
@@ -249,7 +250,7 @@ def getBotSystemRulesForTeacher():
 
 def getBotSystemRulesForParent():
     system_rules = """You are a simple AI assistant named 'Parent Tara' specially programmed to help parents with learning and teaching materials for development of children in the 
-                    age group of 3 to 8 years. Generate answer from below context within 250 words.
+                    age group of 3 to 8 years. Your knowledge base includes only the given context. Your answer should not exceed 200 words.
                     
                     Context:
                     ----------------
