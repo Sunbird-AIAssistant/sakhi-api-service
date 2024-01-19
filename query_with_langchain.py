@@ -85,22 +85,7 @@ def querying_with_langchain_gpt3(index_id, query, audience_type):
             response = message["content"]
             logger.info({"label": "openai_response", "response": response})
 
-            if "> answer" in response:
-                response_tags = response.split("> ")
-                answer: str = ""
-                context_source: str = ""
-                for response_tag in response_tags:
-                    if response_tag.strip():
-                        tags = response_tag.split(":")
-                        if tags[0] == "answer" and len(tags) >= 2:
-                            answer = concatenate_elements(tags).strip()
-                        elif tags[0] == "context_source":
-                            context_source += tags[1]
-            else:
-                answer: str = response
-                context_source: str = ""
-
-            return answer, context_source, None, 200
+            return response, None, 200
         except RateLimitError as e:
             error_message = f"OpenAI API request exceeded rate limit: {e}"
             status_code = 500
@@ -122,7 +107,7 @@ def get_formatted_documents(documents: List[Tuple[Document, Any]]):
     sources = ""
     for document, _ in documents:
         sources += f"""
-            > {document.page_content} \n > context_source: [filename# {document.metadata['file_name']},  page# {document.metadata['page_label']}]\n\n
+            > {document.page_content} \n Source: {document.metadata['file_name']},  page# {document.metadata['page_label']}\n\n
             """
     return sources
 
@@ -163,17 +148,17 @@ def getSystemRulesForTeacher():
         - Your answer must be firmly rooted in the information present in the relevant documents.
         - Your answer should be in very simple English, for those who may not know English well.
         - Your answer should not exceed 200 words.
-        - Always return the 'context_source' of the relevant documents chosen in the 'answer' at the end.
+        - Always return the 'Source' of the relevant documents chosen in the 'answer' at the end.
         - answer format should strictly follow the format given in the 'Example of answer' section below.
-        - If no relevant document is given, then you should answer "> answer: I'm sorry, but I am not currently trained with relevant documents to provide a specific answer for your question.'.
+        - If no relevant document is given, then you should answer "I'm sorry, but I am not currently trained with relevant documents to provide a specific answer for your question.'.
         - If the question is “how to” do something, your answer should be an activity. 
         - Your answer should be in the context of a Teacher engaging with students in a classroom setting
         
         
     Example of 'answer': 
     --------------------
-    > answer: When dealing with behavioral issues in children, it is important to ........
-    > context_source: [filename# unmukh-teacher-handbook.pdf,  page# 49] 
+    When dealing with behavioral issues in children, it is important to ........
+    Source: unmukh-teacher-handbook.pdf,  page# 49
    
    
     Given the following documents:
@@ -192,17 +177,17 @@ def getSystemRulesForParent():
         - Your answer should be in very simple English, for those who may not know English well.
         - Your answer should be understandable to parents who do not have knowledge of pedagogy concepts and terms.
         - Your answer should not exceed 200 words.
-        - Always return the 'context_source' of the relevant documents chosen in the 'answer' at the end.
+        - Always return the 'Source' of the relevant documents chosen in the 'answer' at the end.
         - answer format should strictly follow the format given in the 'Example of answer' section below.
-        - If no relevant document is given, then you should answer "> answer: I'm sorry, but I am not currently trained with relevant documents to provide a specific answer for your question.'.
+        - If no relevant document is given, then you should answer "I'm sorry, but I am not currently trained with relevant documents to provide a specific answer for your question.'.
         - If the question is “how to” do something, your answer should be an activity. 
         - Your answer should be in the context of a Parent engaging with his/her child.
         
    
     Example of 'answer': 
     --------------------
-    > answer: You can play a game called Gilli Danda with your child. Here's how to play......
-    > context_source: [filename# toy_based_pedagogy.pdf,  page# 41]
+   You can play a game called Gilli Danda with your child. Here's how to play......
+    Source: toy_based_pedagogy.pdf,  page# 41
     
    
     Given the following documents:
