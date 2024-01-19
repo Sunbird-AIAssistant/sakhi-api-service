@@ -3,7 +3,6 @@ from enum import Enum
 from fastapi import FastAPI, HTTPException, status, Header
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from dotenv import load_dotenv
 from cloud_storage_oci import *
 from io_processing import *
 from query_with_langchain import *

@@ -28,7 +28,7 @@ def querying_with_langchain_gpt3(index_id, query, audience_type):
     logger.debug(f"Query ===> {query}")
 
     gpt_model = get_config_value("llm", "GPT_MODEL", "gpt-4")
-     # intent recognition using AI
+    # intent recognition using AI
     intent_system_rules = "Identify if the user's query is about the bot's persona. Always answer with 'Yes' or 'No' only"
     intent_res = client.chat.completions.create(
         model=gpt_model,
@@ -85,7 +85,7 @@ def querying_with_langchain_gpt3(index_id, query, audience_type):
             response = message["content"]
             logger.info({"label": "openai_response", "response": response})
 
-            return response, None, 200
+            return response.strip(";"), None, 200
         except RateLimitError as e:
             error_message = f"OpenAI API request exceeded rate limit: {e}"
             status_code = 500
@@ -107,7 +107,7 @@ def get_formatted_documents(documents: List[Tuple[Document, Any]]):
     sources = ""
     for document, _ in documents:
         sources += f"""
-            > {document.page_content} \n Source: {document.metadata['file_name']},  page# {document.metadata['page_label']}\n\n
+            > {document.page_content} \n Source: {document.metadata['file_name']},  page# {document.metadata['page_label']};\n\n
             """
     return sources
 
@@ -140,6 +140,7 @@ def generate_source_format(documents: List[Tuple[Document, Any]]) -> str:
         error_message = "Error while preparing source markdown"
         logger.error(f"{error_message}: {e}", exc_info=True)
         return ""
+
 
 def getSystemRulesForTeacher():
     system_rules = """You are a simple AI assistant specially programmed to help a teacher with learning and teaching materials for development of children in the age group of 3 to 8 years. Your knowledge base includes only the given documents.
@@ -265,6 +266,7 @@ def getBotSystemRulesForParent():
     """
     return system_rules
 
+
 def getSystemPromptTemplate(type):
     logger.info({"label": "audience_type", "type": type})
     if type == 'TEACHER':
@@ -280,6 +282,7 @@ def concatenate_elements(arr):
     separator = ': '
     result = separator.join(arr[1:])
     return result
+
 
 def getBotPromptTemplate(type):
     logger.info({"label": "audience_type", "type": type})
