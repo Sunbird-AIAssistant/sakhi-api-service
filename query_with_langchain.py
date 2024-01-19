@@ -54,7 +54,7 @@ def querying_with_langchain_gpt3(index_id, query, audience_type):
         message = res.choices[0].message.model_dump()
         response = message["content"]
         logger.info({"label": "openai_bot_response", "bot_response": response})
-        return response, "", None, 200
+        return response, None, 200
     else:
         try:
             search_index = Marqo(marqoClient, index_id, searchable_attributes=["text"])
@@ -96,7 +96,7 @@ def querying_with_langchain_gpt3(index_id, query, audience_type):
             error_message = str(e.__context__) + " and " + e.__str__()
             status_code = 500
 
-        return "", None, error_message, status_code
+        return "", error_message, status_code
 
 
 def get_score_filtered_documents(documents: List[Tuple[Document, Any]], min_score=0.0):
