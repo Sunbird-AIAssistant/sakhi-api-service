@@ -68,7 +68,7 @@ def querying_with_langchain_gpt3(index_id, query, audience_type):
             logger.info(f"Score filtered documents : {str(filtered_document)}")
             contexts = get_formatted_documents(filtered_document)
             if not documents or not contexts:
-                return "I'm sorry, but I am not currently trained with relevant documents to provide a specific answer for your question.", None, None, 200
+                return "I'm sorry, but I am not currently trained with relevant documents to provide a specific answer for your question.", None, 200
 
             system_rules = getSystemPromptTemplate(audience_type)
             system_rules = system_rules.format(contexts=contexts)
