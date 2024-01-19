@@ -3,7 +3,6 @@ from enum import Enum
 from fastapi import FastAPI, HTTPException, status, Header
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from dotenv import load_dotenv
 from cloud_storage_oci import *
 from io_processing import *
 from query_with_langchain import *
@@ -165,7 +164,7 @@ async def query(request: QueryModel, x_request_id: str = Header(None, alias="X-R
             is_audio = True
         logger.info({"Query": text})
         if text is not None:
-            answer, source_text, error_message, status_code = querying_with_langchain_gpt3(index_id, text, audience_type)
+            answer, error_message, status_code = querying_with_langchain_gpt3(index_id, text, audience_type)
 
             if len(answer) != 0:
                 regional_answer, error_message = process_outgoing_text(answer, language)
@@ -187,9 +186,6 @@ async def query(request: QueryModel, x_request_id: str = Header(None, alias="X-R
                     status_code = 503
         else:
             status_code = 503
-
-    if source_text is not None and source_text != "" and source_text not in regional_answer:
-        regional_answer = (regional_answer or "") + "\nSource:\n" + source_text.replace("filename# ", "").replace("#", ":").replace("], [", "]\n [")
 
     if status_code != 200:
         logger.error({"index_id": index_id, "query": query_text, "input_language": language, "output_format": output_format, "audio_url": audio_url, "status_code": status_code, "error_message": error_message})
