@@ -58,7 +58,7 @@ To use the code, you need to follow these steps:
     pip install -r requirements-dev.txt
     ```
 
-3. To injest data to marqo
+3. To ingest data to marqo
 
     ```bash
     python3 index_documents.py --marqo_url=<MARQO_URL> --index_name=<MARQO_INDEX_NAME> --folder_path=<PATH_TO_INPUT_FILE_DIRECTORY> --fresh_index
