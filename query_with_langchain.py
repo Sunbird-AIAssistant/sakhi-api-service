@@ -31,11 +31,10 @@ def querying_with_langchain_gpt3(index_id, query, audience_type):
 
     intent_response = "No"
     enable_bot_intent = get_config_value("llm", "ENABLE_BOT_INTENT", "False")
-    print("enable_bot_intent:: ", enable_bot_intent)
 
     if enable_bot_intent.lower() == "true":
         # intent recognition using AI
-        intent_system_rules = "Identify if the user's query is about the bot's persona or 'Teacher Tara' or 'Parent Tara'. If true, return the answer as 'Yes' else return answer as 'No' only"
+        intent_system_rules = "Identify if the user's query is about the bot's persona or 'Teacher Tara' or 'Parent Tara'. If yes, return the answer as 'Yes' else return answer as 'No' only."
         intent_res = client.chat.completions.create(
             model=gpt_model,
             messages=[
