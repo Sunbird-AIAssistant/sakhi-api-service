@@ -28,18 +28,25 @@ def querying_with_langchain_gpt3(index_id, query, audience_type):
     logger.debug(f"Query ===> {query}")
 
     gpt_model = get_config_value("llm", "GPT_MODEL", "gpt-4")
-    # intent recognition using AI
-    intent_system_rules = "Identify if the user's query is about the bot's persona or 'Teacher Tara' or 'Parent Tara'. Always answer with 'Yes' or 'No' only"
-    intent_res = client.chat.completions.create(
-        model=gpt_model,
-        messages=[
-            {"role": "system", "content": intent_system_rules},
-            {"role": "user", "content": query}
-        ],
-    )
-    intent_message = intent_res.choices[0].message.model_dump()
-    intent_response = intent_message["content"]
-    logger.info({"label": "openai_intent_response", "intent_response": intent_response})
+
+    intent_response = "No"
+    enable_bot_intent = bool(get_config_value("llm", "ENABLE_BOT_INTENT", "false"))
+
+    if enable_bot_intent:
+        # intent recognition using AI
+        intent_system_rules = "Identify if the user's query is about the bot's persona or 'Teacher Tara' or 'Parent Tara'. If true, return the answer as 'Yes' else return answer as 'No' only"
+        intent_res = client.chat.completions.create(
+            model=gpt_model,
+            messages=[
+                {"role": "system", "content": intent_system_rules},
+                {"role": "user", "content": query}
+            ],
+        )
+        intent_message = intent_res.choices[0].message.model_dump()
+        intent_response = intent_message["content"]
+        logger.info({"label": "openai_intent_response", "intent_response": intent_response})
+
+
     if intent_response.lower() == "yes":
         system_rules = getBotPromptTemplate(audience_type)
         logger.debug("==== System Rules ====")
