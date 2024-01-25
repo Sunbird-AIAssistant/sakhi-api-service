@@ -17,10 +17,10 @@ load_dotenv()
 marqo_url = get_config_value("database", "MARQO_URL", None)
 marqoClient = marqo.Client(url=marqo_url)
 client = AzureOpenAI(
-            azure_endpoint=os.environ["OPENAI_API_BASE"],
-            api_key=os.environ["OPENAI_API_KEY"],
-            api_version=os.environ["OPENAI_API_VERSION"]
-        )
+    azure_endpoint=os.environ["OPENAI_API_BASE"],
+    api_key=os.environ["OPENAI_API_KEY"],
+    api_version=os.environ["OPENAI_API_VERSION"]
+)
 
 
 def querying_with_langchain_gpt3(index_id, query, audience_type):
@@ -30,9 +30,10 @@ def querying_with_langchain_gpt3(index_id, query, audience_type):
     gpt_model = get_config_value("llm", "GPT_MODEL", "gpt-4")
 
     intent_response = "No"
-    enable_bot_intent = bool(get_config_value("llm", "ENABLE_BOT_INTENT", "false"))
+    enable_bot_intent = get_config_value("llm", "ENABLE_BOT_INTENT", "False")
+    print("enable_bot_intent:: ", enable_bot_intent)
 
-    if enable_bot_intent:
+    if enable_bot_intent.lower() == "true":
         # intent recognition using AI
         intent_system_rules = "Identify if the user's query is about the bot's persona or 'Teacher Tara' or 'Parent Tara'. If true, return the answer as 'Yes' else return answer as 'No' only"
         intent_res = client.chat.completions.create(
@@ -45,7 +46,6 @@ def querying_with_langchain_gpt3(index_id, query, audience_type):
         intent_message = intent_res.choices[0].message.model_dump()
         intent_response = intent_message["content"]
         logger.info({"label": "openai_intent_response", "intent_response": intent_response})
-
 
     if intent_response.lower() == "yes":
         system_rules = getBotPromptTemplate(audience_type)
