@@ -7,6 +7,7 @@ from typing import (
 )
 import marqo
 from dotenv import load_dotenv
+from fastapi import HTTPException
 from langchain.docstore.document import Document
 from langchain.vectorstores.marqo import Marqo
 from openai import AzureOpenAI, RateLimitError, APIError, InternalServerError
@@ -28,8 +29,10 @@ def querying_with_langchain_gpt3(index_id, query, audience_type):
     load_dotenv()
     logger.debug(f"Query: {query}")
 
-    gpt_model = get_config_value("llm", "gpt_model", "gpt-4")
+    gpt_model = get_config_value("llm", "gpt_model", "")
     logger.debug(f"gpt_model: {gpt_model}")
+    if gpt_model is None or gpt_model.strip() == "":
+        raise HTTPException(status_code=422, detail="Please configure gpt_model under llm section in config file!")
 
     intent_response = "No"
 
