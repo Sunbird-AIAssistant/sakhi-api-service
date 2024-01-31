@@ -6,15 +6,15 @@ import requests
 from config_util import get_config_value
 from logger import logger
 
-telemetryURL = get_config_value('telemetry', 'TELEMETRY_ENDPOINT_URL', '')
-ENV_NAME = get_config_value('telemetry', 'environment', 'dev')
-TELEMETRY_LOG_ENABLED = get_config_value('telemetry', 'telemetry_log_enabled', "true").lower() == "true"
+telemetryURL = get_config_value('telemetry', 'TELEMETRY_ENDPOINT_URL', None)
+ENV_NAME = get_config_value('telemetry', 'environment', None)
+TELEMETRY_LOG_ENABLED = get_config_value('telemetry', 'telemetry_log_enabled', None).lower() == "true"
 telemetry_id = get_config_value('telemetry', 'service_id', None)
 telemetry_ver = get_config_value('telemetry', 'service_ver', None)
 actor_id = get_config_value('telemetry', 'actor_id', None)
 channel = get_config_value('telemetry', 'channel', None)
 pdata_id = get_config_value('telemetry', 'pdata_id', None)
-events_threshold = get_config_value('telemetry', 'events_threshold', "5")
+events_threshold = get_config_value('telemetry', 'events_threshold', None)
 
 class TelemetryLogger:
     """
