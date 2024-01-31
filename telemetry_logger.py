@@ -1,20 +1,27 @@
-import requests
 import time
-import os
 import uuid
+
+import requests
+
+from config_util import get_config_value
 from logger import logger
 
-telemetryURL = os.environ.get("TELEMETRY_ENDPOINT_URL", "")
-ENV_NAME = os.environ.get("SERVICE_ENVIRONMENT", "dev")
-TELEMETRY_LOG_ENABLED = os.environ.get("TELEMETRY_LOG_ENABLED", "true").lower() == "true"
-
+telemetryURL = get_config_value('telemetry', 'TELEMETRY_ENDPOINT_URL', '')
+ENV_NAME = get_config_value('telemetry', 'environment', 'dev')
+TELEMETRY_LOG_ENABLED = get_config_value('telemetry', 'telemetry_log_enabled', "true").lower() == "true"
+telemetry_id = get_config_value('telemetry', 'service_id', None)
+telemetry_ver = get_config_value('telemetry', 'service_ver', None)
+actor_id = get_config_value('telemetry', 'actor_id', None)
+channel = get_config_value('telemetry', 'channel', None)
+pdata_id = get_config_value('telemetry', 'pdata_id', None)
+events_threshold = get_config_value('telemetry', 'events_threshold', "5")
 
 class TelemetryLogger:
     """
     A class to capture and send telemetry logs using the requests library with threshold limit.
     """
 
-    def __init__(self, url=telemetryURL, threshold=5):
+    def __init__(self, url=telemetryURL, threshold=int(events_threshold)):
         self.url = url
         self.events = []  # Store multiple events before exceeding threshold
         self.threshold = threshold
@@ -42,8 +49,8 @@ class TelemetryLogger:
         """
         try:
             data = {
-                "id": "api.djp.telemetry",
-                "ver": "3.1",
+                "id": telemetry_id,
+                "ver": telemetry_ver,
                 "params": {"msgid": str(uuid.uuid4())},
                 "ets": int(time.time() * 1000),
                 "events": self.events
@@ -73,16 +80,16 @@ class TelemetryLogger:
         data = {
             "eid": "LOG",
             "ets": int(time.time() * 1000),  # Current timestamp
-            "ver": "3.1",  # Version
+            "ver": telemetry_ver,  # Version
             "mid": f"LOG:{round(time.time())}",  # Unique message ID
             "actor": {
-                "id": "sakhi-api-service",
+                "id": actor_id,
                 "type": "System",
             },
             "context": {
-                "channel": "ejp",
+                "channel": channel,
                 "pdata": {
-                    "id": "ejp.sakhi.api.service",
+                    "id": pdata_id,
                     "ver": "1.0",
                     "pid": ""
                 },
