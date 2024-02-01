@@ -80,6 +80,18 @@ def main():
                         help='documents chunk size',
                         default=200
                         )
+    parser.add_argument('--split_length',
+                        type=int,
+                        required=False,
+                        help='pre-processing split_length',
+                        default=1024
+                        )
+    parser.add_argument('--split_overlap',
+                        type=int,
+                        required=False,
+                        help='pre-processing split_overlap',
+                        default=0
+                        )
     parser.add_argument('--fresh_index',
                         action='store_true',
                         help='Is the indexing fresh'
@@ -94,6 +106,8 @@ def main():
     EMBED_MODEL = args.embedding_model
     CHUNK_SIZE = args.chunk_size
     CHUNK_OVERLAP = args.chunk_overlap
+    SPLIT_LENGTH = args.split_length
+    SPLIT_OVERLAP = args.split_overlap
 
     index_settings = {
         "index_defaults": {
@@ -101,8 +115,8 @@ def main():
             "model": EMBED_MODEL,
             "normalize_embeddings": True,
             "text_preprocessing": {
-                "split_length": 3,
-                "split_overlap": 1,
+                "split_length": SPLIT_LENGTH,
+                "split_overlap": SPLIT_OVERLAP,
                 "split_method": "sentence"
             }
         }
