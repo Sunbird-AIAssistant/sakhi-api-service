@@ -84,7 +84,7 @@ def main():
                         type=int,
                         required=False,
                         help='pre-processing split_length',
-                        default=1024
+                        default=1
                         )
     parser.add_argument('--split_overlap',
                         type=int,
