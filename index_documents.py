@@ -11,12 +11,12 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from llama_index import SimpleDirectoryReader
 
 
-def load_documents(folder_path):
+def load_documents(folder_path, input_chunk_size, input_chunk_overlap):
     source_chunks = []
     sources = SimpleDirectoryReader(
         input_dir=folder_path, recursive=True).load_data()
     splitter = RecursiveCharacterTextSplitter(
-        chunk_size=1024, chunk_overlap=200)
+        chunk_size=input_chunk_size, chunk_overlap=input_chunk_overlap)
     for source in sources:
         for chunk in splitter.split_text(source.text):
             source_chunks.append(Document(page_content=chunk, metadata={
@@ -62,6 +62,36 @@ def main():
                         help='Path to the folder',
                         default="input_data"
                         )
+    parser.add_argument('--embedding_model',
+                        type=str,
+                        required=False,
+                        help='data embedding model to be used.',
+                        default="flax-sentence-embeddings/all_datasets_v4_mpnet-base"
+                        )
+    parser.add_argument('--chunk_size',
+                        type=int,
+                        required=False,
+                        help='documents chunk size',
+                        default=1024
+                        )
+    parser.add_argument('--chunk_overlap',
+                        type=int,
+                        required=False,
+                        help='documents chunk size',
+                        default=200
+                        )
+    parser.add_argument('--split_length',
+                        type=int,
+                        required=False,
+                        help='pre-processing split_length',
+                        default=1
+                        )
+    parser.add_argument('--split_overlap',
+                        type=int,
+                        required=False,
+                        help='pre-processing split_overlap',
+                        default=0
+                        )
     parser.add_argument('--fresh_index',
                         action='store_true',
                         help='Is the indexing fresh'
@@ -73,15 +103,20 @@ def main():
     MARQO_INDEX_NAME = args.index_name
     FOLDER_PATH = args.folder_path
     FRESH_INDEX = args.fresh_index
+    EMBED_MODEL = args.embedding_model
+    CHUNK_SIZE = args.chunk_size
+    CHUNK_OVERLAP = args.chunk_overlap
+    SPLIT_LENGTH = args.split_length
+    SPLIT_OVERLAP = args.split_overlap
 
     index_settings = {
         "index_defaults": {
             "treat_urls_and_pointers_as_images": False,
-            "model": "flax-sentence-embeddings/all_datasets_v4_mpnet-base",
+            "model": EMBED_MODEL,
             "normalize_embeddings": True,
             "text_preprocessing": {
-                "split_length": 3,
-                "split_overlap": 1,
+                "split_length": SPLIT_LENGTH,
+                "split_overlap": SPLIT_OVERLAP,
                 "split_method": "sentence"
             }
         }
@@ -101,7 +136,7 @@ def main():
         print(f"Index {MARQO_INDEX_NAME} created.")
 
     print("Loading documents...")
-    documents = load_documents(FOLDER_PATH)
+    documents = load_documents(FOLDER_PATH, CHUNK_SIZE, CHUNK_OVERLAP)
 
     print("Total Documents ===>", len(documents))
 
