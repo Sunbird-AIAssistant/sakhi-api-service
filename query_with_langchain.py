@@ -1,23 +1,38 @@
 import ast
 import os
+import requests
 from typing import (
     Any,
     List,
     Tuple
 )
-import marqo
+from qdrant_client import QdrantClient
 from dotenv import load_dotenv
 from fastapi import HTTPException
 from langchain.docstore.document import Document
-from langchain.vectorstores.marqo import Marqo
 from openai import AzureOpenAI, RateLimitError, APIError, InternalServerError
 
 from config_util import get_config_value
 from logger import logger
 
 load_dotenv()
-marqo_url = get_config_value("database", "MARQO_URL", None)
-marqoClient = marqo.Client(url=marqo_url)
+qdrant_url = get_config_value("database", "QDRANT_URL", "0.0.0.0")
+qdrant_port = get_config_value("database", "QDRANT_PORT", "6333")
+# marqoClient = marqo.Client(url=marqo_url)
+
+EMBED_API_KEY = get_config_value("data_embedding", "EMBED_API_KEY", None)
+EMBED_MODEL = get_config_value("data_embedding", "EMBED_MODEL", "jina-embeddings-v2-base-en")  # or "jina-embeddings-v2-base-en"
+EMBED_URL = get_config_value("data_embedding", "EMBED_URL", "https://api.jina.ai/v1/embeddings")
+
+headers = {
+    "Content-Type": "application/json",
+    "Authorization": f"Bearer {EMBED_API_KEY}",
+}
+
+
+qdrantClient = QdrantClient(host=qdrant_url, port=qdrant_port)
+
+
 client = AzureOpenAI(
     azure_endpoint=os.environ["OPENAI_API_BASE"],
     api_key=os.environ["OPENAI_API_KEY"],
@@ -82,15 +97,36 @@ def querying_with_langchain_gpt3(index_id, query, audience_type):
                 activity_prompt_dict = ast.literal_eval(activity_prompt_config)
                 system_rules = activity_prompt_dict.get(audience_type)
 
-            search_index = Marqo(marqoClient, index_id, searchable_attributes=["text"])
-            top_docs_to_fetch = get_config_value("database", "top_docs_to_fetch", None)
 
-            documents = search_index.similarity_search_with_score(query, k=20)
-            logger.debug(f"Marqo documents : {str(documents)}")
+            top_docs_to_fetch = get_config_value("database", "top_docs_to_fetch", None)
+            # search_index = Marqo(marqoClient, index_id, searchable_attributes=["text"])
+            # documents = search_index.similarity_search_with_score(query, k=20)
+
+            data = {
+                "input": query,
+                "model": EMBED_MODEL,
+            }
+            response = requests.post(EMBED_URL, headers=headers, json=data)
+            embeddings = [d["embedding"] for d in response.json()["data"]]
+
+            search_result = qdrantClient.search(
+                collection_name=index_id, query_vector=embeddings[0], limit=20
+            )
+
+            print("\nsearch_result:: ", search_result)
+            documents = []
+            for result in search_result:
+                text = result.payload['text']
+                del result.payload['text']
+                tpl = (Document(page_content=text, metadata=result.payload), result.score)
+                documents.append(tpl)
+
             min_score = get_config_value("database", "docs_min_score", None)
+            print(f"\ndocuments : {str(documents)}")
             filtered_document = get_score_filtered_documents(documents, float(min_score))
+            print(f"\n\nScore filtered documents : {str(filtered_document)}")
             filtered_document = filtered_document[:int(top_docs_to_fetch)]
-            logger.info(f"Score filtered documents : {str(filtered_document)}")
+            print(f"\n\nTop documents : {str(filtered_document)}")
             contexts = get_formatted_documents(filtered_document)
             if not documents or not contexts:
                 return "I'm sorry, but I am not currently trained with relevant documents to provide a specific answer for your question.", None, 200

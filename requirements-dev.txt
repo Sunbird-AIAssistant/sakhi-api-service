@@ -22,3 +22,4 @@ pytz==2022.7.1
 ffmpeg
 scikit-learn==1.2.1
 marqo==2.1.0
+qdrant-client==1.7.2
