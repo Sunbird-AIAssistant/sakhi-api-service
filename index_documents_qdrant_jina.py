@@ -180,5 +180,5 @@ if __name__ == "__main__":
     main()
 
 # RUN
-# python3 index_documents.py --qdrant_url=http://0.0.0.0:8882 --index_name=sakhi_activity --folder_path=input_data --fresh_index (FOR FRESH INDEXING)
-# python3 index_documents.py --qdrant_url=http://0.0.0.0:8882 --index_name=sakhi_activity --folder_path=input_data (FOR APPENDING DOCUMENTS)
+# python3 index_documents.py --qdrant_url=http://0.0.0.0:8882 --index_name=sakhi_activity --jinaai_api_key=  --folder_path=input_data --fresh_index (FOR FRESH INDEXING)
+# python3 index_documents.py --qdrant_url=http://0.0.0.0:8882 --index_name=sakhi_activity --jinaai_api_key= --folder_path=input_data (FOR APPENDING DOCUMENTS)
