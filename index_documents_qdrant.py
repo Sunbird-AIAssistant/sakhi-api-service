@@ -185,7 +185,7 @@ if __name__ == "__main__":
     main()
 
 # RUN below command for OPENAI
-# python3 index_documents_qdrant.py --qdrant_url=http://0.0.0.0:6333 --index_name=sakhi_activity --embedding_model=text-embedding-3-small --embedding_api_url=https://api.openai.com/v1/embeddings --embedding_api_key= --embedding_size=768 --folder_path=input_data --fresh_index (FOR FRESH INDEXING)
+# python3 index_documents_qdrant.py --qdrant_url=http://0.0.0.0:6333 --index_name=sakhi_activity --embedding_model=text-embedding-3-small --embedding_api_url=https://api.openai.com/v1/embeddings --embedding_api_key= --embedding_size=1536 --folder_path=input_data --fresh_index (FOR FRESH INDEXING)
 
 # RUN below command for JINAAI
 # python3 index_documents_qdrant.py --qdrant_url=http://0.0.0.0:6333 --index_name=sakhi_activity --embedding_model=jina-embeddings-v2-base-en --embedding_api_url=https://api.jina.ai/v1/embeddings --embedding_api_key= --embedding_size=768 --folder_path=input_data --fresh_index (FOR FRESH INDEXING)
