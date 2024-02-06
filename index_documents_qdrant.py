@@ -40,11 +40,6 @@ def get_formatted_documents(documents: List[Document]):
     return docs
 
 
-# def chunk_list(document, batch_size):
-#     """Return a list of batch sized chunks from document."""
-#     return [document[i: i + batch_size] for i in range(0, len(document), batch_size)]
-
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--qdrant_url',
@@ -177,6 +172,7 @@ def main():
         )
         computed_docs += _document_batch_size
         print("computed_docs:: ", computed_docs)
+        # below sleep code is introduced to avoid 429 error from openAI embedding URL call which has 3 RPM limit for free tier openai_api_key
         time.sleep(20)
 
     print("============ INDEX DONE =============", computed_docs)
