@@ -3,7 +3,7 @@ from typing import (
     Dict,
     List
 )
-
+import time
 import requests
 from langchain.docstore.document import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -154,7 +154,7 @@ def main():
         qdrant_input.append(document.get('text'))
         metadata_list.append(document.get('metadata'))
 
-    _document_batch_size = 120
+    _document_batch_size = 500
     computed_docs = 0
     while computed_docs < len(qdrant_input):
         _document_batch_size = _document_batch_size if (len(qdrant_input)-computed_docs) > _document_batch_size else len(qdrant_input)-computed_docs
@@ -177,6 +177,7 @@ def main():
         )
         computed_docs += _document_batch_size
         print("computed_docs:: ", computed_docs)
+        time.sleep(20)
 
     print("============ INDEX DONE =============", computed_docs)
 
