@@ -21,8 +21,8 @@ qdrant_port = get_config_value("database", "QDRANT_PORT", "6333")
 # marqoClient = marqo.Client(url=marqo_url)
 
 EMBED_API_KEY = get_config_value("data_embedding", "EMBED_API_KEY", None)
-EMBED_MODEL = get_config_value("data_embedding", "EMBED_MODEL", "jina-embeddings-v2-base-en")  # or "jina-embeddings-v2-base-en"
-EMBED_URL = get_config_value("data_embedding", "EMBED_URL", "https://api.jina.ai/v1/embeddings")
+EMBED_MODEL = get_config_value("data_embedding", "EMBED_MODEL", None)
+EMBED_URL = get_config_value("data_embedding", "EMBED_URL", None)
 
 headers = {
     "Content-Type": "application/json",
