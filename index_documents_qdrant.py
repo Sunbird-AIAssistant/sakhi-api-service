@@ -65,14 +65,24 @@ def main():
                         )
     parser.add_argument('--embedding_model',
                         type=str,
-                        required=False,
-                        help='data embedding model to be used.',
-                        default="jina-embeddings-v2-base-en"
+                        required=True,
+                        help='data embedding model to be used.'
                         )
-    parser.add_argument('--jinaai_api_key',
+    parser.add_argument('--embedding_api_url',
                         type=str,
                         required=True,
-                        help='jinaai api key'
+                        help='embedding api url'
+                        )
+    parser.add_argument('--embedding_api_key',
+                        type=str,
+                        required=True,
+                        help='embedding api key'
+                        )
+    parser.add_argument('--embedding_size',
+                        type=int,
+                        required=False,
+                        help='embedding vector size',
+                        default=768
                         )
     parser.add_argument('--chunk_size',
                         type=int,
@@ -98,9 +108,10 @@ def main():
     FOLDER_PATH = args.folder_path
     FRESH_INDEX = args.fresh_index
 
-    JINA_API_KEY = args.jinaai_api_key
-    EMBED_MODEL = args.embedding_model
-    EMBEDDING_SIZE = 768
+    EMBEDDING_API_URL = args.embedding_api_url
+    EMBEDDING_API_KEY = args.embedding_api_key
+    EMBEDDING_MODEL = args.embedding_model
+    EMBEDDING_SIZE = args.embedding_size
     CHUNK_SIZE = args.chunk_size
     CHUNK_OVERLAP = args.chunk_overlap
 
@@ -131,16 +142,10 @@ def main():
 
     print(f"Indexing documents...")
     formatted_documents = get_formatted_documents(documents)
-    # tensor_fields = ['text']
-    # _document_batch_size = 50
-    # chunks = list(chunk_list(formatted_documents, _document_batch_size))
-
-    # Get embeddings from the API
-    url = "https://api.jina.ai/v1/embeddings"
 
     headers = {
         "Content-Type": "application/json",
-        "Authorization": f"Bearer {JINA_API_KEY}",
+        "Authorization": f"Bearer {EMBEDDING_API_KEY}",
     }
 
     qdrant_input = []
@@ -156,10 +161,10 @@ def main():
 
         data = {
             "input": qdrant_input[computed_docs:(computed_docs + _document_batch_size)],
-            "model": EMBED_MODEL,
+            "model": EMBEDDING_MODEL
         }
 
-        response = requests.post(url, headers=headers, json=data)
+        response = requests.post(EMBEDDING_API_URL, headers=headers, json=data)
         embeddings = [d["embedding"] for d in response.json()["data"]]
 
         client.upsert(
@@ -179,6 +184,8 @@ def main():
 if __name__ == "__main__":
     main()
 
-# RUN
-# python3 index_documents.py --qdrant_url=http://0.0.0.0:8882 --index_name=sakhi_activity --jinaai_api_key=  --folder_path=input_data --fresh_index (FOR FRESH INDEXING)
-# python3 index_documents.py --qdrant_url=http://0.0.0.0:8882 --index_name=sakhi_activity --jinaai_api_key= --folder_path=input_data (FOR APPENDING DOCUMENTS)
+# RUN below command for OPENAI
+# python3 index_documents_qdrant.py --qdrant_url=http://0.0.0.0:6333 --index_name=sakhi_activity --embedding_model=text-embedding-3-small --embedding_api_url=https://api.openai.com/v1/embeddings --embedding_api_key= --embedding_size=768 --folder_path=input_data --fresh_index (FOR FRESH INDEXING)
+
+# RUN below command for JINAAI
+# python3 index_documents_qdrant.py --qdrant_url=http://0.0.0.0:6333 --index_name=sakhi_activity --embedding_model=jina-embeddings-v2-base-en --embedding_api_url=https://api.jina.ai/v1/embeddings --embedding_api_key= --embedding_size=768 --folder_path=input_data --fresh_index (FOR FRESH INDEXING)
