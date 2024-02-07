@@ -203,6 +203,30 @@ This repository comes with a Dockerfile. You can use this dockerfile to deploy y
 Make the necessary changes to your dockerfile with respect to your new changes. (Note: The given Dockerfile will deploy the base code without any error, provided you added the required environment variables (mentioned in the `.env` file) to either the Dockerfile or the cloud run revision)
 
 
+# 5. Configuration (config.ini)
+
+| Variable                        | Description                                                                                    | Default Value                        |
+|:--------------------------------|------------------------------------------------------------------------------------------------|--------------------------------------|
+| database.indices                | index or collection name to be referred to from vector database based on input audienceType    |                                      |
+| database.top_docs_to_fetch      | Number of filtered documents retrieved from vector database to be passed to Gen AI as contexts | 5                                    |
+| database.docs_min_score         | Minimum score of the documents based on which filtration happens on retrieved documents        | 0.4                                  |
+| request.supported_lang_codes    | Supported languages by the service                                                             | en,bn,gu,hi,kn,ml,mr,or,pa,ta,te     |
+| request.support_response_format | Supported response formats                                                                     | text,audio                           |
+| llm.gpt_model                   | Gen AI GPT Model value                                                                         |                                      |
+| llm.enable_bot_intent           | Flag to enable or disable verification of user's query to check if it is referring to bot      | false                                |
+| llm.intent_prompt               | System prompt to Gen AI to verify if the user's query is referring to the bot                  |                                      |
+| llm.bot_prompt                  | System prompt to Gen AI to generate responses for user's query related to bot                  |                                      |
+| llm.activity_prompt             | System prompt to Gen AI to generate responses based on user's query and input contexts         |                                      |
+| telemetry.telemetry_log_enabled | Flag to enable or disable telemetry events logging to Sunbird Telemetry service                | true                                 |
+| telemetry.environment           | service environment from where telemetry is generated from, in telemetry service               | dev                                  |
+| telemetry.service_id            | service identifier to be passed to Sunbird telemetry service                                   |                                      |
+| telemetry.service_ver           | service version to be passed to Sunbird telemetry service                                      |                                      |
+| telemetry.actor_id              | service actor id to be passed to Sunbird telemetry service                                     |                                      |
+| telemetry.channel               | channel value to be passed to Sunbird telemetry service                                        |                                      |
+| telemetry.pdata_id              | pdata_id value to be passed to Sunbird telemetry service                                       |                                      |
+| telemetry.events_threshold      | telemetry events batch size upon which events will be passed to Sunbird telemetry service      | 5                                    |
+
+
 ## Feature request and contribution
 
 *   We are currently in the alpha stage and hence need all the inputs, feedbacks and contributions we can.
