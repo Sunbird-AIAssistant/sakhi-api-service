@@ -6,6 +6,7 @@ from typing import (
     Tuple
 )
 import marqo
+import openai
 from dotenv import load_dotenv
 from fastapi import HTTPException
 from langchain.docstore.document import Document
@@ -18,11 +19,17 @@ from logger import logger
 load_dotenv()
 marqo_url = get_config_value("database", "MARQO_URL", None)
 marqoClient = marqo.Client(url=marqo_url)
-client = AzureOpenAI(
-    azure_endpoint=os.environ["OPENAI_API_BASE"],
-    api_key=os.environ["OPENAI_API_KEY"],
-    api_version=os.environ["OPENAI_API_VERSION"]
-)
+
+llm_type = get_config_value("llm", "llm_type", None).lower()
+
+if llm_type == "azure":
+    client = AzureOpenAI(
+        azure_endpoint=os.environ["OPENAI_API_BASE"],
+        api_key=os.environ["OPENAI_API_KEY"],
+        api_version=os.environ["OPENAI_API_VERSION"]
+    )
+elif llm_type == "openai":
+    client = openai.OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
 
 def querying_with_langchain_gpt3(index_id, query, audience_type):
