@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, status, Header
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-
+from enum import Enum
 from cloud_storage_oci import *
 from io_processing import *
 from query_with_langchain import *
@@ -37,13 +37,15 @@ async def shutdown_event():
     logger.info('Invoking shutdown_event')
     logger.info('shutdown_event : Engine closed')
 
+AudienceType = Enum("AudienceType", {type: type for type in get_config_value('request', 'support_audience_type', None).split(',')})
+DropdownOutputFormat = Enum("DropdownOutputFormat", {type: type for type in get_config_value('request', 'support_response_format', None).split(',')})
+DropDownInputLanguage = Enum("DropDownInputLanguage", {type: type for type in get_config_value('request', 'supported_lang_codes', None).split(',')})
 
 class OutputResponse(BaseModel):
     text: str
     audio: str = None
-    language: str = None
-    format: str = None
-
+    language: DropDownInputLanguage
+    format: DropdownOutputFormat
 
 class ResponseForQuery(BaseModel):
     output: OutputResponse
@@ -51,19 +53,18 @@ class ResponseForQuery(BaseModel):
 
 class HealthCheck(BaseModel):
     """Response model to validate and return when performing a health check."""
-
     status: str = "OK"
 
 
 class QueryInputModel(BaseModel):
-    language: str = None
-    text: str = None
-    audio: str = None
-    audienceType: str = None
+    language: DropDownInputLanguage
+    text: str = ""
+    audio: str = ""
+    audienceType: AudienceType
 
 
 class QueryOuputModel(BaseModel):
-    format: str = None
+    format: DropdownOutputFormat
 
 
 class QueryModel(BaseModel):
@@ -103,34 +104,15 @@ def get_health() -> HealthCheck:
 
 
 @app.post("/v1/query", tags=["Q&A over Document Store"], include_in_schema=True)
-async def query(request: QueryModel, x_request_id: str = Header(None, alias="X-Request-ID")) -> ResponseForQuery:
+async def query(request: QueryModel, x_request_id: str = Header(None, alias="X-Request-ID"),
+                x_source: str = Header(None, alias="x-source"),
+                x_consumer_id: str = Header(None, alias="x-consumer-id")) -> ResponseForQuery:
     load_dotenv()
-
-    language_code_list = get_config_value('request', 'supported_lang_codes', None).split(",")
-    if language_code_list is None:
-        raise HTTPException(status_code=422, detail="supported_lang_codes not configured!")
-
-    language = request.input.language.strip().lower()
-    if language is None or language == "" or language not in language_code_list:
-        raise HTTPException(status_code=422, detail="Unsupported language code entered!")
-
-    audience_type = request.input.audienceType
-    if audience_type is None or audience_type.strip() == "":
-        raise HTTPException(status_code=422, detail="Please pass audience type!")
     indices = json.loads(get_config_value('database', 'indices', None))
+    language = request.input.language.name
+    audience_type = request.input.audienceType.name
+    output_format = request.output.format.name
     index_id = indices.get(audience_type.lower())
-    if index_id is None:
-        raise HTTPException(status_code=422, detail="Unsupported audience type!")
-
-    output_format_list = get_config_value('request', 'support_response_format', None).split(",")
-    if output_format_list is None:
-        raise HTTPException(status_code=422, detail="support_response_format not configured!")
-
-    output_format = request.output.format.strip().lower()
-
-    if output_format is None or output_format == "" or output_format not in output_format_list:
-        raise HTTPException(status_code=422, detail="Invalid output format!")
-
     audio_url = request.input.audio
     query_text = request.input.text
     is_audio = False
@@ -138,14 +120,10 @@ async def query(request: QueryModel, x_request_id: str = Header(None, alias="X-R
     regional_answer = None
     audio_output_url = None
     logger.info({"label": "query", "query_text": query_text, "index_id": index_id, "audience_type": audience_type, "input_language": language, "output_format": output_format, "audio_url": audio_url})
-
-    if query_text is None and audio_url is None:
+    redis_session_id  = prepare_redis_key(x_source, x_consumer_id, audience_type)
+    logger.info(f"Redis session ID :: {redis_session_id} ")
+    if not query_text and not audio_url:
         raise HTTPException(status_code=422, detail="Either 'text' or 'audio' should be present!")
-    elif (query_text is None or query_text == "") and (audio_url is None or audio_url == ""):
-        raise HTTPException(status_code=422, detail="Either 'text' or 'audio' should be present!")
-    elif query_text is not None and audio_url is not None and query_text != "" and audio_url != "":
-        raise HTTPException(status_code=422, detail="Both 'text' and 'audio' cannot be taken as input! Either 'text' "
-                                                    "or 'audio' is allowed.")
 
     if query_text:
         text, error_message = process_incoming_text(query_text, language)
@@ -153,15 +131,13 @@ async def query(request: QueryModel, x_request_id: str = Header(None, alias="X-R
             is_audio = True
     else:
         if not is_url(audio_url) and not is_base64(audio_url):
-            logger.error(
-                {"index_id": index_id, "query": query_text, "input_language": language, "output_format": output_format, "audio_url": audio_url, "status_code": status.HTTP_422_UNPROCESSABLE_ENTITY, "error_message": "Invalid audio input!"})
+            logger.error({"index_id": index_id, "query": query_text, "input_language": language, "output_format": output_format, "audio_url": audio_url, "status_code": status.HTTP_422_UNPROCESSABLE_ENTITY, "error_message": "Invalid audio input!"})
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid audio input!")
         query_text, text, error_message = process_incoming_voice(audio_url, language)
         is_audio = True
-    logger.info({"Query": text})
+    
     if text is not None:
-        answer, error_message, status_code = querying_with_langchain_gpt3(index_id, text, audience_type)
-
+        answer, error_message, status_code = querying_with_langchain_gpt3(index_id, text, redis_session_id, audience_type)
         if len(answer) != 0:
             regional_answer, error_message = process_outgoing_text(answer, language)
             logger.info({"regional_answer": regional_answer})
