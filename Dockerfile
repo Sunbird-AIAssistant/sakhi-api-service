@@ -33,6 +33,7 @@ COPY ./telemetry_logger.py /root/
 COPY ./telemetry_middleware.py /root/
 COPY ./config.ini /root/
 COPY ./config_util.py /root/
+COPY ./redis_util /root/
 EXPOSE 8000
 COPY script.sh /root/
 ENTRYPOINT ["bash","script.sh"]
