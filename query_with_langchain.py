@@ -28,8 +28,64 @@ client = AzureOpenAI(
 )
 
 
-def querying_with_langchain_gpt3(index_id, query, session_id, audience_type):
+def querying_with_langchain_gpt3(index_id, query, audience_type):
 
+    logger.debug(f"gpt_model: {gpt_model}")
+    if gpt_model is None or gpt_model.strip() == "":
+        raise HTTPException(status_code=422, detail="Please configure gpt_model under llm section in config file!")
+
+    intent_response = check_bot_intent(query, audience_type)
+    if intent_response:
+        return intent_response, None, 200
+    
+    try:
+        system_rules = ""
+        activity_prompt_config = get_config_value("llm", "activity_prompt", None)
+        logger.debug(f"activity_prompt_config: {activity_prompt_config}")
+        if activity_prompt_config:
+            activity_prompt_dict = ast.literal_eval(activity_prompt_config)
+            system_rules = activity_prompt_dict.get(audience_type)
+
+        search_index = Marqo(marqoClient, index_id, searchable_attributes=["text"])
+        top_docs_to_fetch = get_config_value("database", "top_docs_to_fetch", None)
+        documents = search_index.similarity_search_with_score(query, k=20)
+        logger.debug(f"Marqo documents : {str(documents)}")
+        min_score = get_config_value("database", "docs_min_score", None)
+        filtered_document = get_score_filtered_documents(documents, float(min_score))
+        filtered_document = filtered_document[:int(top_docs_to_fetch)]
+        logger.info(f"Score filtered documents : {str(filtered_document)}")
+        contexts = get_formatted_documents(filtered_document)
+        if not documents or not contexts:
+            return "I'm sorry, but I am not currently trained with relevant documents to provide a specific answer for your question.", None, 200
+
+        system_rules = system_rules.format(contexts=contexts)
+        logger.debug("==== System Rules ====")
+        logger.debug(f"System Rules : {system_rules}")
+        res = client.chat.completions.create(
+            model=gpt_model,
+            messages=[
+                {"role": "system", "content": system_rules},
+                {"role": "user", "content": query}
+            ],
+        )
+        message = res.choices[0].message.model_dump()
+        response = message["content"]
+        logger.info({"label": "openai_response", "response": response})
+
+        return response.strip(";"), None, 200
+    except RateLimitError as e:
+        error_message = f"OpenAI API request exceeded rate limit: {e}"
+        status_code = 500
+    except (APIError, InternalServerError):
+        error_message = "Server is overloaded or unable to answer your request at the moment. Please try again later"
+        status_code = 503
+    except Exception as e:
+        error_message = str(e.__context__) + " and " + e.__str__()
+        status_code = 500
+
+    return "", error_message, status_code
+
+def conversation_retrieval_chain(index_id, query, session_id, audience_type):
     logger.debug(f"gpt_model: {gpt_model}")
     if gpt_model is None or gpt_model.strip() == "":
         raise HTTPException(status_code=422, detail="Please configure gpt_model under llm section in config file!")
@@ -91,7 +147,7 @@ def querying_with_langchain_gpt3(index_id, query, session_id, audience_type):
 
     return "", error_message, status_code
 
-def call_chat_model(messages: List[dict], max_tokens ) -> str:
+def call_chat_model(messages: List[dict], max_tokens) -> str:
     res = client.chat.completions.create(
             model=gpt_model,
             messages=messages,
