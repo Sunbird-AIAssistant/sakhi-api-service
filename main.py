@@ -104,7 +104,67 @@ def get_health() -> HealthCheck:
 
 
 @app.post("/v1/query", tags=["Q&A over Document Store"], include_in_schema=True)
-async def query(request: QueryModel, x_request_id: str = Header(None, alias="X-Request-ID"),
+async def query(request: QueryModel, x_request_id: str = Header(None, alias="X-Request-ID")) -> ResponseForQuery:
+    load_dotenv()
+    indices = json.loads(get_config_value('database', 'indices', None))
+    language = request.input.language.name
+    audience_type = request.input.audienceType.name
+    output_format = request.output.format.name
+    index_id = indices.get(audience_type.lower())
+    audio_url = request.input.audio
+    query_text = request.input.text
+    is_audio = False
+    text = None
+    regional_answer = None
+    audio_output_url = None
+    logger.info({"label": "query", "query_text": query_text, "index_id": index_id, "audience_type": audience_type, "input_language": language, "output_format": output_format, "audio_url": audio_url})
+    if not query_text and not audio_url:
+        raise HTTPException(status_code=422, detail="Either 'text' or 'audio' should be present!")
+
+    if query_text:
+        text, error_message = process_incoming_text(query_text, language)
+        if output_format == "audio":
+            is_audio = True
+    else:
+        if not is_url(audio_url) and not is_base64(audio_url):
+            logger.error({"index_id": index_id, "query": query_text, "input_language": language, "output_format": output_format, "audio_url": audio_url, "status_code": status.HTTP_422_UNPROCESSABLE_ENTITY, "error_message": "Invalid audio input!"})
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid audio input!")
+        query_text, text, error_message = process_incoming_voice(audio_url, language)
+        is_audio = True
+    
+    if text is not None:
+        answer, error_message, status_code = querying_with_langchain_gpt3(index_id, text, audience_type)
+        if len(answer) != 0:
+            regional_answer, error_message = process_outgoing_text(answer, language)
+            logger.info({"regional_answer": regional_answer})
+            if regional_answer is not None:
+                if is_audio:
+                    output_file, error_message = process_outgoing_voice(regional_answer, language)
+                    if output_file is not None:
+                        upload_file_object(output_file.name)
+                        audio_output_url, error_message = give_public_url(output_file.name)
+                        logger.debug(f"Audio Ouput URL ===> {audio_output_url}")
+                        output_file.close()
+                        os.remove(output_file.name)
+                    else:
+                        status_code = 503
+                else:
+                    audio_output_url = ""
+            else:
+                status_code = 503
+    else:
+        status_code = 503
+
+    if status_code != 200:
+        logger.error({"index_id": index_id, "query": query_text, "input_language": language, "output_format": output_format, "audio_url": audio_url, "status_code": status_code, "error_message": error_message})
+        raise HTTPException(status_code=status_code, detail=error_message)
+
+    response = ResponseForQuery(output=OutputResponse(text=regional_answer, audio=audio_output_url, language=language, format=output_format))
+    logger.info({"x_request_id": x_request_id, "query": query_text, "text": text, "response": response})
+    return response
+
+@app.post("/v1/chat", tags=["Conversation chat over Document Store"], include_in_schema=True)
+async def chat(request: QueryModel, x_request_id: str = Header(None, alias="X-Request-ID"),
                 x_source: str = Header(None, alias="x-source"),
                 x_consumer_id: str = Header(None, alias="x-consumer-id")) -> ResponseForQuery:
     load_dotenv()
@@ -137,7 +197,7 @@ async def query(request: QueryModel, x_request_id: str = Header(None, alias="X-R
         is_audio = True
     
     if text is not None:
-        answer, error_message, status_code = querying_with_langchain_gpt3(index_id, text, redis_session_id, audience_type)
+        answer, error_message, status_code = conversation_retrieval_chain(index_id, text, redis_session_id, audience_type)
         if len(answer) != 0:
             regional_answer, error_message = process_outgoing_text(answer, language)
             logger.info({"regional_answer": regional_answer})
