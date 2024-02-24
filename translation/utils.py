@@ -3,6 +3,9 @@ import time
 import json
 import requests
 from pydub import AudioSegment
+from google.cloud import speech_v1p1beta1 as speech
+from google.cloud import texttospeech
+from google.cloud import translate_v2 as translate
 
 from logger import logger
 from config_util import get_config_value
@@ -83,7 +86,6 @@ class BhashiniTranslationClass():
             "ta": "ai4bharat/indic-tts-coqui-dravidian-gpu--t4",
             "te": "ai4bharat/indic-tts-coqui-dravidian-gpu--t4"
         }
-
 
     def detect_language(self):
         pass
@@ -174,7 +176,6 @@ class BhashiniTranslationClass():
             log_failed_telemetry_event(url, "POST", {"taskType": "asr"}, process_time, status_code=e.response.status_code, error=e.response.text)
             raise RequestError(e.response) from e
 
-
     def text_to_speech(self, language, text, gender='female'):
         try:
             start_time = time.time()
@@ -225,10 +226,7 @@ class BhashiniTranslationClass():
 
 
 
-import os
-from google.cloud import speech_v1p1beta1 as speech
-from google.cloud import texttospeech
-from google.cloud import translate_v2 as translate
+
 
 
 class GoogleCloudTranslationClass():
