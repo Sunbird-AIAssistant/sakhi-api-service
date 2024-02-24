@@ -1,4 +1,6 @@
 from telemetry_logger import TelemetryLogger
+from env_manager import translate_class as translator
+
 telemetryLogger = TelemetryLogger()
 
 def log_success_telemetry_event(url, method, payload, process_time, status_code):

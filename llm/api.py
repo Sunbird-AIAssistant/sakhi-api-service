@@ -12,11 +12,12 @@ from langchain.docstore.document import Document
 from langchain.vectorstores.marqo import Marqo
 from openai import RateLimitError, APIError, InternalServerError
 
-from env_manager import ai_client as client
+from env_manager import ai_class
 from config_util import get_config_value
 from logger import logger
 
 load_dotenv()
+client = ai_class.get_client()
 marqo_url = get_config_value("database", "MARQO_URL", None)
 marqoClient = marqo.Client(url=marqo_url)
 

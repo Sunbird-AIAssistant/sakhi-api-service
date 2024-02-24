@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+from logger import logger
 
 
 ## import all classes
@@ -17,31 +18,49 @@ from llm.utils import (
                         OpenAiClass
                     )
 
-load_dotenv()
+class EnvironmentManager():
+    """
+    Class for initializing functions respective to the env variable provided
+    """
+    def __init__(self):
+        load_dotenv()
+        self.indexes = {
+                        "llm": {
+                            "class": {
+                                "openai": OpenAiClass,
+                                "azure": AzureAiClass
+                            },
+                            "env_key": "OPENAI_TYPE"
+                        },
+                        "translate": {
+                            "class": {
+                                "bhashini": BhashiniTranslationClass,
+                                "google": GoogleCloudTranslationClass
+                            },
+                            "env_key": "TRANSLATION_TYPE"
+                        },
+                        "storage": {
+                            "class": {
+                                "oci": OciBucketClass,
+                                "gcp": GoogleBucketClass,
+                                "aws": AwsS3MainClass
+                            },
+                            "env_key": "BUCKET_TYPE"
+                        }
+                    }
+
+    def create_instance(self, env_key):
+        env_var = self.indexes[env_key]["env_key"]
+        type_value = os.getenv(env_var)
+        logger.info(f"Init {env_key} class for: {type_value}")
+        if type_value is not None:
+            return self.indexes[env_key]["class"].get(type_value)()
 
 
-indexes = {
-    "gpt_type": {
-        "openai": OpenAiClass,
-        "azure": AzureAiClass
-    },
-    "translation": {
-        "bhashini": BhashiniTranslationClass,
-        "google": GoogleCloudTranslationClass,
-    },
-    "storage_type":{
-        "oci": OciBucketClass,
-        "gcp": GoogleBucketClass,
-        "aws": AwsS3MainClass
-    }
-}
+env_class = EnvironmentManager()
 
-ai_type = os.getenv("OPENAI_TYPE")
-ai_class = indexes["gpt_type"][ai_type]()
-ai_client = ai_class.get_client()
-
-translate_type = os.getenv("TRANSLATION_TYPE")
-translate_class = indexes["translation"][translate_type]()
-
-storage_type = os.getenv("BUCKET_TYPE")
-storage_class = indexes["storage_type"][storage_type]()
+# create instances of functions
+logger.info(f"Initializing required classes for components")
+ai_class = env_class.create_instance("llm")
+translate_class = env_class.create_instance("translate")
+storage_class = env_class.create_instance("storage")

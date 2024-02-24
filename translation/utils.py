@@ -10,7 +10,6 @@ from google.cloud import translate_v2 as translate
 from logger import logger
 from config_util import get_config_value
 from utils import *
-from translation.api import *
 
 def get_encoded_string(audio):
     if is_url(audio):
