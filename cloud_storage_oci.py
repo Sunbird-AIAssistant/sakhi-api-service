@@ -8,14 +8,14 @@ load_dotenv()
 # Create S3 client for OCI object storage
 s3_client = boto3.client(
     's3',
-    region_name=os.environ["OCI_REGION_NAME"],
-    aws_secret_access_key=os.environ["OCI_SECRET_ACCESS_KEY"],
-    aws_access_key_id=os.environ["OCI_ACCESS_KEY_ID"],
-    endpoint_url=os.environ["OCI_ENDPOINT_URL"]
+    region_name=os.environ["BUCKET_REGION_NAME"],
+    aws_secret_access_key=os.environ["BUCKET_SECRET_ACCESS_KEY"],
+    aws_access_key_id=os.environ["BUCKET_ACCESS_KEY_ID"],
+    endpoint_url=os.environ["BUCKET_ENDPOINT_URL"]
 )
 
 # OCI Bucket Name
-bucket_name = os.environ["OCI_BUCKET_NAME"]
+bucket_name = os.environ["BUCKET_NAME"]
 
 
 def upload_file_object(file_name, object_name=None):
@@ -93,8 +93,8 @@ def give_public_url(file_name: str):
         The full path to the file.
     """
     try:
-        oci_endpoint_url = os.environ["OCI_ENDPOINT_URL"]
-        public_url = f"{oci_endpoint_url}{bucket_name}/{file_name}"
+        bucket_endpoint_url = os.environ["BUCKET_ENDPOINT_URL"]
+        public_url = f"{bucket_endpoint_url}{bucket_name}/{file_name}"
         return public_url, None
     except Exception as e:
         logger.error(f"Exception Preparing public URL: {e}", exc_info=True)
