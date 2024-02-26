@@ -5,7 +5,7 @@ from fastapi import HTTPException, status
 
 from logger import logger
 
-config_file_path = 'config.ini'  # Update with your config file path
+config_file_path = os.getenv('CONFIG_INI_PATH')  # Update with your config file path
 config = ConfigParser()
 config.read(config_file_path)
 
