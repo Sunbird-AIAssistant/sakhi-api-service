@@ -44,7 +44,7 @@ def chunk_list(document, batch_size):
     return [document[i: i + batch_size] for i in range(0, len(document), batch_size)]
 
 
-def main():
+def indexer_main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--marqo_url',
                         type=str,
@@ -157,7 +157,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    indexer_main()
     
 # RUN
 # python3 index_documents.py --marqo_url=http://0.0.0.0:8882 --index_name=sakhi_activity --folder_path=input_data --fresh_index (FOR FRESH INDEXING)
