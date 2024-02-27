@@ -1,5 +1,5 @@
 from telemetry_logger import TelemetryLogger
-from env_manager import translate_class as translator
+
 
 telemetryLogger = TelemetryLogger()
 

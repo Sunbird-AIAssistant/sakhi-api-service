@@ -1,7 +1,7 @@
 import time
 
 from logger import logger
-from translation.api import translator
+from env_manager import translate_class as translator
 
 
 
