@@ -71,6 +71,13 @@ class QueryModel(BaseModel):
     input: QueryInputModel
     output: QueryOuputModel
 
+class ChatInputModel(BaseModel):
+    language: DropDownInputLanguage
+    text: str = ""
+    audio: str = ""
+    context: AudienceType
+class ChatModel(QueryModel):
+    input: ChatInputModel
 
 # Telemetry API logs middleware
 app.add_middleware(TelemetryMiddleware)
@@ -164,23 +171,23 @@ async def query(request: QueryModel, x_request_id: str = Header(None, alias="X-R
     return response
 
 @app.post("/v1/chat", tags=["Conversation chat over Document Store"], include_in_schema=True)
-async def chat(request: QueryModel, x_request_id: str = Header(None, alias="X-Request-ID"),
+async def chat(request: ChatModel, x_request_id: str = Header(None, alias="X-Request-ID"),
                 x_source: str = Header(None, alias="x-source"),
                 x_consumer_id: str = Header(None, alias="x-consumer-id")) -> ResponseForQuery:
     load_dotenv()
     indices = json.loads(get_config_value('database', 'indices', None))
     language = request.input.language.name
-    audience_type = request.input.audienceType.name
+    context = request.input.context.name
     output_format = request.output.format.name
-    index_id = indices.get(audience_type.lower())
+    index_id = indices.get(context.lower())
     audio_url = request.input.audio
     query_text = request.input.text
     is_audio = False
     text = None
     regional_answer = None
     audio_output_url = None
-    logger.info({"label": "query", "query_text": query_text, "index_id": index_id, "audience_type": audience_type, "input_language": language, "output_format": output_format, "audio_url": audio_url})
-    redis_session_id  = prepare_redis_key(x_source, x_consumer_id, audience_type)
+    logger.info({"label": "query", "query_text": query_text, "index_id": index_id, "context": context, "input_language": language, "output_format": output_format, "audio_url": audio_url})
+    redis_session_id  = prepare_redis_key(x_source, x_consumer_id, context)
     logger.info(f"Redis session ID :: {redis_session_id} ")
     if not query_text and not audio_url:
         raise HTTPException(status_code=422, detail="Either 'text' or 'audio' should be present!")
@@ -197,7 +204,7 @@ async def chat(request: QueryModel, x_request_id: str = Header(None, alias="X-Re
         is_audio = True
     
     if text is not None:
-        answer, error_message, status_code = conversation_retrieval_chain(index_id, text, redis_session_id, audience_type)
+        answer, error_message, status_code = conversation_retrieval_chain(index_id, text, redis_session_id, context)
         if len(answer) != 0:
             regional_answer, error_message = process_outgoing_text(answer, language)
             logger.info({"regional_answer": regional_answer})

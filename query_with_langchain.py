@@ -85,12 +85,12 @@ def querying_with_langchain_gpt3(index_id, query, audience_type):
 
     return "", error_message, status_code
 
-def conversation_retrieval_chain(index_id, query, session_id, audience_type):
+def conversation_retrieval_chain(index_id, query, session_id, context):
     logger.debug(f"gpt_model: {gpt_model}")
     if gpt_model is None or gpt_model.strip() == "":
         raise HTTPException(status_code=422, detail="Please configure gpt_model under llm section in config file!")
 
-    intent_response = check_bot_intent(query, audience_type)
+    intent_response = check_bot_intent(query, context)
     if intent_response:
         return intent_response, None, 200
     
@@ -99,7 +99,7 @@ def conversation_retrieval_chain(index_id, query, session_id, audience_type):
         activity_prompt_config = get_config_value("llm", "activity_prompt", None)
         logger.debug(f"activity_prompt_config: {activity_prompt_config}")
         activity_prompt_dict = ast.literal_eval(activity_prompt_config)
-        system_rules = activity_prompt_dict.get(audience_type)
+        system_rules = activity_prompt_dict.get(context)
         system_message = {'role': 'system', 'content': system_rules}
         previous_messages  = read_messages_from_redis(session_id)
         formatted_messages = format_previous_messages(previous_messages)
@@ -288,7 +288,7 @@ def format_previous_messages(messages):
     return formatted_messages
 
 
-def check_bot_intent(query: str, audience_type: str):
+def check_bot_intent(query: str, context: str):
 
     enable_bot_intent = get_config_value("llm", "enable_bot_intent", None)
     logger.debug(f"enable_bot_intent: {enable_bot_intent}")
@@ -308,7 +308,7 @@ def check_bot_intent(query: str, audience_type: str):
         bot_prompt_config = get_config_value("llm", "bot_prompt", "")
         logger.debug(f"bot_prompt_config: {bot_prompt_config}")
         bot_prompt_dict = ast.literal_eval(bot_prompt_config)
-        system_rules = bot_prompt_dict.get(audience_type)
+        system_rules = bot_prompt_dict.get(context)
         logger.debug(f"Intent System Rules : {system_rules}")
         res = client.chat.completions.create(
             model=gpt_model,
