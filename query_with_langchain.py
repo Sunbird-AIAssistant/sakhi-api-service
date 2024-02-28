@@ -20,6 +20,7 @@ from logger import logger
 load_dotenv()
 marqo_url = get_config_value("database", "MARQO_URL", None)
 gpt_model = get_config_value("llm", "gpt_model", None)
+max_messages = int(get_config_value("llm", "max_messages")) # Maximum number of messages to include in conversation history
 marqoClient = marqo.Client(url=marqo_url)
 client = AzureOpenAI(
     azure_endpoint=os.environ["OPENAI_API_BASE"],
@@ -85,12 +86,12 @@ def querying_with_langchain_gpt3(index_id, query, audience_type):
 
     return "", error_message, status_code
 
-def conversation_retrieval_chain(index_id, query, session_id, audience_type):
+def conversation_retrieval_chain(index_id, query, session_id, context):
     logger.debug(f"gpt_model: {gpt_model}")
     if gpt_model is None or gpt_model.strip() == "":
         raise HTTPException(status_code=422, detail="Please configure gpt_model under llm section in config file!")
 
-    intent_response = check_bot_intent(query, audience_type)
+    intent_response = check_bot_intent(query, context)
     if intent_response:
         return intent_response, None, 200
     
@@ -99,13 +100,13 @@ def conversation_retrieval_chain(index_id, query, session_id, audience_type):
         activity_prompt_config = get_config_value("llm", "activity_prompt", None)
         logger.debug(f"activity_prompt_config: {activity_prompt_config}")
         activity_prompt_dict = ast.literal_eval(activity_prompt_config)
-        system_rules = activity_prompt_dict.get(audience_type)
+        system_rules = activity_prompt_dict.get(context)
         system_message = {'role': 'system', 'content': system_rules}
         previous_messages  = read_messages_from_redis(session_id)
         formatted_messages = format_previous_messages(previous_messages)
         user_message = {"role":"user","content": query}
-        intent_payload = create_message_payload(user_message, system_message, messages=formatted_messages, max_tokens=count_tokens([system_message])+1000)
-        logger.debug(f"intent_payload :: {intent_payload}")
+        intent_payload = create_payload_by_message_count(user_message, system_message, messages=formatted_messages, max_messages=max_messages)
+        logger.info(f"intent_payload :: {intent_payload}")
         search_intent = get_intent_query(intent_payload)
         logger.info(f"search_intent :: {search_intent}")
         search_index = Marqo(marqoClient, index_id, searchable_attributes=["text"])
@@ -123,12 +124,9 @@ def conversation_retrieval_chain(index_id, query, session_id, audience_type):
         system_rules = system_rules.format(contexts=contexts)
         system_rules = {"role": "system", "content": system_rules}
         logger.debug(f"System Rules : {system_rules}")
-        tokens_used  = count_tokens([system_rules,user_message])
-        message_payload  = create_message_payload(user_message,system_rules,formatted_messages,max_tokens=min(5000,tokens_used)+1000)
-        logger.debug(f"message_payload :: {message_payload}")
-        max_tokens = 8000 - count_tokens(message_payload)
-        logger.info(f"max_tokens =====> {max_tokens}")
-        response = call_chat_model(message_payload, max_tokens)
+        message_payload  = create_payload_by_message_count(user_message,system_rules,formatted_messages,max_messages=max_messages)
+        logger.info(f"message_payload :: {message_payload}")
+        response = call_chat_model(message_payload)
         logger.info({"label": "openai_response", "response": response})
         assistant_message = format_assistant_message(response.strip(";"))
         messages = read_messages_from_redis(session_id)
@@ -147,12 +145,11 @@ def conversation_retrieval_chain(index_id, query, session_id, audience_type):
 
     return "", error_message, status_code
 
-def call_chat_model(messages: List[dict], max_tokens) -> str:
+def call_chat_model(messages: List[dict]) -> str:
     res = client.chat.completions.create(
             model=gpt_model,
             messages=messages,
-            temperature=0.7,
-            max_tokens=max_tokens
+            temperature=0.7
     )
     message = res.choices[0].message.model_dump()
     return message["content"]
@@ -239,6 +236,24 @@ def count_tokens(messages):
     num_tokens += 2  # every reply is primed with <im_start>assistant
     return num_tokens
 
+def create_payload_by_message_count(user_message, system_message, messages=[], max_messages=4):  # IMPORTANT
+    """Get the message history for the conversation, limited by message count.
+
+    Args:
+        user_message (str): User message to add to the history.
+        system_message (str): System message to add to the history.
+        messages (list, optional): List of previous messages. Defaults to [].
+        max_messages (int, optional): Maximum number of messages to include. Defaults to 4.
+
+    Returns:
+        list: Message history
+    """
+    message_history = [system_message]
+    total_count =  max_messages * 2
+    message_history.extend(messages[-total_count:])
+    message_history.append(user_message)
+    return message_history
+
 def create_message_payload(user_message, system_message, messages=[], max_tokens=3000):  # IMPORTANT
     """Get the message history for the conversation.
     # NOTE: Include user message {role=user,content=user_q} in the message history
@@ -288,7 +303,7 @@ def format_previous_messages(messages):
     return formatted_messages
 
 
-def check_bot_intent(query: str, audience_type: str):
+def check_bot_intent(query: str, context: str):
 
     enable_bot_intent = get_config_value("llm", "enable_bot_intent", None)
     logger.debug(f"enable_bot_intent: {enable_bot_intent}")
@@ -308,7 +323,7 @@ def check_bot_intent(query: str, audience_type: str):
         bot_prompt_config = get_config_value("llm", "bot_prompt", "")
         logger.debug(f"bot_prompt_config: {bot_prompt_config}")
         bot_prompt_dict = ast.literal_eval(bot_prompt_config)
-        system_rules = bot_prompt_dict.get(audience_type)
+        system_rules = bot_prompt_dict.get(context)
         logger.debug(f"Intent System Rules : {system_rules}")
         res = client.chat.completions.create(
             model=gpt_model,
