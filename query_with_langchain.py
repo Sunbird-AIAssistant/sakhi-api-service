@@ -20,6 +20,7 @@ from logger import logger
 load_dotenv()
 marqo_url = get_config_value("database", "MARQO_URL", None)
 gpt_model = get_config_value("llm", "gpt_model", None)
+max_messages = int(get_config_value("llm", "max_messages")) # Maximum number of messages to include in conversation history
 marqoClient = marqo.Client(url=marqo_url)
 client = AzureOpenAI(
     azure_endpoint=os.environ["OPENAI_API_BASE"],
@@ -104,8 +105,8 @@ def conversation_retrieval_chain(index_id, query, session_id, context):
         previous_messages  = read_messages_from_redis(session_id)
         formatted_messages = format_previous_messages(previous_messages)
         user_message = {"role":"user","content": query}
-        intent_payload = create_message_payload(user_message, system_message, messages=formatted_messages, max_tokens=count_tokens([system_message])+1000)
-        logger.debug(f"intent_payload :: {intent_payload}")
+        intent_payload = create_payload_by_message_count(user_message, system_message, messages=formatted_messages, max_messages=max_messages)
+        logger.info(f"intent_payload :: {intent_payload}")
         search_intent = get_intent_query(intent_payload)
         logger.info(f"search_intent :: {search_intent}")
         search_index = Marqo(marqoClient, index_id, searchable_attributes=["text"])
@@ -123,12 +124,9 @@ def conversation_retrieval_chain(index_id, query, session_id, context):
         system_rules = system_rules.format(contexts=contexts)
         system_rules = {"role": "system", "content": system_rules}
         logger.debug(f"System Rules : {system_rules}")
-        tokens_used  = count_tokens([system_rules,user_message])
-        message_payload  = create_message_payload(user_message,system_rules,formatted_messages,max_tokens=min(5000,tokens_used)+1000)
-        logger.debug(f"message_payload :: {message_payload}")
-        max_tokens = 8000 - count_tokens(message_payload)
-        logger.info(f"max_tokens =====> {max_tokens}")
-        response = call_chat_model(message_payload, max_tokens)
+        message_payload  = create_payload_by_message_count(user_message,system_rules,formatted_messages,max_messages=max_messages)
+        logger.info(f"message_payload :: {message_payload}")
+        response = call_chat_model(message_payload)
         logger.info({"label": "openai_response", "response": response})
         assistant_message = format_assistant_message(response.strip(";"))
         messages = read_messages_from_redis(session_id)
@@ -147,12 +145,11 @@ def conversation_retrieval_chain(index_id, query, session_id, context):
 
     return "", error_message, status_code
 
-def call_chat_model(messages: List[dict], max_tokens) -> str:
+def call_chat_model(messages: List[dict]) -> str:
     res = client.chat.completions.create(
             model=gpt_model,
             messages=messages,
-            temperature=0.7,
-            max_tokens=max_tokens
+            temperature=0.7
     )
     message = res.choices[0].message.model_dump()
     return message["content"]
@@ -238,6 +235,24 @@ def count_tokens(messages):
                 num_tokens += -1  # role is always required and always 1 token
     num_tokens += 2  # every reply is primed with <im_start>assistant
     return num_tokens
+
+def create_payload_by_message_count(user_message, system_message, messages=[], max_messages=4):  # IMPORTANT
+    """Get the message history for the conversation, limited by message count.
+
+    Args:
+        user_message (str): User message to add to the history.
+        system_message (str): System message to add to the history.
+        messages (list, optional): List of previous messages. Defaults to [].
+        max_messages (int, optional): Maximum number of messages to include. Defaults to 4.
+
+    Returns:
+        list: Message history
+    """
+    message_history = [system_message]
+    total_count =  max_messages * 2
+    message_history.extend(messages[-total_count:])
+    message_history.append(user_message)
+    return message_history
 
 def create_message_payload(user_message, system_message, messages=[], max_tokens=3000):  # IMPORTANT
     """Get the message history for the conversation.
