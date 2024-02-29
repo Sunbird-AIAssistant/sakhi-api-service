@@ -2,10 +2,16 @@ import os
 from openai import OpenAI
 from openai import AzureOpenAI, RateLimitError, APIError, InternalServerError
 
+class AiMainClass:
+    
+    def __init__(self):
+        pass
 
+    def get_client(self):
+        pass
 
-class AzureAiClass():
-
+class AzureAiClass(AiMainClass):
+    
     def __init__(self) -> None:
 
         self.azure_endpoint=os.environ["OPENAI_API_BASE"],
@@ -20,7 +26,7 @@ class AzureAiClass():
         )
         return client
 
-class OpenAiClass():
+class OpenAiClass(AiMainClass):
 
     def __init__(self) -> None:
         pass
