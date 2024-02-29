@@ -101,17 +101,17 @@ def conversation_retrieval_chain(index_id, query, session_id, context):
         logger.debug(f"activity_prompt_config: {activity_prompt_config}")
         activity_prompt_dict = ast.literal_eval(activity_prompt_config)
         system_rules = activity_prompt_dict.get(context)
-        system_message = {'role': 'system', 'content': system_rules}
         previous_messages  = read_messages_from_redis(session_id)
         formatted_messages = format_previous_messages(previous_messages)
         user_message = {"role":"user","content": query}
-        intent_payload = create_payload_by_message_count(user_message, system_message, messages=formatted_messages, max_messages=max_messages)
-        logger.info(f"intent_payload :: {intent_payload}")
+        intent_system_prompt = get_chat_intent_prompt()
+        intent_payload = create_payload_by_message_count(user_message, intent_system_prompt, messages=formatted_messages, max_messages=max_messages)
+        logger.debug(f"intent_payload :: {intent_payload}")
         search_intent = get_intent_query(intent_payload)
         logger.info(f"search_intent :: {search_intent}")
         search_index = Marqo(marqoClient, index_id, searchable_attributes=["text"])
         top_docs_to_fetch = get_config_value("database", "top_docs_to_fetch", None)
-        documents = search_index.similarity_search_with_score(search_intent["query"], k=20)
+        documents = search_index.similarity_search_with_score(search_intent, k=20)
         logger.debug(f"Marqo documents : {str(documents)}")
         min_score = get_config_value("database", "docs_min_score", None)
         filtered_document = get_score_filtered_documents(documents, float(min_score))
@@ -125,7 +125,7 @@ def conversation_retrieval_chain(index_id, query, session_id, context):
         system_rules = {"role": "system", "content": system_rules}
         logger.debug(f"System Rules : {system_rules}")
         message_payload  = create_payload_by_message_count(user_message,system_rules,formatted_messages,max_messages=max_messages)
-        logger.info(f"message_payload :: {message_payload}")
+        logger.debug(f"message_payload :: {message_payload}")
         response = call_chat_model(message_payload)
         logger.info({"label": "openai_response", "response": response})
         assistant_message = format_assistant_message(response.strip(";"))
@@ -163,6 +163,9 @@ def format_assistant_message(a):
     """
     return {'role': 'assistant', 'content': a.strip()}
 
+def get_chat_intent_prompt():
+    intent_prompt = get_config_value("llm", "chat_intent_prompt")
+    return {'role': "system", 'content': intent_prompt }
 
 def get_intent_query(messages=[]):
     """    
@@ -188,20 +191,21 @@ def get_intent_query(messages=[]):
         }
     }
     gpt_model = get_config_value("llm", "GPT_MODEL", "gpt-4")
-    print(function_info.get("name"))
     response = client.chat.completions.create(
         model=gpt_model,
         messages=messages,
-        functions=[function_info],
-        function_call= {"name": function_info.get("name")},
+        # functions=[function_info],
+        # function_call= {"name": function_info.get("name")},
         stream=False,
         temperature=0.1,
     )
-    message = response.choices[0].message
-    function_call = message.function_call
-    arguments = json.loads(function_call.arguments)
-    print("response ====>", arguments)
-    return arguments
+    # message = response.choices[0].message
+    # function_call = message.function_call
+    # arguments = json.loads(function_call.arguments)
+    # print("response ====>", arguments)
+    # return arguments
+    message = response.choices[0].message.model_dump()
+    return message["content"]
 
 def count_tokens_str(doc, model="gpt-4"):
     """Count tokens in a string.
