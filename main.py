@@ -162,7 +162,7 @@ async def query(request: QueryModel, x_request_id: str = Header(None, alias="X-R
     else:
         if not is_url(audio_url) and not is_base64(audio_url):
             logger.error(
-                {"index_isad": index_id, "query": query_text, "input_language": language, "output_format": output_format, "audio_url": audio_url, "status_code": status.HTTP_422_UNPROCESSABLE_ENTITY, "error_message": "Invalid audio input!"})
+                {"index_is": index_id, "query": query_text, "input_language": language, "output_format": output_format, "audio_url": audio_url, "status_code": status.HTTP_422_UNPROCESSABLE_ENTITY, "error_message": "Invalid audio input!"})
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid audio input!")
         query_text, text, error_message = process_incoming_voice(audio_url, language)
         is_audio = True
