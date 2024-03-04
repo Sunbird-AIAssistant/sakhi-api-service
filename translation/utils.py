@@ -11,6 +11,7 @@ from pydub import AudioSegment
 from logger import logger
 from config_util import get_config_value
 from utils import *
+from translation.telemetry import *
 
 def get_encoded_string(audio):
     if is_url(audio):
