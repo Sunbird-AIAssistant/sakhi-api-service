@@ -55,6 +55,23 @@ class OciBucketClass(StorageClass):
             return False
         return True
 
+    def generate_public_url(self, object_name):
+        """
+        Generates the full path to a file in OCI Object Storage.
+
+        Args:
+            file_name: The name of the file.
+
+        Returns:
+            The full path to the file.
+        """
+        try:
+            oci_endpoint_url = os.environ["OCI_ENDPOINT_URL"]
+            public_url = f"{oci_endpoint_url}{self.bucket_name}/{object_name}"
+            return public_url, None
+        except Exception as e:
+            logger.error(f"Exception Preparing public URL: {e}", exc_info=True)
+            return None, "Error while generating public URL"
     # Additional OCI-specific methods can be implemented here
 
 
@@ -80,6 +97,10 @@ class AwsS3MainClass(StorageClass):
             return False
         return True
 
+
+    def generate_public_url(self, object_name):
+        public_url = f'https://{self.bucket_name}.s3.amazonaws.com/{object_name}'
+        return public_url
     # Additional AWS-specific methods can be implemented here
 
 

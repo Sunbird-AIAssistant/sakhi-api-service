@@ -1,16 +1,17 @@
 import os
-import time
-import json
 import requests
-from pydub import AudioSegment
+import json
+import base64
+import time
 from google.cloud import speech_v1p1beta1 as speech
 from google.cloud import texttospeech
 from google.cloud import translate_v2 as translate
+from pydub import AudioSegment
 
 from logger import logger
 from config_util import get_config_value
 from utils import *
-from translation.api import *
+from translation.telemetry import *
 
 def get_encoded_string(audio):
     if is_url(audio):
@@ -48,8 +49,31 @@ class RequestError(Exception):
         self.response = response
 
 
-class BhashiniTranslationClass():
+class TranslationClass:
+    def __init__(self):
+        pass
 
+    def translate_text(self, text):
+        pass
+
+    def translate_file(self, file_path):
+        pass
+
+    def text_to_speech(self, language, text):
+        pass
+
+    def speech_to_text(self, audio_file, input_language):
+        pass
+    
+    def detect_language(self):
+        pass
+
+    
+
+
+
+class BhashiniTranslationClass(TranslationClass):
+    
     def __init__(self) -> None:
         self.asr_mapping = {
             "bn": "ai4bharat/conformer-multilingual-indo_aryan-gpu--t4",
@@ -86,10 +110,7 @@ class BhashiniTranslationClass():
             "ta": "ai4bharat/indic-tts-coqui-dravidian-gpu--t4",
             "te": "ai4bharat/indic-tts-coqui-dravidian-gpu--t4"
         }
-
-    def detect_language(self):
-        pass
-
+    
     def translate_text(self, text, source, destination):
         if source == destination:
             return text
@@ -131,7 +152,6 @@ class BhashiniTranslationClass():
             process_time = time.time() - start_time
             log_failed_telemetry_event(url, "POST", {"taskType": "translation"}, process_time, status_code=e.response.status_code, error=e.response.text)
             raise RequestError(e.response) from e
-            # indic_text = google_translate_text(text, source, destination)
         return indic_text
 
     def speech_to_text(self, audio_file, input_language):
@@ -224,18 +244,11 @@ class BhashiniTranslationClass():
         return audio_content
 
 
-
-
-
-
-
-class GoogleCloudTranslationClass():
-
-    def __init__(self) -> None:
+class GoogleCloudTranslationClass(TranslationClass):
+    def __init__(self):
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.getenv("GCP_CONFIG_PATH")
 
-    def detect_language(self):
-        pass
+    
 
     def translate_text(self, text, source, destination):
         client = translate.Client()
