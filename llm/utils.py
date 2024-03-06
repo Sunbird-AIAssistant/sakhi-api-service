@@ -11,7 +11,7 @@ class AiMainClass:
         pass
 
 class AzureAiClass(AiMainClass):
-
+  
     def __init__(self) -> None:
 
         self.azure_endpoint=os.environ["OPENAI_API_BASE"],
