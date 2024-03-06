@@ -14,8 +14,8 @@ class AzureAiClass(AiMainClass):
   
     def __init__(self) -> None:
 
-        self.azure_endpoint=os.environ["OPENAI_API_BASE"],
-        self.api_key=os.environ["OPENAI_API_KEY"],
+        self.azure_endpoint=os.environ["OPENAI_API_BASE"]
+        self.api_key=os.environ["OPENAI_API_KEY"]
         self.api_version=os.environ["OPENAI_API_VERSION"]
 
     def get_client(self):
