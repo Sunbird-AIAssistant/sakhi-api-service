@@ -5,7 +5,7 @@ RUN python -m pip install --upgrade pip
 RUN pip install --no-cache-dir --upgrade -r /code/requirements-prod.txt
 COPY . /code
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 
 # FROM continuumio/anaconda3:2023.03-1
 # WORKDIR /root

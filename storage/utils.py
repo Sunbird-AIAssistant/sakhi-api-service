@@ -66,7 +66,7 @@ class OciBucketClass(StorageClass):
             The full path to the file.
         """
         try:
-            oci_endpoint_url = os.environ["OCI_ENDPOINT_URL"]
+            oci_endpoint_url = os.environ["BUCKET_ENDPOINT_URL"]
             public_url = f"{oci_endpoint_url}{self.bucket_name}/{object_name}"
             return public_url, None
         except Exception as e:
