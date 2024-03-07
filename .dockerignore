@@ -1,1 +1,44 @@
+# Environment files
+**/__pycache__/
+
+# Virtual environment
 .env
+.venv/
+venv/
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDE and virtual environment files
+.idea/
+.vscode/
+.venv/
+venv/*
+
+# Build artifacts
+*.egg-info/
+dist/
+build/
+
+# Unit test / coverage reports
+**/*.pyc
+.coverage
+.tox/
+.cache
+nosetests.xml
+coverage.xml
+
+# Logs and temporary files
+*.log
+tmp/
+
+# Documentation
+docs/
+
+# PyCharm
+.idea
+
+# VS Code
+.vscode/
