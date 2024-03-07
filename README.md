@@ -18,6 +18,7 @@ Integrate "Activity Sakhi" effortlessly into your applications to revolutionize 
 
 - **Python 3.7 or higher**
 - Latest Docker
+- Redis
 
 
 ### [Marqo database setup](https://marqo.pages.dev/1.5.1/#setup-and-installation)
@@ -77,7 +78,6 @@ To use the code, you need to follow these steps:
       }
    ```
 
-
 4. You will need an OCI account to store the audio file for response.
 
 5. create another file **.env** which will hold the development credentials and add the following variables. Update the Azure OpenAI details, OCI details, Bhashini endpoint URL and API key.
@@ -104,6 +104,9 @@ To use the code, you need to follow these steps:
     MARQO_URL=<your_marqo_db_url>
     TELEMETRY_ENDPOINT_URL=<telemetry_endpoint_url>
     TELEMETRY_LOG_ENABLED=<telemetry_enable_or_disable> # true or false
+    REDIS_HOST=localhost
+    REDIS_PORT=6379
+    REDIS_DB=0
     ```
 
 # 🏃🏻 2. Running

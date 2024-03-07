@@ -22,3 +22,17 @@ def is_url(string):
     
 def generate_temp_filename(ext, prefix = "temp"):
     return f"{prefix}_{uuid.uuid4()}.{ext}"
+
+def prepare_redis_key(x_source, x_consumer_id, context):
+    key = "history"
+
+    if x_source is not None:
+        key += f"_{x_source}"
+
+    if x_consumer_id is not None:
+         key += f"_{x_consumer_id}"
+
+    if context is not None:
+         key += f"_{context}"
+
+    return key
