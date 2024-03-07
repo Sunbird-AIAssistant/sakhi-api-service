@@ -84,18 +84,23 @@ To use the code, you need to follow these steps:
 
     ```bash
     SERVICE_ENVIRONMENT=<name_of_the_environment>
+    LOG_LEVEL=<log_level> # INFO, DEBUG, ERROR
+    CONFIG_INI_PATH=<your_config.ini_file_path>
+    OPENAI_TYPE=<openai_type> # openai, azure
     OPENAI_API_BASE=<your_azure_openai_api_base_url>
-    OPENAI_API_VERSION=<your_azure_api_version>
-    OPENAI_API_KEY=<your_azure_api_key>
+    OPENAI_API_VERSION=<your_openai_api_version>
+    OPENAI_API_KEY=<your_openai_api_key>
     GPT_MODEL=<your_gpt_model>
-    LOG_LEVEL=<log_level>  # INFO, DEBUG, ERROR
+    TRANSLATION_TYPE=<translation_type> #bhashini, google
     BHASHINI_ENDPOINT_URL=<your_bhashini_api_endpoint>
     BHASHINI_API_KEY=<your_bhashini_api_key>
-    OCI_ENDPOINT_URL=<oracle_bucket_name>
-    OCI_REGION_NAME=<oracle_region_name>
-    OCI_BUCKET_NAME=<oracle_bucket_name>
-    OCI_SECRET_ACCESS_KEY=<oracle_secret_access_key>
-    OCI_ACCESS_KEY_ID=<oracle_access_key_id>
+    GCP_CONFIG_PATH=<your_gcp.json_file_path>
+    BUCKET_TYPE=<bucket_type> #oci, gcp, aws
+    BUCKET_ENDPOINT_URL=<your_bucket_endpoint_url>
+    BUCKET_REGION_NAME=<your_bucket_region_name>
+    BUCKET_NAME=<your_bucket_name>  #ai-assistent-prod
+    BUCKET_SECRET_ACCESS_KEY=<your_bucket_secret_access_key>
+    BUCKET_ACCESS_KEY_ID=<your_bucket_access_key_id>
     MARQO_URL=<your_marqo_db_url>
     TELEMETRY_ENDPOINT_URL=<telemetry_endpoint_url>
     TELEMETRY_LOG_ENABLED=<telemetry_enable_or_disable> # true or false
