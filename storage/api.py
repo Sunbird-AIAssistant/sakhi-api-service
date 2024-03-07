@@ -7,6 +7,6 @@ def upload_file_object(file_name, object_name=None):
 
 def give_public_url(file_name: str):
 
-    url = storage.generate_public_url(file_name)
+    url, errMsg = storage.generate_public_url(file_name)
 
-    return url, None
+    return url, errMsg
