@@ -99,8 +99,12 @@ class AwsS3MainClass(StorageClass):
 
 
     def generate_public_url(self, object_name):
-        public_url = f'https://{self.bucket_name}.s3.amazonaws.com/{object_name}'
-        return public_url
+        try:
+            public_url = f'https://{self.bucket_name}.s3.amazonaws.com/{object_name}'
+            return public_url, None
+        except Exception as e:
+            logger.error(f"Exception Preparing public URL: {e}", exc_info=True)
+            return None, "Error while generating public URL"
     # Additional AWS-specific methods can be implemented here
 
 
@@ -117,10 +121,14 @@ class GoogleBucketClass(StorageClass):
         return True
 
     def generate_public_url(self, object_name):
-        bucket = self.client.get_bucket(self.bucket_name)
-        blob = bucket.blob(object_name)
+        try:
+            bucket = self.client.get_bucket(self.bucket_name)
+            blob = bucket.blob(object_name)
 
-        blob.acl.all().grant_read()
-        public_url = blob.public_url
+            blob.acl.all().grant_read()
+            public_url = blob.public_url
 
-        return public_url
+            return public_url,  None
+        except Exception as e:
+            logger.error(f"Exception Preparing public URL: {e}", exc_info=True)
+            return None, "Error while generating public URL"
