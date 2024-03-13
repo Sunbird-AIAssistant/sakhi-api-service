@@ -76,39 +76,41 @@ class BhashiniTranslationClass(TranslationClass):
     
     def __init__(self) -> None:
         self.asr_mapping = {
-            "bn": "ai4bharat/conformer-multilingual-indo_aryan-gpu--t4",
-            "en": "ai4bharat/whisper-medium-en--gpu--t4",
-            "gu": "ai4bharat/conformer-multilingual-indo_aryan-gpu--t4",
-            "hi": "ai4bharat/conformer-hi-gpu--t4",
-            "kn": "ai4bharat/conformer-multilingual-dravidian-gpu--t4",
-            "ml": "ai4bharat/conformer-multilingual-dravidian-gpu--t4",
-            "mr": "ai4bharat/conformer-multilingual-indo_aryan-gpu--t4",
-            "or": "ai4bharat/conformer-multilingual-indo_aryan-gpu--t4",
-            "pa": "ai4bharat/conformer-multilingual-indo_aryan-gpu--t4",
-            "sa": "ai4bharat/conformer-multilingual-indo_aryan-gpu--t4",
-            "ta": "ai4bharat/conformer-multilingual-dravidian-gpu--t4",
-            "te": "ai4bharat/conformer-multilingual-dravidian-gpu--t4",
-            "ur": "ai4bharat/conformer-multilingual-indo_aryan-gpu--t4"
+            "bn": "ai4bharat/conformer-multilingual-indo-aryan--gpu-t4",
+            "en": "ai4bharat/whisper--gpu-t4",
+            "gu": "ai4bharat/conformer-multilingual-indo-aryan--gpu-t4",
+            "hi": "ai4bharat/conformer-hi--gpu-t4",
+            "kn": "ai4bharat/conformer-multilingual-dravidian--gpu-t4",
+            "ml": "ai4bharat/conformer-multilingual-dravidian--gpu-t4",
+            "mr": "ai4bharat/conformer-multilingual-indo-aryan--gpu-t4",
+            "or": "ai4bharat/conformer-multilingual-indo-aryan--gpu-t4",
+            "pa": "ai4bharat/conformer-multilingual-indo-aryan--gpu-t4",
+            "sa": "ai4bharat/conformer-multilingual-indo-aryan--gpu-t4",
+            "ta": "ai4bharat/conformer-multilingual-dravidian--gpu-t4",
+            "te": "ai4bharat/conformer-multilingual-dravidian--gpu-t4",
+            "ur": "ai4bharat/conformer-multilingual-indo-aryan--gpu-t4"
+
         }
 
-        self.translation_serviceId = "ai4bharat/indictrans-v2-all-gpu--t4"
+        self.translation_serviceId = "ai4bharat/indictrans--gpu-t4"
 
         self.tts_mapping = {
-            "as": "ai4bharat/indic-tts-coqui-indo_aryan-gpu--t4",
-            "bn": "ai4bharat/indic-tts-coqui-indo_aryan-gpu--t4",
-            "brx": "ai4bharat/indic-tts-coqui-misc-gpu--t4",
-            "en": "ai4bharat/indic-tts-coqui-misc-gpu--t4",
-            "gu": "ai4bharat/indic-tts-coqui-indo_aryan-gpu--t4",
-            "hi": "ai4bharat/indic-tts-coqui-indo_aryan-gpu--t4",
-            "kn": "ai4bharat/indic-tts-coqui-dravidian-gpu--t4",
-            "ml": "ai4bharat/indic-tts-coqui-dravidian-gpu--t4",
-            "mni": "ai4bharat/indic-tts-coqui-misc-gpu--t4",
-            "mr": "ai4bharat/indic-tts-coqui-indo_aryan-gpu--t4",
-            "or": "ai4bharat/indic-tts-coqui-indo_aryan-gpu--t4",
-            "pa": "ai4bharat/indic-tts-coqui-indo_aryan-gpu--t4",
-            "raj": "ai4bharat/indic-tts-coqui-indo_aryan-gpu--t4",
-            "ta": "ai4bharat/indic-tts-coqui-dravidian-gpu--t4",
-            "te": "ai4bharat/indic-tts-coqui-dravidian-gpu--t4"
+            "as": "ai4bharat/indic-tts-indo-aryan--gpu-t4",
+            "bn": "ai4bharat/indic-tts-indo-aryan--gpu-t4",
+            "brx": "ai4bharat/indic-tts-misc--gpu-t4",
+            "en": "ai4bharat/indic-tts-misc--gpu-t4",
+            "gu": "ai4bharat/indic-tts-indo-aryan--gpu-t4",
+            "hi": "ai4bharat/indic-tts-indo-aryan--gpu-t4",
+            "kn": "ai4bharat/indic-tts-dravidian--gpu-t4",
+            "ml": "ai4bharat/indic-tts-dravidian--gpu-t4",
+            "mni": "ai4bharat/indic-tts-misc--gpu-t4",
+            "mr": "ai4bharat/indic-tts-indo-aryan--gpu-t4",
+            "or": "ai4bharat/indic-tts-indo-aryan--gpu-t4",
+            "pa": "ai4bharat/indic-tts-indo-aryan--gpu-t4",
+            "raj": "ai4bharat/indic-tts-indo-aryan--gpu-t4",
+            "ta": "ai4bharat/indic-tts-dravidian--gpu-t4",
+            "te": "ai4bharat/indic-tts-dravidian--gpu-t4"
+
         }
     
     def translate_text(self, text, source, destination):
