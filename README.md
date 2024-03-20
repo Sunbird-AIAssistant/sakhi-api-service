@@ -78,7 +78,7 @@ To use the code, you need to follow these steps:
       }
    ```
 
-4. You will need an OCI account to store the audio file for response.
+4. You will need Cloud storage account to store the audio file for response. (Supported - OCI, GCP, AWS)
 
 5. create another file **.env** which will hold the development credentials and add the following variables. Update the Azure OpenAI details, OCI details, Bhashini endpoint URL and API key.
 
@@ -135,7 +135,7 @@ The command `uvicorn main:app` refers to:
 ### `POST /v1/query`
 
 #### API Function
-API is used to generate activity/story based on user query and translation of text/audio from one language to another language in text/audio format. To achieve the same, Bhashini has been integrated. OCI object storage has been used to store translated audio files when audio is chosen as target output format.
+API is used to generate activity/story based on user query and translation of text/audio from one language to another language in text/audio format. To achieve the same, Required cloud service has been integrated. Cloud object storage has been used to store translated audio files when audio is chosen as target output format. 
 
 ```commandline
 curl -X 'POST' \
@@ -198,14 +198,14 @@ If output format is given as `text` than response will return `text` format only
 
 Once the API is hit with proper request parameters, it is then checked for the presence of query text. 
 
-If query text is present, the translation of query text based on input language is done. Then the translated query text is given to langchain model which does the same work. Then the paraphrased answer is again translated back to input_language. If the output_format is voice, the translated paraphrased answer is then converted to a mp3 file and uploaded to an OCI folder and made public.
+If query text is present, the translation of query text based on input language is done. Then the translated query text is given to langchain model which does the same work. Then the paraphrased answer is again translated back to input_language. If the output_format is voice, the translated paraphrased answer is then converted to a mp3 file and uploaded to supported cloud storage folder and made public.
 
 If the query text is absent and audio url is present, then the audio url is downloaded and converted into text based on the input language. Once speech to text conversion in input language is finished, the same process mentioned above happens. One difference is that by default, the paraphrased answer is converted to voice irrespective of the output_format since the input format is voice.
 
 ### `POST /v1/chat`
 
 #### API Function
-API is used to generate activity/story based on user query and translation of text/audio from one language to another language in text/audio format. To achieve the same, Bhashini has been integrated. OCI object storage has been used to store translated audio files when audio is chosen as target output format.
+API is used to generate activity/story based on user query and translation of text/audio from one language to another language in text/audio format. To achieve the same, Required cloud service has been integrated. Cloud object storage has been used to store translated audio files when audio is chosen as target output format.
 
 ```commandline
 curl -X 'POST' \
@@ -286,7 +286,7 @@ Make the necessary changes to your dockerfile with respect to your new changes. 
 | database.indices                | index or collection name to be referred to from vector database based on input audienceType    |                                      |
 | database.top_docs_to_fetch      | Number of filtered documents retrieved from vector database to be passed to Gen AI as contexts | 5                                    |
 | database.docs_min_score         | Minimum score of the documents based on which filtration happens on retrieved documents        | 0.4                                  |
-| redis.ttl         | Redis cache expiration time for a key in seconds.        | 43200                               |
+| redis.ttl         | Redis cache expiration time for a key in seconds. (Only applicable for `/v1/chat` API.)        | 43200                               |
 | request.supported_lang_codes    | Supported languages by the service                                                             | en,bn,gu,hi,kn,ml,mr,or,pa,ta,te     |
 | request.support_response_format | Supported response formats                                                                     | text,audio                           |
 | request.support_audience_type | index name to be referred to from vector database based on audience type                                                                  | teacher, parent (Default)                           |
