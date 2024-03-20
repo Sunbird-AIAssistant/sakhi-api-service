@@ -6,7 +6,8 @@ from logger import logger
 ## import all classes
 from translation.utils import (
                         BhashiniTranslationClass,
-                        GoogleCloudTranslationClass
+                        GoogleCloudTranslationClass,
+                        DhruvaTranslationClass
                     )
 from storage.utils import (
                         AwsS3MainClass,
@@ -35,7 +36,8 @@ class EnvironmentManager():
                         "translate": {
                             "class": {
                                 "bhashini": BhashiniTranslationClass,
-                                "google": GoogleCloudTranslationClass
+                                "google": GoogleCloudTranslationClass,
+                                "dhruva": DhruvaTranslationClass
                             },
                             "env_key": "TRANSLATION_TYPE"
                         },
