@@ -135,7 +135,7 @@ The command `uvicorn main:app` refers to:
 ### `POST /v1/query`
 
 #### API Function
-API is used to generate activity/story based on user query and translation of text/audio from one language to another language in text/audio format. To achieve the same, Required cloud service has been integrated. Cloud object storage has been used to store translated audio files when audio is chosen as target output format. 
+API is used to generate activity/story based on user query and translation of text/audio from one language to another language in text/audio format. To achieve the same, Language Services has been integrated. Cloud object storage has been used to store translated audio files when audio is chosen as target output format. 
 
 ```commandline
 curl -X 'POST' \
@@ -205,7 +205,7 @@ If the query text is absent and audio url is present, then the audio url is down
 ### `POST /v1/chat`
 
 #### API Function
-API is used to generate activity/story based on user query and translation of text/audio from one language to another language in text/audio format. To achieve the same, Required cloud service has been integrated. Cloud object storage has been used to store translated audio files when audio is chosen as target output format.
+API is used to generate activity/story based on user query and translation of text/audio from one language to another language in text/audio format. To achieve the same, Language Services has been integrated. Cloud object storage has been used to store translated audio files when audio is chosen as target output format.
 
 ```commandline
 curl -X 'POST' \
