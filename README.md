@@ -82,32 +82,39 @@ To use the code, you need to follow these steps:
 
 5. create another file **.env** which will hold the development credentials and add the following variables. Update the Azure OpenAI details, OCI details, Bhashini endpoint URL and API key.
 
-    ```bash
-    SERVICE_ENVIRONMENT=<name_of_the_environment>
-    LOG_LEVEL=<log_level> # INFO, DEBUG, ERROR
-    CONFIG_INI_PATH=<your_config.ini_file_path>
-    OPENAI_TYPE=<openai_type> # openai, azure
-    OPENAI_API_BASE=<your_azure_openai_api_base_url>
-    OPENAI_API_VERSION=<your_openai_api_version>
-    OPENAI_API_KEY=<your_openai_api_key>
-    GPT_MODEL=<your_gpt_model>
-    TRANSLATION_TYPE=<translation_type> #bhashini, google, dhruva
-    BHASHINI_ENDPOINT_URL=<your_bhashini_api_endpoint>
-    BHASHINI_API_KEY=<your_bhashini_api_key>
-    GCP_CONFIG_PATH=<your_gcp.json_file_path>
-    BUCKET_TYPE=<bucket_type> #oci, gcp, aws
-    BUCKET_ENDPOINT_URL=<your_bucket_endpoint_url>
-    BUCKET_REGION_NAME=<your_bucket_region_name>
-    BUCKET_NAME=<your_bucket_name>  #ai-assistent-prod
-    BUCKET_SECRET_ACCESS_KEY=<your_bucket_secret_access_key>
-    BUCKET_ACCESS_KEY_ID=<your_bucket_access_key_id>
-    MARQO_URL=<your_marqo_db_url>
-    TELEMETRY_ENDPOINT_URL=<telemetry_endpoint_url>
-    TELEMETRY_LOG_ENABLED=<telemetry_enable_or_disable> # true or false
-    REDIS_HOST=localhost
-    REDIS_PORT=6379
-    REDIS_DB=0
-    ```
+   ```bash
+   SERVICE_ENVIRONMENT=<name_of_the_environment>
+   LOG_LEVEL=<log_level> # INFO, DEBUG, ERROR
+   CONFIG_INI_PATH=<your_config.ini_file_path>
+   MARQO_URL=<your_marqo_db_url> 
+
+   #Redis Database
+   REDIS_HOST=localhost
+   REDIS_PORT=6379
+   REDIS_DB=0
+
+   #Telemetry
+   TELEMETRY_ENDPOINT_URL=<telemetry_endpoint_url>
+   TELEMETRY_LOG_ENABLED=<telemetry_enable_or_disable> # true or false
+
+   #LLM
+   LLM_TYPE=<llm_type> #openai, azure, ollama
+   OPENAI_API_KEY=<your_openai_api_key>
+   GPT_MODEL=<your_gpt_model>
+
+   #Translation
+   TRANSLATION_TYPE=<translation_type> #bhashini, google, dhruva
+   BHASHINI_ENDPOINT_URL=<your_bhashini_api_endpoint>
+   BHASHINI_API_KEY=<your_bhashini_api_key>
+
+   #Storage
+   BUCKET_TYPE=<bucket_type> #oci, gcp, aws
+   BUCKET_ENDPOINT_URL=<your_bucket_endpoint_url>
+   BUCKET_REGION_NAME=<your_bucket_region_name>
+   BUCKET_NAME=<your_bucket_name>
+   BUCKET_SECRET_ACCESS_KEY=<your_bucket_secret_access_key>
+   BUCKET_ACCESS_KEY_ID=<your_bucket_access_key_id>
+   ```
 
 # 🏃🏻 2. Running
 
@@ -291,7 +298,6 @@ Make the necessary changes to your dockerfile with respect to your new changes. 
 | request.support_response_format | Supported response formats                                                                     | text,audio                           |
 | request.support_audience_type | index name to be referred to from vector database based on audience type                                                                  | teacher, parent (Default)                           |
 | llm.max_messages                   | Maximum number of messages to include in conversation history                                      |    4 |
-| llm.gpt_model                   | Gen AI GPT Model value                                                                         |                                      |
 | llm.enable_bot_intent           | Flag to enable or disable verification of user's query to check if it is referring to bot      | false                                |
 | llm.intent_prompt               | System prompt to Gen AI to verify if the user's query is referring to the bot                  |                                      |
 | llm.bot_prompt                  | System prompt to Gen AI to generate responses for user's query related to bot                  |                                      |

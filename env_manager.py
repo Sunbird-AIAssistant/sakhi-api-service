@@ -7,16 +7,20 @@ from logger import logger
 from translation.utils import (
                         BhashiniTranslationClass,
                         GoogleCloudTranslationClass,
-                        DhruvaTranslationClass
+                        DhruvaTranslationClass,
+                        TranslationClass
                     )
 from storage.utils import (
                         AwsS3MainClass,
                         GoogleBucketClass,
-                        OciBucketClass
+                        OciBucketClass,
+                        StorageClass
                     )
 from llm.utils import (
-                        AzureAiClass,
-                        OpenAiClass
+                        BaseChatClient,
+                        OpenAIChatClient,
+                        AzureChatClient,
+                        OllamaChatClient
                     )
 
 class EnvironmentManager():
@@ -28,10 +32,11 @@ class EnvironmentManager():
         self.indexes = {
                         "llm": {
                             "class": {
-                                "openai": OpenAiClass,
-                                "azure": AzureAiClass
+                                "openai": OpenAIChatClient,
+                                "azure": AzureChatClient,
+                                "ollama": OllamaChatClient
                             },
-                            "env_key": "OPENAI_TYPE"
+                            "env_key": "LLM_TYPE"
                         },
                         "translate": {
                             "class": {
@@ -60,9 +65,8 @@ class EnvironmentManager():
 
 
 env_class = EnvironmentManager()
-
 # create instances of functions
 logger.info(f"Initializing required classes for components")
-ai_class = env_class.create_instance("llm")
-translate_class = env_class.create_instance("translate")
-storage_class = env_class.create_instance("storage")
+ai_class: BaseChatClient = env_class.create_instance("llm")
+translate_class: TranslationClass = env_class.create_instance("translate")
+storage_class: StorageClass = env_class.create_instance("storage")

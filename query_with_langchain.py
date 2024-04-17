@@ -9,27 +9,20 @@ import marqo
 import tiktoken
 from redis_util import read_messages_from_redis, store_messages_in_redis
 from dotenv import load_dotenv
-from fastapi import HTTPException
 from langchain.docstore.document import Document
 from langchain.vectorstores.marqo import Marqo
-from openai import RateLimitError, APIError, InternalServerError
 from env_manager import ai_class
 from config_util import get_config_value
+from utils import convert_chat_messages
 from logger import logger
 
 load_dotenv()
-client = ai_class.get_client()
+chatClient  = ai_class.get_client()
 marqo_url = get_config_value("database", "MARQO_URL", None)
-gpt_model = get_config_value("llm", "gpt_model", None)
 max_messages = int(get_config_value("llm", "max_messages")) # Maximum number of messages to include in conversation history
 marqoClient = marqo.Client(url=marqo_url)
 
-
 def querying_with_langchain_gpt3(index_id, query, audience_type):
-    logger.debug(f"gpt_model: {gpt_model}")
-    if gpt_model is None or gpt_model.strip() == "":
-        raise HTTPException(status_code=422, detail="Please configure gpt_model under llm section in config file!")
-
     intent_response = check_bot_intent(query, audience_type)
     if intent_response:
         return intent_response, None, 200
@@ -57,24 +50,14 @@ def querying_with_langchain_gpt3(index_id, query, audience_type):
         system_rules = system_rules.format(contexts=contexts)
         logger.debug("==== System Rules ====")
         logger.debug(f"System Rules : {system_rules}")
-        res = client.chat.completions.create(
-            model=gpt_model,
+        response = call_chat_model(
             messages=[
                 {"role": "system", "content": system_rules},
                 {"role": "user", "content": query}
-            ],
+            ]
         )
-        message = res.choices[0].message.model_dump()
-        response = message["content"]
-        logger.info({"label": "openai_response", "response": response})
-
+        logger.info({"label": "llm_response", "response": response})
         return response.strip(";"), None, 200
-    except RateLimitError as e:
-        error_message = f"OpenAI API request exceeded rate limit: {e}"
-        status_code = 500
-    except (APIError, InternalServerError):
-        error_message = "Server is overloaded or unable to answer your request at the moment. Please try again later"
-        status_code = 503
     except Exception as e:
         error_message = str(e.__context__) + " and " + e.__str__()
         status_code = 500
@@ -82,10 +65,6 @@ def querying_with_langchain_gpt3(index_id, query, audience_type):
     return "", error_message, status_code
 
 def conversation_retrieval_chain(index_id, query, session_id, context):
-    logger.debug(f"gpt_model: {gpt_model}")
-    if gpt_model is None or gpt_model.strip() == "":
-        raise HTTPException(status_code=422, detail="Please configure gpt_model under llm section in config file!")
-
     intent_response = check_bot_intent(query, context)
     if intent_response:
         return intent_response, None, 200
@@ -122,18 +101,12 @@ def conversation_retrieval_chain(index_id, query, session_id, context):
         message_payload  = create_payload_by_message_count(user_message,system_rules,formatted_messages,max_messages=max_messages)
         logger.debug(f"message_payload :: {message_payload}")
         response = call_chat_model(message_payload)
-        logger.info({"label": "openai_response", "response": response})
+        logger.info({"label": "llm_response", "response": response})
         assistant_message = format_assistant_message(response.strip(";"))
         messages = read_messages_from_redis(session_id)
         messages.extend([user_message,assistant_message])
         store_messages_in_redis(session_id, messages)
         return response.strip(";"), None, 200
-    except RateLimitError as e:
-        error_message = f"OpenAI API request exceeded rate limit: {e}"
-        status_code = 500
-    except (APIError, InternalServerError):
-        error_message = "Server is overloaded or unable to answer your request at the moment. Please try again later"
-        status_code = 503
     except Exception as e:
         error_message = str(e.__context__) + " and " + e.__str__()
         status_code = 500
@@ -141,13 +114,9 @@ def conversation_retrieval_chain(index_id, query, session_id, context):
     return "", error_message, status_code
 
 def call_chat_model(messages: List[dict]) -> str:
-    res = client.chat.completions.create(
-            model=gpt_model,
-            messages=messages,
-            temperature=0.7
-    )
-    message = res.choices[0].message.model_dump()
-    return message["content"]
+    converted_messsages = convert_chat_messages(messages)
+    response = chatClient.invoke(input=converted_messsages)
+    return response.content
 
 def format_assistant_message(a):
     """Formats the assistant message
@@ -185,22 +154,27 @@ def get_intent_query(messages=[]):
             "required": ["query"]
         }
     }
-    gpt_model = get_config_value("llm", "GPT_MODEL", "gpt-4")
-    response = client.chat.completions.create(
-        model=gpt_model,
-        messages=messages,
-        # functions=[function_info],
-        # function_call= {"name": function_info.get("name")},
-        stream=False,
-        temperature=0.1,
-    )
+    # gpt_model = get_config_value("llm", "GPT_MODEL", "gpt-4")
+    # response = client.chat.completions.create(
+    #     model=gpt_model,
+    #     messages=messages,
+    #     # functions=[function_info],
+    #     # function_call= {"name": function_info.get("name")},
+    #     stream=False,
+    #     temperature=0.1,
+    # )
+    clientIntent = ai_class.get_client(temperature=0.1)
+    converted_messsages = convert_chat_messages(messages)
+    response = clientIntent.invoke(input=converted_messsages)
+
     # message = response.choices[0].message
     # function_call = message.function_call
     # arguments = json.loads(function_call.arguments)
     # print("response ====>", arguments)
     # return arguments
-    message = response.choices[0].message.model_dump()
-    return message["content"]
+    return response.content
+
+
 
 def count_tokens_str(doc, model="gpt-4"):
     """Count tokens in a string.
@@ -310,30 +284,23 @@ def check_bot_intent(query: str, context: str):
         return None
 
     intent_prompt = get_config_value("llm", "intent_prompt")
-    res = client.chat.completions.create(
-        model=gpt_model,
+    intent_response = call_chat_model(
         messages=[{"role": "system", "content": intent_prompt}, {"role": "user", "content": query}]
     )
-    intent_message = res.choices[0].message.model_dump()
-    intent_response = intent_message["content"]
-    logger.info({"label": "openai_intent_response", "intent_response": intent_response})
-
+    logger.info({"label": "intent_response", "intent_response": intent_response})
     if intent_response.lower() == "yes":
         bot_prompt_config = get_config_value("llm", "bot_prompt", "")
         logger.debug(f"bot_prompt_config: {bot_prompt_config}")
         bot_prompt_dict = ast.literal_eval(bot_prompt_config)
         system_rules = bot_prompt_dict.get(context)
         logger.debug(f"Intent System Rules : {system_rules}")
-        res = client.chat.completions.create(
-            model=gpt_model,
+        response = call_chat_model(
             messages=[
                 {"role": "system", "content": system_rules},
                 {"role": "user", "content": query}
-            ],
+            ]
         )
-        message = res.choices[0].message.model_dump()
-        response = message["content"]
-        logger.info({"label": "openai_bot_response", "bot_response": response})
+        logger.info({"label": "llm_bot_response", "bot_response": response})
         return response
     else:
         return None
