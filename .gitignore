@@ -9,3 +9,5 @@ __pycache__/
 gcp_credentials.json
 sample.env
 extraction.py
+docker-compose.yml
+.json

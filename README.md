@@ -18,6 +18,7 @@ Integrate "Activity Sakhi" effortlessly into your applications to revolutionize 
 
 - **Python 3.7 or higher**
 - Latest Docker
+- Redis
 
 
 ### [Marqo database setup](https://marqo.pages.dev/1.5.1/#setup-and-installation)
@@ -77,28 +78,35 @@ To use the code, you need to follow these steps:
       }
    ```
 
-
-4. You will need an OCI account to store the audio file for response.
+4. You will need Cloud storage account to store the audio file for response. (Supported - OCI, GCP, AWS)
 
 5. create another file **.env** which will hold the development credentials and add the following variables. Update the Azure OpenAI details, OCI details, Bhashini endpoint URL and API key.
 
     ```bash
     SERVICE_ENVIRONMENT=<name_of_the_environment>
+    LOG_LEVEL=<log_level> # INFO, DEBUG, ERROR
+    CONFIG_INI_PATH=<your_config.ini_file_path>
+    OPENAI_TYPE=<openai_type> # openai, azure
     OPENAI_API_BASE=<your_azure_openai_api_base_url>
-    OPENAI_API_VERSION=<your_azure_api_version>
-    OPENAI_API_KEY=<your_azure_api_key>
+    OPENAI_API_VERSION=<your_openai_api_version>
+    OPENAI_API_KEY=<your_openai_api_key>
     GPT_MODEL=<your_gpt_model>
-    LOG_LEVEL=<log_level>  # INFO, DEBUG, ERROR
+    TRANSLATION_TYPE=<translation_type> #bhashini, google, dhruva
     BHASHINI_ENDPOINT_URL=<your_bhashini_api_endpoint>
     BHASHINI_API_KEY=<your_bhashini_api_key>
-    OCI_ENDPOINT_URL=<oracle_bucket_name>
-    OCI_REGION_NAME=<oracle_region_name>
-    OCI_BUCKET_NAME=<oracle_bucket_name>
-    OCI_SECRET_ACCESS_KEY=<oracle_secret_access_key>
-    OCI_ACCESS_KEY_ID=<oracle_access_key_id>
+    GCP_CONFIG_PATH=<your_gcp.json_file_path>
+    BUCKET_TYPE=<bucket_type> #oci, gcp, aws
+    BUCKET_ENDPOINT_URL=<your_bucket_endpoint_url>
+    BUCKET_REGION_NAME=<your_bucket_region_name>
+    BUCKET_NAME=<your_bucket_name>  #ai-assistent-prod
+    BUCKET_SECRET_ACCESS_KEY=<your_bucket_secret_access_key>
+    BUCKET_ACCESS_KEY_ID=<your_bucket_access_key_id>
     MARQO_URL=<your_marqo_db_url>
     TELEMETRY_ENDPOINT_URL=<telemetry_endpoint_url>
     TELEMETRY_LOG_ENABLED=<telemetry_enable_or_disable> # true or false
+    REDIS_HOST=localhost
+    REDIS_PORT=6379
+    REDIS_DB=0
     ```
 
 # 🏃🏻 2. Running
@@ -127,7 +135,7 @@ The command `uvicorn main:app` refers to:
 ### `POST /v1/query`
 
 #### API Function
-API is used to generate activity/story based on user query and translation of text/audio from one language to another language in text/audio format. To achieve the same, Bhashini has been integrated. OCI object storage has been used to store translated audio files when audio is chosen as target output format.
+API is used to generate activity/story based on user query and translation of text/audio from one language to another language in text/audio format. To achieve the same, Language Services has been integrated. Cloud object storage has been used to store translated audio files when audio is chosen as target output format. 
 
 ```commandline
 curl -X 'POST' \
@@ -190,7 +198,78 @@ If output format is given as `text` than response will return `text` format only
 
 Once the API is hit with proper request parameters, it is then checked for the presence of query text. 
 
-If query text is present, the translation of query text based on input language is done. Then the translated query text is given to langchain model which does the same work. Then the paraphrased answer is again translated back to input_language. If the output_format is voice, the translated paraphrased answer is then converted to a mp3 file and uploaded to an OCI folder and made public.
+If query text is present, the translation of query text based on input language is done. Then the translated query text is given to langchain model which does the same work. Then the paraphrased answer is again translated back to input_language. If the output_format is voice, the translated paraphrased answer is then converted to a mp3 file and uploaded to supported cloud storage folder and made public.
+
+If the query text is absent and audio url is present, then the audio url is downloaded and converted into text based on the input language. Once speech to text conversion in input language is finished, the same process mentioned above happens. One difference is that by default, the paraphrased answer is converted to voice irrespective of the output_format since the input format is voice.
+
+### `POST /v1/chat`
+
+#### API Function
+API is used to generate activity/story based on user query and translation of text/audio from one language to another language in text/audio format. To achieve the same, Language Services has been integrated. Cloud object storage has been used to store translated audio files when audio is chosen as target output format.
+
+```commandline
+curl -X 'POST' \
+  'http://127.0.0.1:8000/v1/chat' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "input": {
+    "language": "en",
+    "text": "string",
+    "audio": "string",
+    "context": "parent"
+  },
+  "output": {
+    "format": "text"
+  }
+}'
+```
+
+#### Request
+| Request Input       | Value                                                     |
+|:--------------------|-----------------------------------------------------------|
+| `input.language`    | en,bn,gu,hi,kn,ml,mr,or,pa,ta,te                          |
+| `input.text`        | User entered question (any of the above language)         |
+| `input.audio`       | Public file URL Or Base64 encoded audio                   |
+| `input.context`     | parent, teacher (default value is parent, if not passing) |
+| `output.format`     | text or audio                                             |
+
+Required inputs are `text`, `audio` and `language`.
+
+Either of the `text`(string) or `audio`(string) should be present. If both the values are given, `text` is taken for consideration. Another requirement is that the `language` should be same as the one given in text and audio (i.e, if you pass English as `language`, then your `text/audio` should contain queries in English language). The audio should either contain a publicly downloadable url of mp3 file or base64 encoded text of the mp3.
+If output format is given as `text` than response will return `text` format only. If output format is given as `audio` than response will return `text` and `audio` both.
+
+```json
+{
+   "input": {
+      "text": "How to Teach Kids to Play Games", 
+      "language": "en"
+   },
+   "output": {
+      "format": "text"
+   }
+}
+```
+
+#### Successful Response
+
+```json
+{
+   "output": {
+      "text": "string",
+      "audio": "string",
+      "language": "en",
+      "format": "text|audio"
+   }
+}
+```
+
+#### What happens during the API call?
+
+Once the API is hit with proper request parameters, it is then checked for the presence of query text. 
+
+When a query is provided as text, the system first checks the language. If it's not English, the query is translated. Then, the translated query and the user's past interactions are sent to a large language model (LLM) to generate a refined query for retrieving relevant documents from a vector store.The retrieved documents are filtered based on a set score. These documents and the refined query are again sent to the LLM to generate the final answer.
+Finally, the answer is translated back to the original language if necessary. If the output format is voice, the translated answer is converted to an MP3 file, uploaded to a public cloud storage folder.
 
 If the query text is absent and audio url is present, then the audio url is downloaded and converted into text based on the input language. Once speech to text conversion in input language is finished, the same process mentioned above happens. One difference is that by default, the paraphrased answer is converted to voice irrespective of the output_format since the input format is voice.
 
@@ -207,13 +286,17 @@ Make the necessary changes to your dockerfile with respect to your new changes. 
 | database.indices                | index or collection name to be referred to from vector database based on input audienceType    |                                      |
 | database.top_docs_to_fetch      | Number of filtered documents retrieved from vector database to be passed to Gen AI as contexts | 5                                    |
 | database.docs_min_score         | Minimum score of the documents based on which filtration happens on retrieved documents        | 0.4                                  |
+| redis.ttl         | Redis cache expiration time for a key in seconds. (Only applicable for `/v1/chat` API.)        | 43200                               |
 | request.supported_lang_codes    | Supported languages by the service                                                             | en,bn,gu,hi,kn,ml,mr,or,pa,ta,te     |
 | request.support_response_format | Supported response formats                                                                     | text,audio                           |
+| request.support_audience_type | index name to be referred to from vector database based on audience type                                                                  | teacher, parent (Default)                           |
+| llm.max_messages                   | Maximum number of messages to include in conversation history                                      |    4 |
 | llm.gpt_model                   | Gen AI GPT Model value                                                                         |                                      |
 | llm.enable_bot_intent           | Flag to enable or disable verification of user's query to check if it is referring to bot      | false                                |
 | llm.intent_prompt               | System prompt to Gen AI to verify if the user's query is referring to the bot                  |                                      |
 | llm.bot_prompt                  | System prompt to Gen AI to generate responses for user's query related to bot                  |                                      |
 | llm.activity_prompt             | System prompt to Gen AI to generate responses based on user's query and input contexts         |                                      |
+| llm.chat_intent_prompt          | System prompt to Gen AI to generate standalone query based on user's previous history and input contexts         |                                      |
 | telemetry.telemetry_log_enabled | Flag to enable or disable telemetry events logging to Sunbird Telemetry service                | true                                 |
 | telemetry.environment           | service environment from where telemetry is generated from, in telemetry service               | dev                                  |
 | telemetry.service_id            | service identifier to be passed to Sunbird telemetry service                                   |                                      |
