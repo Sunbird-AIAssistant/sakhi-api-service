@@ -59,11 +59,15 @@ class EnvironmentManager():
     def create_instance(self, env_key):
         env_var = self.indexes[env_key]["env_key"]
         type_value = os.getenv(env_var)
+
+        if type_value is None:
+            raise ValueError(
+                f"Missing credentials. Please pass the `{env_var}` environment variable"
+            )
+
         logger.info(f"Init {env_key} class for: {type_value}")
-        if type_value is not None:
-            return self.indexes[env_key]["class"].get(type_value)()
-
-
+        return self.indexes[env_key]["class"].get(type_value)()
+            
 env_class = EnvironmentManager()
 # create instances of functions
 logger.info(f"Initializing required classes for components")
