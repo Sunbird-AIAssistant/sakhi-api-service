@@ -288,8 +288,8 @@ Make the necessary changes to your dockerfile with respect to your new changes. 
 | database.docs_min_score         | Minimum score of the documents based on which filtration happens on retrieved documents        | 0.4                                  |
 | redis.ttl         | Redis cache expiration time for a key in seconds. (Only applicable for `/v1/chat` API.)        | 43200                               |
 | request.supported_lang_codes    | Supported languages by the service                                                             | en,bn,gu,hi,kn,ml,mr,or,pa,ta,te     |
-| request.support_response_format | Supported response formats                                                                     | text,audio                           |
-| request.support_context | index name to be referred to from vector database based on context type                                                                  | teacher, parent (Default)                           |
+| request.supported_response_format | Supported response formats                                                                     | text,audio                           |
+| request.supported_context | index name to be referred to from vector database based on context type                                                                  | teacher, parent (Default)                           |
 | llm.max_messages                   | Maximum number of messages to include in conversation history                                      |    4 |
 | llm.gpt_model                   | Gen AI GPT Model value                                                                         |                                      |
 | llm.enable_bot_intent           | Flag to enable or disable verification of user's query to check if it is referring to bot      | false                                |

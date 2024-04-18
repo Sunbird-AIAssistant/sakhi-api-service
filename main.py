@@ -44,8 +44,8 @@ async def shutdown_event():
     logger.info('Invoking shutdown_event')
     logger.info('shutdown_event : Engine closed')
 
-Context = Enum("Context", {type: type for type in get_config_value('request', 'support_context', None).split(',')})
-DropdownOutputFormat = Enum("DropdownOutputFormat", {type: type for type in get_config_value('request', 'support_response_format', None).split(',')})
+Context = Enum("Context", {type: type for type in get_config_value('request', 'supported_context', None).split(',')})
+DropdownOutputFormat = Enum("DropdownOutputFormat", {type: type for type in get_config_value('request', 'supported_response_format', None).split(',')})
 DropDownInputLanguage = Enum("DropDownInputLanguage", {type: type for type in get_config_value('request', 'supported_lang_codes', None).split(',')})
 
 class OutputResponse(BaseModel):
