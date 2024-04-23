@@ -1,11 +1,11 @@
 # Activity Sakhi API : 
 
-A powerful service designed to enhance the educational experience for both parents and teachers. Our service revolves around a curated collection of documents focused on children's activities and curriculum frameworks. With simplicity at its core, "Activity Sakhi" empowers parents and teachers to effortlessly discover relevant content and find answers to audience-specific questions.
+A powerful service designed to enhance the educational experience for both parents and teachers. Our service revolves around a curated collection of documents focused on children's activities and curriculum frameworks. With simplicity at its core, "Activity Sakhi" empowers parents and teachers to effortlessly discover relevant content and find answers to context-specific questions.
 
 ### Key Features:
 #### Rich Content Repository: 
 Explore a predefined set of documents tailored to children's activities and curriculum frameworks, ensuring a wealth of valuable information at your fingertips.
-#### Audience-Centric: 
+#### Context-Centric: 
 Targeted specifically for parents and teachers, "Activity Sakhi" caters to their unique needs, providing insights and resources tailored to enhance the learning journey.
 Discover and Learn: Seamlessly discover engaging content and obtain answers to your specific questions, making the educational process more accessible and enjoyable.
 
@@ -147,7 +147,7 @@ curl -X 'POST' \
     "language": "en",
     "text": "string",
     "audio": "string",
-    "audienceType": "teacher"
+    "context": "teacher"
   },
   "output": {
     "format": "text"
@@ -161,8 +161,8 @@ curl -X 'POST' \
 | `input.language`    | en,bn,gu,hi,kn,ml,mr,or,pa,ta,te                          |
 | `input.text`        | User entered question (any of the above language)         |
 | `input.audio`       | Public file URL Or Base64 encoded audio                   |
-| `input.audienceType` | parent, teacher (default value is parent, if not passing) |
-| `output.format`      | text or audio                                             |
+| `input.context`     | parent, teacher (default value is parent, if not passing) |
+| `output.format`     | text or audio                                             |
 
 Required inputs are `text`, `audio` and `language`.
 
@@ -283,13 +283,13 @@ Make the necessary changes to your dockerfile with respect to your new changes. 
 
 | Variable                        | Description                                                                                    | Default Value                        |
 |:--------------------------------|------------------------------------------------------------------------------------------------|--------------------------------------|
-| database.indices                | index or collection name to be referred to from vector database based on input audienceType    |                                      |
+| database.indices                | index or collection name to be referred to from vector database based on input context    |                                      |
 | database.top_docs_to_fetch      | Number of filtered documents retrieved from vector database to be passed to Gen AI as contexts | 5                                    |
 | database.docs_min_score         | Minimum score of the documents based on which filtration happens on retrieved documents        | 0.4                                  |
 | redis.ttl         | Redis cache expiration time for a key in seconds. (Only applicable for `/v1/chat` API.)        | 43200                               |
 | request.supported_lang_codes    | Supported languages by the service                                                             | en,bn,gu,hi,kn,ml,mr,or,pa,ta,te     |
-| request.support_response_format | Supported response formats                                                                     | text,audio                           |
-| request.support_audience_type | index name to be referred to from vector database based on audience type                                                                  | teacher, parent (Default)                           |
+| request.supported_response_format | Supported response formats                                                                     | text,audio                           |
+| request.supported_context | index name to be referred to from vector database based on context type                                                                  | teacher, parent (Default)                           |
 | llm.max_messages                   | Maximum number of messages to include in conversation history                                      |    4 |
 | llm.gpt_model                   | Gen AI GPT Model value                                                                         |                                      |
 | llm.enable_bot_intent           | Flag to enable or disable verification of user's query to check if it is referring to bot      | false                                |

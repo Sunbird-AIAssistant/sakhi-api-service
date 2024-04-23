@@ -44,8 +44,8 @@ async def shutdown_event():
     logger.info('Invoking shutdown_event')
     logger.info('shutdown_event : Engine closed')
 
-AudienceType = Enum("AudienceType", {type: type for type in get_config_value('request', 'support_audience_type', None).split(',')})
-DropdownOutputFormat = Enum("DropdownOutputFormat", {type: type for type in get_config_value('request', 'support_response_format', None).split(',')})
+Context = Enum("Context", {type: type for type in get_config_value('request', 'supported_context', None).split(',')})
+DropdownOutputFormat = Enum("DropdownOutputFormat", {type: type for type in get_config_value('request', 'supported_response_format', None).split(',')})
 DropDownInputLanguage = Enum("DropDownInputLanguage", {type: type for type in get_config_value('request', 'supported_lang_codes', None).split(',')})
 
 class OutputResponse(BaseModel):
@@ -67,24 +67,15 @@ class QueryInputModel(BaseModel):
     language: DropDownInputLanguage # type: ignore
     text: str = ""
     audio: str = ""
-    audienceType: AudienceType # type: ignore
+    context: Context # type: ignore
 
 
 class QueryOuputModel(BaseModel):
     format: DropdownOutputFormat # type: ignore
 
-
 class QueryModel(BaseModel):
     input: QueryInputModel
     output: QueryOuputModel
-
-class ChatInputModel(BaseModel):
-    language: DropDownInputLanguage # type: ignore
-    text: str = ""
-    audio: str = ""
-    context: AudienceType # type: ignore
-class ChatModel(QueryModel):
-    input: ChatInputModel
 
 # Telemetry API logs middleware
 app.add_middleware(TelemetryMiddleware)
@@ -122,16 +113,16 @@ async def query(request: QueryModel, x_request_id: str = Header(None, alias="X-R
     load_dotenv()
     indices = json.loads(get_config_value('database', 'indices', None))
     language = request.input.language.name
-    audience_type = request.input.audienceType.name
+    context = request.input.context.name
     output_format = request.output.format.name
-    index_id = indices.get(audience_type.lower())
+    index_id = indices.get(context.lower())
     audio_url = request.input.audio
     query_text = request.input.text
     is_audio = False
     text = None
     regional_answer = None
     audio_output_url = None
-    logger.info({"label": "query", "query_text": query_text, "index_id": index_id, "audience_type": audience_type, "input_language": language, "output_format": output_format, "audio_url": audio_url})
+    logger.info({"label": "query", "query_text": query_text, "index_id": index_id, "context": context, "input_language": language, "output_format": output_format, "audio_url": audio_url})
     if not query_text and not audio_url:
         raise HTTPException(status_code=422, detail="Either 'text' or 'audio' should be present!")
 
@@ -147,7 +138,7 @@ async def query(request: QueryModel, x_request_id: str = Header(None, alias="X-R
         is_audio = True
     
     if text is not None:
-        answer, error_message, status_code = querying_with_langchain_gpt3(index_id, text, audience_type)
+        answer, error_message, status_code = querying_with_langchain_gpt3(index_id, text, context)
         if len(answer) != 0:
             regional_answer, error_message = process_outgoing_text(answer, language)
             logger.info({"regional_answer": regional_answer})
@@ -178,7 +169,7 @@ async def query(request: QueryModel, x_request_id: str = Header(None, alias="X-R
     return response
 
 @app.post("/v1/chat", tags=["Conversation chat over Document Store"], include_in_schema=True)
-async def chat(request: ChatModel, x_request_id: str = Header(None, alias="X-Request-ID"),
+async def chat(request: QueryModel, x_request_id: str = Header(None, alias="X-Request-ID"),
                 x_source: str = Header(None, alias="x-source"),
                 x_consumer_id: str = Header(None, alias="x-consumer-id")) -> ResponseForQuery:
     load_dotenv()

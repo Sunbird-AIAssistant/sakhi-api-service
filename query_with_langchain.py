@@ -25,12 +25,12 @@ max_messages = int(get_config_value("llm", "max_messages")) # Maximum number of 
 marqoClient = marqo.Client(url=marqo_url)
 
 
-def querying_with_langchain_gpt3(index_id, query, audience_type):
+def querying_with_langchain_gpt3(index_id, query, context):
     logger.debug(f"gpt_model: {gpt_model}")
     if gpt_model is None or gpt_model.strip() == "":
         raise HTTPException(status_code=422, detail="Please configure gpt_model under llm section in config file!")
 
-    intent_response = check_bot_intent(query, audience_type)
+    intent_response = check_bot_intent(query, context)
     if intent_response:
         return intent_response, None, 200
     
@@ -40,7 +40,7 @@ def querying_with_langchain_gpt3(index_id, query, audience_type):
         logger.debug(f"activity_prompt_config: {activity_prompt_config}")
         if activity_prompt_config:
             activity_prompt_dict = ast.literal_eval(activity_prompt_config)
-            system_rules = activity_prompt_dict.get(audience_type)
+            system_rules = activity_prompt_dict.get(context)
 
         search_index = Marqo(marqoClient, index_id, searchable_attributes=["text"])
         top_docs_to_fetch = get_config_value("database", "top_docs_to_fetch", None)
