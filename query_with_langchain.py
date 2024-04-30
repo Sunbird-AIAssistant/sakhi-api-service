@@ -11,16 +11,15 @@ from redis_util import read_messages_from_redis, store_messages_in_redis
 from dotenv import load_dotenv
 from langchain.docstore.document import Document
 from langchain.vectorstores.marqo import Marqo
-from env_manager import ai_class
+from env_manager import ai_class, vectorstore_class
 from config_util import get_config_value
 from utils import convert_chat_messages
 from logger import logger
 
 load_dotenv()
-chatClient  = ai_class.get_client()
-marqo_url = get_config_value("database", "MARQO_URL", None)
+temperature = float(get_config_value("llm", "temperature"))
+chatClient  = ai_class.get_client(temperature=temperature)
 max_messages = int(get_config_value("llm", "max_messages")) # Maximum number of messages to include in conversation history
-marqoClient = marqo.Client(url=marqo_url)
 
 def querying_with_langchain_gpt3(index_id, query, context):
     intent_response = check_bot_intent(query, context)
@@ -35,9 +34,8 @@ def querying_with_langchain_gpt3(index_id, query, context):
             activity_prompt_dict = ast.literal_eval(activity_prompt_config)
             system_rules = activity_prompt_dict.get(context)
 
-        search_index = Marqo(marqoClient, index_id, searchable_attributes=["text"])
         top_docs_to_fetch = get_config_value("database", "top_docs_to_fetch", None)
-        documents = search_index.similarity_search_with_score(query, k=20)
+        documents = vectorstore_class.similarity_search_with_score(query, index_id, k=20)
         logger.debug(f"Marqo documents : {str(documents)}")
         min_score = get_config_value("database", "docs_min_score", None)
         filtered_document = get_score_filtered_documents(documents, float(min_score))
@@ -83,12 +81,11 @@ def conversation_retrieval_chain(index_id, query, session_id, context):
         logger.debug(f"intent_payload :: {intent_payload}")
         search_intent = get_intent_query(intent_payload)
         logger.info(f"search_intent :: {search_intent}")
-        search_index = Marqo(marqoClient, index_id, searchable_attributes=["text"])
-        top_docs_to_fetch = get_config_value("database", "top_docs_to_fetch", None)
-        documents = search_index.similarity_search_with_score(search_intent, k=20)
+        documents = vectorstore_class.similarity_search_with_score(search_intent, index_id, k=20)
         logger.debug(f"Marqo documents : {str(documents)}")
         min_score = get_config_value("database", "docs_min_score", None)
         filtered_document = get_score_filtered_documents(documents, float(min_score))
+        top_docs_to_fetch = get_config_value("database", "top_docs_to_fetch", None)
         filtered_document = filtered_document[:int(top_docs_to_fetch)]
         logger.info(f"Score filtered documents : {str(filtered_document)}")
         contexts = get_formatted_documents(filtered_document)

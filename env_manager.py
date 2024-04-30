@@ -23,6 +23,11 @@ from llm.utils import (
                         OllamaChatClient
                     )
 
+from vectorstores.utils import (
+                        MarqoVectorStore,
+                        BaseVectorStore
+                    )
+
 class EnvironmentManager():
     """
     Class for initializing functions respective to the env variable provided
@@ -53,6 +58,12 @@ class EnvironmentManager():
                                 "aws": AwsS3MainClass
                             },
                             "env_key": "BUCKET_TYPE"
+                        },
+                        "vectorstore": {
+                            "class": {
+                                "marqo": MarqoVectorStore
+                            },
+                            "env_key": "VECTOR_STORE_TYPE"
                         }
                     }
 
@@ -74,3 +85,4 @@ logger.info(f"Initializing required classes for components")
 ai_class: BaseChatClient = env_class.create_instance("llm")
 translate_class: TranslationClass = env_class.create_instance("translate")
 storage_class: StorageClass = env_class.create_instance("storage")
+vectorstore_class: BaseVectorStore = env_class.create_instance("vectorstore")

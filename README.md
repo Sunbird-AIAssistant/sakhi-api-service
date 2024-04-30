@@ -59,15 +59,15 @@ To use the code, you need to follow these steps:
 3. To ingest data to marqo
 
     ```bash
-    python3 index_documents.py --marqo_url=<MARQO_URL> --index_name=<MARQO_INDEX_NAME> --folder_path=<PATH_TO_INPUT_FILE_DIRECTORY> --fresh_index
+    python3 index_documents.py --folder_path=<PATH_TO_INPUT_FILE_DIRECTORY> --fresh_index
     ```
    --fresh_index: This is a flag that creating a new index or overwriting an existing one. Fresh indexing typically starts from scratch without using existing data.
    PATH_TO_INPUT_FILE_DIRECTORY should have only PDF, audio, video and txt file only.
    
    e.g.
    ```bash
-   python3 index_documents.py --marqo_url=http://0.0.0.0:8882 --index_name=sakhi_parent_activities --folder_path=parent_pdfs --fresh_index
-   python3 index_documents.py --marqo_url=http://0.0.0.0:8882 --index_name=sakhi_teacher_activities --folder_path=teacher_pfs --fresh_index
+   python3 index_documents.py --folder_path=parent_pdfs --fresh_index
+   python3 index_documents.py --folder_path=teacher_pfs --fresh_index
    ```
    Create the index by using the above command. After creating the index add the index name in `config.ini` file.
 
@@ -86,7 +86,6 @@ To use the code, you need to follow these steps:
    SERVICE_ENVIRONMENT=<name_of_the_environment>
    LOG_LEVEL=<log_level> # INFO, DEBUG, ERROR
    CONFIG_INI_PATH=<your_config.ini_file_path>
-   MARQO_URL=<your_marqo_db_url> 
 
    #Redis Database
    REDIS_HOST=localhost
@@ -114,6 +113,13 @@ To use the code, you need to follow these steps:
    BUCKET_NAME=<your_bucket_name>
    BUCKET_SECRET_ACCESS_KEY=<your_bucket_secret_access_key>
    BUCKET_ACCESS_KEY_ID=<your_bucket_access_key_id>
+
+   #Vector Store
+   VECTOR_STORE_TYPE=marqo
+   VECTOR_STORE_ENDPOINT=http://localhost:8882
+   EMBEDDING_MODEL=flax-sentence-embeddings/all_datasets_v4_mpnet-base
+   VECTOR_COLLECTION_NAME=test
+
    ```
 
 # 🏃🏻 2. Running
