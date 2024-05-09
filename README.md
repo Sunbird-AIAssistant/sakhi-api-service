@@ -84,7 +84,7 @@ To use the code, you need to follow these steps:
 
    ```bash
    SERVICE_ENVIRONMENT=<name_of_the_environment>
-   LOG_LEVEL=<log_level> # INFO, DEBUG, ERROR
+   LOG_LEVEL=<log_level>
    CONFIG_INI_PATH=<your_config.ini_file_path>
 
    #Redis Database
@@ -94,27 +94,27 @@ To use the code, you need to follow these steps:
 
    #Telemetry
    TELEMETRY_ENDPOINT_URL=<telemetry_endpoint_url>
-   TELEMETRY_LOG_ENABLED=<telemetry_enable_or_disable> # true or false
+   TELEMETRY_LOG_ENABLED=<telemetry_enable_or_disable>
 
-   #LLM
-   LLM_TYPE=<llm_type> #openai, azure, ollama
+   #LLM - openai, azure, ollama
+   LLM_TYPE=<llm_type> 
    OPENAI_API_KEY=<your_openai_api_key>
    GPT_MODEL=<your_gpt_model>
 
-   #Translation
-   TRANSLATION_TYPE=<translation_type> #bhashini, google, dhruva
+   #Translation - bhashini, google, dhruva
+   TRANSLATION_TYPE=<translation_type> 
    BHASHINI_ENDPOINT_URL=<your_bhashini_api_endpoint>
    BHASHINI_API_KEY=<your_bhashini_api_key>
 
-   #Storage
-   BUCKET_TYPE=<bucket_type> #oci, gcp, aws
+   #Storage - oci, gcp, aws
+   BUCKET_TYPE=<bucket_type>
    BUCKET_ENDPOINT_URL=<your_bucket_endpoint_url>
    BUCKET_REGION_NAME=<your_bucket_region_name>
    BUCKET_NAME=<your_bucket_name>
    BUCKET_SECRET_ACCESS_KEY=<your_bucket_secret_access_key>
    BUCKET_ACCESS_KEY_ID=<your_bucket_access_key_id>
 
-   #Vector Store
+   #Vector Store - marqo
    VECTOR_STORE_TYPE=marqo
    VECTOR_STORE_ENDPOINT=http://localhost:8882
    EMBEDDING_MODEL=flax-sentence-embeddings/all_datasets_v4_mpnet-base
