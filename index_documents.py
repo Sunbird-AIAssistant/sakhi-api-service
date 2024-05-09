@@ -88,7 +88,7 @@ def indexer_main():
     print("Total documents :: =>", len(documents))
     
     print("Adding documents...")
-    results = vectorstore_class.add_documents(documents)
+    results = vectorstore_class.add_documents(documents, FRESH_INDEX)
     print("results =======>", results)
     
     print("============ INDEX DONE =============")
