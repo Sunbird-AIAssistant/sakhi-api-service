@@ -36,10 +36,10 @@ class OciBucketClass(StorageClass):
     def __init__(self):
         super().__init__(boto3.client(
             's3',
-            region_name=os.environ["BUCKET_REGION_NAME"],
-            aws_secret_access_key=os.environ["BUCKET_SECRET_ACCESS_KEY"],
-            aws_access_key_id=os.environ["BUCKET_ACCESS_KEY_ID"],
-            endpoint_url=os.environ["BUCKET_ENDPOINT_URL"]
+            region_name=os.getenv("BUCKET_REGION_NAME"),
+            aws_secret_access_key=os.getenv("BUCKET_SECRET_ACCESS_KEY"),
+            aws_access_key_id=os.getenv("BUCKET_ACCESS_KEY_ID"),
+            endpoint_url=os.getenv("BUCKET_ENDPOINT_URL")
         ))
 
     def upload_to_storage(self, file_name, object_name=None):
@@ -66,7 +66,7 @@ class OciBucketClass(StorageClass):
             The full path to the file.
         """
         try:
-            oci_endpoint_url = os.environ["BUCKET_ENDPOINT_URL"]
+            oci_endpoint_url = os.getenv("BUCKET_ENDPOINT_URL")
             public_url = f"{oci_endpoint_url}{self.bucket_name}/{object_name}"
             return public_url, None
         except Exception as e:
@@ -79,9 +79,9 @@ class AwsS3MainClass(StorageClass):
     def __init__(self):
         super().__init__(boto3.client(
             's3',
-            region_name=os.environ["BUCKET_REGION_NAME"],
-            aws_secret_access_key=os.environ["BUCKET_SECRET_ACCESS_KEY"],
-            aws_access_key_id=os.environ["BUCKET_ACCESS_KEY_ID"],
+            region_name=os.getenv("BUCKET_REGION_NAME"),
+            aws_secret_access_key=os.getenv("BUCKET_SECRET_ACCESS_KEY"),
+            aws_access_key_id=os.getenv("BUCKET_ACCESS_KEY_ID"),
         ))
 
     def upload_to_storage(self, file_name, object_name=None):

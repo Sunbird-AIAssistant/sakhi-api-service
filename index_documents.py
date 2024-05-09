@@ -1,72 +1,64 @@
 import argparse
-import json
 from typing import (
-    Dict,
     List
 )
-
-import marqo
 from langchain.docstore.document import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from llama_index import SimpleDirectoryReader
+from env_manager import vectorstore_class
+ 
+def document_loader(input_dir: str) -> List[Document]:
+    """Load data from the input directory.
 
+    Args:
+        input_dir (str): Path to the directory.
 
-def load_documents(folder_path, input_chunk_size, input_chunk_overlap):
-    source_chunks = []
-    sources = SimpleDirectoryReader(
-        input_dir=folder_path, recursive=True).load_data()
-    splitter = RecursiveCharacterTextSplitter(
-        chunk_size=input_chunk_size, chunk_overlap=input_chunk_overlap)
-    for source in sources:
-        for chunk in splitter.split_text(source.text):
-            source_chunks.append(Document(page_content=chunk, metadata={
-                "page_label": source.metadata.get("page_label"),
-                "file_name": source.metadata.get("file_name"),
-                "file_path": source.metadata.get("file_path"),
-                "file_type": source.metadata.get("file_type")
+    Returns:
+        List[Document]: A list of documents.
+    """
+    return SimpleDirectoryReader(
+        input_dir=input_dir, recursive=True).load_data() # show_progress=True 
+ 
+def split_documents(documents: List[Document], chunk_size: int = 4000, chunk_overlap = 200) -> List[Document]:
+    """Split documents.
+
+    Args:
+        documents: List of documents
+        chunk_size: Maximum size of chunks to return
+        chunk_overlap: Overlap in characters between chunks
+
+    Returns:
+        List[Document]: A list of documents.
+    """
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+    # splited_docs = text_splitter.split_documents(documents)
+    splited_docs = []
+    for document in documents:
+        for chunk in text_splitter.split_text(document.text):
+            splited_docs.append(Document(page_content=chunk, metadata={
+                "page_label": document.metadata.get("page_label"),
+                "file_name": document.metadata.get("file_name"),
+                "file_path": document.metadata.get("file_path"),
+                "file_type": document.metadata.get("file_type")
             }))
-    return source_chunks
+    return splited_docs
 
+def transform_documents():
+    pass
 
-def get_formatted_documents(documents: List[Document]):
-    docs: List[Dict[str, str]] = []
-    for d in documents:
-        doc = {
-            "text": d.page_content,
-            "metadata": json.dumps(d.metadata) if d.metadata else json.dumps({}),
-        }
-        docs.append(doc)
-    return docs
-
-
-def chunk_list(document, batch_size):
-    """Return a list of batch sized chunks from document."""
-    return [document[i: i + batch_size] for i in range(0, len(document), batch_size)]
-
+def load_documents(folder_path: str, chunk_size: int, chunk_overlap: int) -> List[Document]:
+    documents = document_loader(folder_path)
+    splitted_documents = split_documents(documents, chunk_size, chunk_overlap)
+    return splitted_documents
 
 def indexer_main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--marqo_url',
-                        type=str,
-                        required=True,
-                        help='Endpoint URL of marqo',
-                        )
-    parser.add_argument('--index_name',
-                        type=str,
-                        required=True,
-                        help='Name of marqo index',
-                        )
     parser.add_argument('--folder_path',
                         type=str,
                         required=True,
                         help='Path to the folder',
                         default="input_data"
-                        )
-    parser.add_argument('--embedding_model',
-                        type=str,
-                        required=False,
-                        help='data embedding model to be used.',
-                        default="flax-sentence-embeddings/all_datasets_v4_mpnet-base"
                         )
     parser.add_argument('--chunk_size',
                         type=int,
@@ -80,18 +72,6 @@ def indexer_main():
                         help='documents chunk size',
                         default=200
                         )
-    parser.add_argument('--split_length',
-                        type=int,
-                        required=False,
-                        help='pre-processing split_length',
-                        default=1
-                        )
-    parser.add_argument('--split_overlap',
-                        type=int,
-                        required=False,
-                        help='pre-processing split_overlap',
-                        default=0
-                        )
     parser.add_argument('--fresh_index',
                         action='store_true',
                         help='Is the indexing fresh'
@@ -99,66 +79,26 @@ def indexer_main():
 
     args = parser.parse_args()
 
-    MARQO_URL = args.marqo_url
-    MARQO_INDEX_NAME = args.index_name
     FOLDER_PATH = args.folder_path
     FRESH_INDEX = args.fresh_index
-    EMBED_MODEL = args.embedding_model
     CHUNK_SIZE = args.chunk_size
     CHUNK_OVERLAP = args.chunk_overlap
-    SPLIT_LENGTH = args.split_length
-    SPLIT_OVERLAP = args.split_overlap
 
-    index_settings = {
-        "index_defaults": {
-            "treat_urls_and_pointers_as_images": False,
-            "model": EMBED_MODEL,
-            "normalize_embeddings": True,
-            "text_preprocessing": {
-                "split_length": SPLIT_LENGTH,
-                "split_overlap": SPLIT_OVERLAP,
-                "split_method": "sentence"
-            }
-        }
-    }
-
-    # Initialize Marqo instance
-    marqo_client = marqo.Client(url=MARQO_URL)
-    if FRESH_INDEX:
-        try:
-            marqo_client.index(MARQO_INDEX_NAME).delete()
-            print("Existing Index successfully deleted.")
-        except:
-            print("Index does not exist. Creating new index")
-
-        marqo_client.create_index(
-            MARQO_INDEX_NAME, settings_dict=index_settings)
-        print(f"Index {MARQO_INDEX_NAME} created.")
-
-    print("Loading documents...")
     documents = load_documents(FOLDER_PATH, CHUNK_SIZE, CHUNK_OVERLAP)
-
-    print("Total Documents ===>", len(documents))
-
-    f = open("indexed_documents.txt", "w")
-    f.write(str(documents))
-    f.close()
-
-    print(f"Indexing documents...")
-    formatted_documents = get_formatted_documents(documents)
-    tensor_fields = ['text']
-    _document_batch_size = 50
-    chunks = list(chunk_list(formatted_documents, _document_batch_size))
-    for chunk in chunks:
-        marqo_client.index(MARQO_INDEX_NAME).add_documents(
-            documents=chunk, client_batch_size=_document_batch_size, tensor_fields=tensor_fields)
-
+    print("Total documents :: =>", len(documents))
+    
+    print("Adding documents...")
+    results = vectorstore_class.add_documents(documents, FRESH_INDEX)
+    print("results =======>", results)
+    
     print("============ INDEX DONE =============")
 
 
 if __name__ == "__main__":
     indexer_main()
     
-# RUN
-# python3 index_documents.py --marqo_url=http://0.0.0.0:8882 --index_name=sakhi_activity --folder_path=input_data --fresh_index (FOR FRESH INDEXING)
-# python3 index_documents.py --marqo_url=http://0.0.0.0:8882 --index_name=sakhi_activity --folder_path=input_data (FOR APPENDING DOCUMENTS)
+# For Fresh collection
+# python3 index_documents.py --folder_path=Documents --fresh_index
+
+# For appending documents to existing collection
+# python3 index_documents.py --folder_path=Documents

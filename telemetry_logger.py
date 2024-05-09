@@ -1,13 +1,12 @@
 import time
 import uuid
-
+import os
 import requests
-
 from config_util import get_config_value
 from logger import logger
 
-telemetryURL = get_config_value('telemetry', 'TELEMETRY_ENDPOINT_URL', None)
-ENV_NAME = get_config_value('telemetry', 'environment', None)
+telemetryURL = os.getenv('TELEMETRY_ENDPOINT_URL')
+ENV_NAME = os.getenv('SERVICE_ENVIRONMENT')
 TELEMETRY_LOG_ENABLED = get_config_value('telemetry', 'telemetry_log_enabled', None).lower() == "true"
 telemetry_id = get_config_value('telemetry', 'service_id', None)
 telemetry_ver = get_config_value('telemetry', 'service_ver', None)
