@@ -1,18 +1,15 @@
 import os
 from configparser import ConfigParser
-
 from fastapi import HTTPException, status
-
 from logger import logger
 
-config_file_path = os.getenv('CONFIG_INI_PATH')  # Update with your config.ini file path
+config_file_path = os.getenv('CONFIG_INI_PATH', 'config.ini')  # Update with your config.ini file path
 config = ConfigParser()
 config.read(config_file_path)
 
-
-def get_config_value(section, key, default=None):
+def get_config_value(section: str, key: str, default=None):
     # Check if the key exists in the environment variables
-    value = os.getenv(key, default)
+    value = os.getenv(key.upper(), default)
 
     # If the key is not in the environment variables, try reading from a config file
     if value is None or value == "":
