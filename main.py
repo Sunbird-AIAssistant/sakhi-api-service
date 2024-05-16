@@ -4,14 +4,15 @@ import json
 from fastapi import FastAPI, HTTPException, status, Header
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from storage.api import *
+
+from app_utils import is_url, is_base64, prepare_redis_key
+from env_manager import storage_class as storage
 from enum import Enum
 from io_processing import *
 # from query_with_langchain import *
 from query_with_langchain import *
 from telemetry_middleware import TelemetryMiddleware
 from config_util import get_config_value
-from utils import *
 
 from dotenv import load_dotenv
 
@@ -146,8 +147,8 @@ async def query(request: QueryModel, x_request_id: str = Header(None, alias="X-R
                 if is_audio:
                     output_file, error_message = process_outgoing_voice(regional_answer, language)
                     if output_file is not None:
-                        upload_file_object(output_file.name)
-                        audio_output_url, error_message = give_public_url(output_file.name)
+                        storage.upload_to_storage(output_file.name)
+                        audio_output_url, error_message = storage.generate_public_url(output_file.name)
                         logger.debug(f"Audio Ouput URL ===> {audio_output_url}")
                         output_file.close()
                         os.remove(output_file.name)
@@ -210,8 +211,8 @@ async def chat(request: QueryModel, x_request_id: str = Header(None, alias="X-Re
                 if is_audio:
                     output_file, error_message = process_outgoing_voice(regional_answer, language)
                     if output_file is not None:
-                        upload_file_object(output_file.name)
-                        audio_output_url, error_message = give_public_url(output_file.name)
+                        storage.upload_to_storage(output_file.name)
+                        audio_output_url, error_message = storage.generate_public_url(output_file.name)
                         logger.debug(f"Audio Ouput URL ===> {audio_output_url}")
                         output_file.close()
                         os.remove(output_file.name)
