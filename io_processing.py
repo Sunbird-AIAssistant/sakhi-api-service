@@ -1,10 +1,10 @@
 import time
-
 from logger import logger
-from env_manager import translate_class as translator
-from config_util import get_config_value
 
-DEFAULT_LANGAUGE = get_config_value('default', 'language', None)
+from env_manager import translate_class as translator
+from utils.env import get_from_env_or_config
+
+DEFAULT_LANGAUGE = get_from_env_or_config('default', 'language', None)
 
 def process_incoming_voice(file_url, input_language):
     """

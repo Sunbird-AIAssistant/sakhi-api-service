@@ -1,28 +1,26 @@
 import os
 import json
-
+from enum import Enum
+from dotenv import load_dotenv
+from pydantic import BaseModel
 from fastapi import FastAPI, HTTPException, status, Header
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
 
-from app_utils import is_url, is_base64, prepare_redis_key
+from utils import is_url, is_base64, prepare_redis_key, get_from_env_or_config
 from env_manager import storage_class as storage
-from enum import Enum
 from io_processing import *
-# from query_with_langchain import *
 from query_with_langchain import *
 from telemetry_middleware import TelemetryMiddleware
-from config_util import get_config_value
 
-from dotenv import load_dotenv
 
-app = FastAPI(title="Sakhi API Service",
-              #   docs_url=None,  # Swagger UI: disable it by setting docs_url=None
-              redoc_url=None,  # ReDoc : disable it by setting docs_url=None
-              swagger_ui_parameters={"defaultModelsExpandDepth": -1},
-              description='',
-              version="1.0.0"
-              )
+app = FastAPI(
+    title="Sakhi API Service",
+    #   docs_url=None,  # Swagger UI: disable it by setting docs_url=None
+    redoc_url=None,  # ReDoc : disable it by setting docs_url=None
+    swagger_ui_parameters={"defaultModelsExpandDepth": -1},
+    description='',
+    version="1.0.0"
+)
 
 app.add_middleware(
     CORSMiddleware,
@@ -31,7 +29,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 @app.on_event("startup")
 async def startup_event():
@@ -45,9 +42,9 @@ async def shutdown_event():
     logger.info('Invoking shutdown_event')
     logger.info('shutdown_event : Engine closed')
 
-Context = Enum("Context", {type: type for type in get_config_value('request', 'supported_context', None).split(',')})
-DropdownOutputFormat = Enum("DropdownOutputFormat", {type: type for type in get_config_value('request', 'supported_response_format', None).split(',')})
-DropDownInputLanguage = Enum("DropDownInputLanguage", {type: type for type in get_config_value('request', 'supported_lang_codes', None).split(',')})
+Context = Enum("Context", {type: type for type in get_from_env_or_config('request', 'supported_context', None).split(',')})
+DropdownOutputFormat = Enum("DropdownOutputFormat", {type: type for type in get_from_env_or_config('request', 'supported_response_format', None).split(',')})
+DropDownInputLanguage = Enum("DropDownInputLanguage", {type: type for type in get_from_env_or_config('request', 'supported_lang_codes', None).split(',')})
 
 class OutputResponse(BaseModel):
     text: str
@@ -112,7 +109,7 @@ def get_health() -> HealthCheck:
 @app.post("/v1/query", tags=["Q&A over Document Store"], include_in_schema=True)
 async def query(request: QueryModel, x_request_id: str = Header(None, alias="X-Request-ID")) -> ResponseForQuery:
     load_dotenv()
-    indices = json.loads(get_config_value('database', 'indices', None))
+    indices = json.loads(get_from_env_or_config('database', 'indices', None))
     language = request.input.language.name
     context = request.input.context.name
     output_format = request.output.format.name
@@ -174,7 +171,7 @@ async def chat(request: QueryModel, x_request_id: str = Header(None, alias="X-Re
                 x_source: str = Header(None, alias="x-source"),
                 x_consumer_id: str = Header(None, alias="x-consumer-id")) -> ResponseForQuery:
     load_dotenv()
-    indices = json.loads(get_config_value('database', 'indices', None))
+    indices = json.loads(get_from_env_or_config('database', 'indices', None))
     language = request.input.language.name
     context = request.input.context.name
     output_format = request.output.format.name

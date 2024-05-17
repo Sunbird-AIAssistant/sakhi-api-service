@@ -1,14 +1,12 @@
 import logging
 import os
-from logging.handlers import TimedRotatingFileHandler
 from dotenv import load_dotenv
 
 load_dotenv()
 logger_name = "sakhi_activity"
-
 log_level = os.environ["LOG_LEVEL"]
-
 log_format = '%(asctime)s - %(thread)d - %(threadName)s - %(name)s - %(levelname)s - %(message)s'
+
 logging.basicConfig(
     level=log_level,
     format=log_format,

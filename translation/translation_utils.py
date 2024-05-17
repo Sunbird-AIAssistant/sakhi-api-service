@@ -1,9 +1,8 @@
 import os
-
 import requests
 from pydub import AudioSegment
 
-from app_utils import *
+from utils.utils import *
 
 
 def get_encoded_string(audio):
