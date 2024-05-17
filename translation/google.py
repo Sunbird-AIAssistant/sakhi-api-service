@@ -1,3 +1,4 @@
+from typing import Any
 from logger import logger
 from google.cloud import speech_v1p1beta1 as speech
 from google.cloud import texttospeech

@@ -1,5 +1,6 @@
 import json
 import time
+from typing import Any
 
 from utils import get_from_env_or_config
 from translation.base import BaseTranslationClass

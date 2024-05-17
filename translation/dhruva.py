@@ -1,6 +1,7 @@
 import json
 import base64
 import time
+from typing import Any
 import requests
 
 from translation.base import BaseTranslationClass
