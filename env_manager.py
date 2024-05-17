@@ -4,26 +4,26 @@ from logger import logger
 
 
 ## import all classes
-from translation.utils import (
+from translation import (
                         BhashiniTranslationClass,
                         GoogleCloudTranslationClass,
                         DhruvaTranslationClass,
-                        TranslationClass
+                        BaseTranslationClass
                     )
-from storage.utils import (
-                        AwsS3MainClass,
-                        GoogleBucketClass,
+from storage import (
+                        AwsS3BucketClass,
+                        GcpBucketClass,
                         OciBucketClass,
-                        StorageClass
+                        BaseStorageClass
                     )
-from llm.utils import (
+from llm import (
                         BaseChatClient,
                         OpenAIChatClient,
                         AzureChatClient,
                         OllamaChatClient
                     )
 
-from vectorstores.utils import (
+from vectorstores import (
                         MarqoVectorStore,
                         BaseVectorStore
                     )
@@ -54,8 +54,8 @@ class EnvironmentManager():
                         "storage": {
                             "class": {
                                 "oci": OciBucketClass,
-                                "gcp": GoogleBucketClass,
-                                "aws": AwsS3MainClass
+                                "gcp": GcpBucketClass,
+                                "aws": AwsS3BucketClass
                             },
                             "env_key": "BUCKET_TYPE"
                         },
@@ -83,6 +83,6 @@ env_class = EnvironmentManager()
 # create instances of functions
 logger.info(f"Initializing required classes for components")
 ai_class: BaseChatClient = env_class.create_instance("llm")
-translate_class: TranslationClass = env_class.create_instance("translate")
-storage_class: StorageClass = env_class.create_instance("storage")
+translate_class: BaseTranslationClass = env_class.create_instance("translate")
+storage_class: BaseStorageClass = env_class.create_instance("storage")
 vectorstore_class: BaseVectorStore = env_class.create_instance("vectorstore")
