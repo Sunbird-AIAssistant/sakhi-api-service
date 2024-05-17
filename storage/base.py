@@ -1,7 +1,8 @@
 import os
+from abc import ABC, abstractmethod
+from typing import Optional, Union
 
-
-class BaseStorageClass:
+class BaseStorageClass(ABC):
     def __init__(self, client_type):
         self.client = client_type
         self.bucket_name = os.environ["BUCKET_NAME"]
@@ -9,7 +10,8 @@ class BaseStorageClass:
     def create_bucket(self):
         pass
 
-    def upload_to_storage(self, file_name, object_name=None):
+    @abstractmethod
+    def upload_to_storage(self, file_name: str, object_name: Optional[str] = None) -> bool:
         pass
 
     def download_from_storage(self):
@@ -21,6 +23,7 @@ class BaseStorageClass:
     def generate_presigned_url(self):
         pass
 
-    def generate_public_url(self, object_name):
+    @abstractmethod
+    def generate_public_url(self, object_name: str) -> Union[tuple[str, None], tuple[None, str]]:
         pass
 

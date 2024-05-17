@@ -2,8 +2,9 @@ import os
 import boto3
 from botocore.exceptions import ClientError
 from logger import logger
+from typing import Union, Optional
 
-from storage.BaseStorageClass import BaseStorageClass
+from storage.base import BaseStorageClass
 
 
 class AwsS3BucketClass(BaseStorageClass):
@@ -15,7 +16,7 @@ class AwsS3BucketClass(BaseStorageClass):
             aws_access_key_id=os.getenv("BUCKET_ACCESS_KEY_ID"),
         ))
 
-    def upload_to_storage(self, file_name, object_name=None):
+    def upload_to_storage(self, file_name: str, object_name: Optional[str] = None) -> bool:
         if object_name is None:
             object_name = os.path.basename(file_name)
 
@@ -29,7 +30,7 @@ class AwsS3BucketClass(BaseStorageClass):
         return True
 
 
-    def generate_public_url(self, object_name):
+    def generate_public_url(self, object_name: str) -> Union[tuple[str, None], tuple[None, str]]:
         try:
             public_url = f'https://{self.bucket_name}.s3.amazonaws.com/{object_name}'
             return public_url, None

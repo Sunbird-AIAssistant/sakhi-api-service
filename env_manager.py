@@ -2,31 +2,29 @@ import os
 from dotenv import load_dotenv
 from logger import logger
 
-
-## import all classes
 from translation import (
-                        BhashiniTranslationClass,
-                        GoogleCloudTranslationClass,
-                        DhruvaTranslationClass,
-                        BaseTranslationClass
-                    )
+    BaseTranslationClass,
+    BhashiniTranslationClass,
+    DhruvaTranslationClass,
+    GoogleCloudTranslationClass
+)
 from storage import (
-                        AwsS3BucketClass,
-                        GcpBucketClass,
-                        OciBucketClass,
-                        BaseStorageClass
-                    )
+    BaseStorageClass,
+    AwsS3BucketClass,
+    GcpBucketClass,
+    OciBucketClass
+)
 from llm import (
-                        BaseChatClient,
-                        OpenAIChatClient,
-                        AzureChatClient,
-                        OllamaChatClient
-                    )
+    BaseChatClient,
+    AzureChatClient,
+    OpenAIChatClient,
+    OllamaChatClient
+)
 
 from vectorstores import (
-                        MarqoVectorStore,
-                        BaseVectorStore
-                    )
+   BaseVectorStore,
+   MarqoVectorStore
+)
 
 class EnvironmentManager():
     """
@@ -35,37 +33,37 @@ class EnvironmentManager():
     def __init__(self):
         load_dotenv()
         self.indexes = {
-                        "llm": {
-                            "class": {
-                                "openai": OpenAIChatClient,
-                                "azure": AzureChatClient,
-                                "ollama": OllamaChatClient
-                            },
-                            "env_key": "LLM_TYPE"
-                        },
-                        "translate": {
-                            "class": {
-                                "bhashini": BhashiniTranslationClass,
-                                "google": GoogleCloudTranslationClass,
-                                "dhruva": DhruvaTranslationClass
-                            },
-                            "env_key": "TRANSLATION_TYPE"
-                        },
-                        "storage": {
-                            "class": {
-                                "oci": OciBucketClass,
-                                "gcp": GcpBucketClass,
-                                "aws": AwsS3BucketClass
-                            },
-                            "env_key": "BUCKET_TYPE"
-                        },
-                        "vectorstore": {
-                            "class": {
-                                "marqo": MarqoVectorStore
-                            },
-                            "env_key": "VECTOR_STORE_TYPE"
-                        }
-                    }
+            "llm": {
+                "class": {
+                    "openai": OpenAIChatClient,
+                    "azure": AzureChatClient,
+                    "ollama": OllamaChatClient
+                },
+                "env_key": "LLM_TYPE"
+            },
+            "translate": {
+                "class": {
+                    "bhashini": BhashiniTranslationClass,
+                    "google": GoogleCloudTranslationClass,
+                    "dhruva": DhruvaTranslationClass
+                },
+                "env_key": "TRANSLATION_TYPE"
+            },
+            "storage": {
+                "class": {
+                    "oci": OciBucketClass,
+                    "gcp": GcpBucketClass,
+                    "aws": AwsS3BucketClass
+                },
+                "env_key": "BUCKET_TYPE"
+            },
+            "vectorstore": {
+                "class": {
+                    "marqo": MarqoVectorStore
+                },
+                "env_key": "VECTOR_STORE_TYPE"
+            }
+        }
 
     def create_instance(self, env_key):
         env_var = self.indexes[env_key]["env_key"]
@@ -80,9 +78,10 @@ class EnvironmentManager():
         return self.indexes[env_key]["class"].get(type_value)()
             
 env_class = EnvironmentManager()
+
 # create instances of functions
 logger.info(f"Initializing required classes for components")
-ai_class: BaseChatClient = env_class.create_instance("llm")
+llm_class: BaseChatClient = env_class.create_instance("llm")
 translate_class: BaseTranslationClass = env_class.create_instance("translate")
 storage_class: BaseStorageClass = env_class.create_instance("storage")
 vectorstore_class: BaseVectorStore = env_class.create_instance("vectorstore")

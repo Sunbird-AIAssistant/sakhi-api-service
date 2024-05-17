@@ -1,22 +1,24 @@
 import os
-
+from typing import Optional, Union
 from logger import logger
-from storage.BaseStorageClass import BaseStorageClass
 from google.cloud import storage
+
+from storage.base import BaseStorageClass
+
 
 class GcpBucketClass(BaseStorageClass):
     def __init__(self):
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.getenv("GCP_CONFIG_PATH")
         super().__init__(storage.Client())
 
-    def upload_to_storage(self, file_name, object_name=None):
+    def upload_to_storage(self, file_name: str, object_name: Optional[str] = None) -> bool:
         bucket = self.client.bucket(self.bucket_name)
         blob = bucket.blob(file_name)
         blob.upload_from_filename(file_name)
 
         return True
 
-    def generate_public_url(self, object_name):
+    def generate_public_url(self, object_name: str) -> Union[tuple[str, None], tuple[None, str]]:
         try:
             bucket = self.client.get_bucket(self.bucket_name)
             blob = bucket.blob(object_name)

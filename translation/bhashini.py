@@ -1,8 +1,9 @@
 import json
 import time
+from typing import Any
 
-from config_util import get_config_value
-from translation.BaseTranslationClass import BaseTranslationClass
+from utils import get_from_env_or_config
+from translation.base import BaseTranslationClass
 from translation.telemetry import *
 from translation.translation_utils import *
 
@@ -46,12 +47,12 @@ class BhashiniTranslationClass(BaseTranslationClass):
             "te": "ai4bharat/indic-tts-coqui-dravidian-gpu--t4"
         }
 
-    def translate_text(self, text, source, destination):
+    def translate_text(self, text: str, source: str, destination: str):
         if source == destination:
             return text
         try:
             start_time = time.time()
-            url = get_config_value('translator', 'BHASHINI_ENDPOINT_URL', None)
+            url = get_from_env_or_config('translator', 'BHASHINI_ENDPOINT_URL', None)
             payload = {
                 "pipelineTasks": [
                     {
@@ -74,25 +75,29 @@ class BhashiniTranslationClass(BaseTranslationClass):
                 }
             }
             headers = {
-                'Authorization': get_config_value('translator', 'BHASHINI_API_KEY', None),
+                'Authorization': get_from_env_or_config('translator', 'BHASHINI_API_KEY', None),
                 'Content-Type': 'application/json'
             }
 
-            response = requests.request("POST", url, headers=headers, data=json.dumps(payload))
+            response = requests.request(
+                "POST", url, headers=headers, data=json.dumps(payload))
             process_time = time.time() - start_time
             response.raise_for_status()
-            log_success_telemetry_event(url, "POST", {"taskType": "translation"}, process_time, status_code=response.status_code)
-            indic_text = json.loads(response.text)["pipelineResponse"][0]["output"][0]["target"]
+            log_success_telemetry_event(url, "POST", {
+                                        "taskType": "translation"}, process_time, status_code=response.status_code)
+            indic_text = json.loads(response.text)[
+                "pipelineResponse"][0]["output"][0]["target"]
         except requests.exceptions.RequestException as e:
             process_time = time.time() - start_time
-            log_failed_telemetry_event(url, "POST", {"taskType": "translation"}, process_time, status_code=e.response.status_code, error=e.response.text)
+            log_failed_telemetry_event(url, "POST", {
+                                       "taskType": "translation"}, process_time, status_code=e.response.status_code, error=e.response.text)
             raise RequestError(e.response) from e
         return indic_text
 
-    def speech_to_text(self, audio_file, input_language):
+    def speech_to_text(self, audio_file: Any, input_language: str):
         encoded_string, wav_file_content = get_encoded_string(audio_file)
         start_time = time.time()
-        url = get_config_value('translator', 'BHASHINI_ENDPOINT_URL', None)
+        url = get_from_env_or_config('translator', 'BHASHINI_ENDPOINT_URL', None)
         payload = {
             "pipelineTasks": [
                 {
@@ -114,27 +119,30 @@ class BhashiniTranslationClass(BaseTranslationClass):
             }
         }
         headers = {
-            'Authorization': get_config_value('translator', 'BHASHINI_API_KEY', None),
+            'Authorization': get_from_env_or_config('translator', 'BHASHINI_API_KEY', None),
             'Content-Type': 'application/json'
         }
 
         try:
-            response = requests.request("POST", url, headers=headers, data=json.dumps(payload))
+            response = requests.request(
+                "POST", url, headers=headers, data=json.dumps(payload))
             process_time = time.time() - start_time
             response.raise_for_status()
-            log_success_telemetry_event(url, "POST", {"taskType": "asr"}, process_time, status_code=response.status_code)
+            log_success_telemetry_event(
+                url, "POST", {"taskType": "asr"}, process_time, status_code=response.status_code)
             text = json.loads(response.text)[
                 "pipelineResponse"][0]["output"][0]["source"]
             return text
         except requests.exceptions.RequestException as e:
             process_time = time.time() - start_time
-            log_failed_telemetry_event(url, "POST", {"taskType": "asr"}, process_time, status_code=e.response.status_code, error=e.response.text)
+            log_failed_telemetry_event(url, "POST", {
+                                       "taskType": "asr"}, process_time, status_code=e.response.status_code, error=e.response.text)
             raise RequestError(e.response) from e
 
-    def text_to_speech(self, language, text, gender='female'):
+    def text_to_speech(self, language: str, text: str, gender='female'):
         try:
             start_time = time.time()
-            url = get_config_value('translator', 'BHASHINI_ENDPOINT_URL', None)
+            url = get_from_env_or_config('translator', 'BHASHINI_ENDPOINT_URL', None)
             payload = {
                 "pipelineTasks": [
                     {
@@ -162,18 +170,22 @@ class BhashiniTranslationClass(BaseTranslationClass):
                 }
             }
             headers = {
-                'Authorization': get_config_value('translator', 'BHASHINI_API_KEY', None),
+                'Authorization': get_from_env_or_config('translator', 'BHASHINI_API_KEY', None),
                 'Content-Type': 'application/json'
             }
-            response = requests.request("POST", url, headers=headers, data=json.dumps(payload))
+            response = requests.request(
+                "POST", url, headers=headers, data=json.dumps(payload))
             process_time = time.time() - start_time
             response.raise_for_status()
-            log_success_telemetry_event(url, "POST", {"taskType": "tts"}, process_time, status_code=response.status_code)
-            audio_content = response.json()["pipelineResponse"][0]['audio'][0]['audioContent']
+            log_success_telemetry_event(
+                url, "POST", {"taskType": "tts"}, process_time, status_code=response.status_code)
+            audio_content = response.json(
+            )["pipelineResponse"][0]['audio'][0]['audioContent']
             audio_content = base64.b64decode(audio_content)
         except requests.exceptions.RequestException as e:
             process_time = time.time() - start_time
-            log_failed_telemetry_event(url, "POST", {"taskType": "tts"}, process_time, status_code=e.response.status_code, error=e.response.text)
+            log_failed_telemetry_event(url, "POST", {
+                                       "taskType": "tts"}, process_time, status_code=e.response.status_code, error=e.response.text)
             audio_content = None
             # audio_content = google_text_to_speech(text, language)
         return audio_content

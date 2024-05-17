@@ -1,9 +1,10 @@
+from typing import Any
+from logger import logger
 from google.cloud import speech_v1p1beta1 as speech
 from google.cloud import texttospeech
 from google.cloud import translate_v2 as translate
 
-from logger import logger
-from translation.BaseTranslationClass import BaseTranslationClass
+from translation.base import BaseTranslationClass
 from translation.translation_utils import *
 
 
@@ -11,7 +12,7 @@ class GoogleCloudTranslationClass(BaseTranslationClass):
     def __init__(self):
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.getenv("GCP_CONFIG_PATH")
 
-    def translate_text(self, text, source, destination):
+    def translate_text(self, text: str, source: str, destination: str):
         client = translate.Client()
         try:
             result = client.translate(text, target_language=destination)
@@ -20,7 +21,7 @@ class GoogleCloudTranslationClass(BaseTranslationClass):
             logger.info(f"error during google translation")
         return result['translatedText']
 
-    def speech_to_text(self, audio_file, input_language):
+    def speech_to_text(self, audio_file: Any, input_language: str):
         encoded_string, wav_file_content = get_encoded_string(audio_file)
         client = speech.SpeechClient()
 
@@ -39,14 +40,14 @@ class GoogleCloudTranslationClass(BaseTranslationClass):
             # log failed telemetry
             return "No speech detected."
 
-    def text_to_speech(self, language, text):
+    def text_to_speech(self, language: str, text: str, gender=texttospeech.SsmlVoiceGender.FEMALE):
         client = texttospeech.TextToSpeechClient()
 
         synthesis_input = texttospeech.SynthesisInput(text=text)
 
         # Use a female voice
         voice = texttospeech.VoiceSelectionParams(
-            language_code=language, ssml_gender=texttospeech.SsmlVoiceGender.FEMALE
+            language_code=language, ssml_gender=gender
         )
 
         audio_config = texttospeech.AudioConfig(

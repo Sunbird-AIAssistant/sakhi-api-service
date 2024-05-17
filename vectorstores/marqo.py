@@ -10,7 +10,7 @@ import marqo
 from langchain.docstore.document import Document
 from langchain.vectorstores.marqo import Marqo
 
-from vectorstores.BaseVectorStore import BaseVectorStore
+from vectorstores.base import BaseVectorStore
 
 
 class MarqoVectorStore(BaseVectorStore):

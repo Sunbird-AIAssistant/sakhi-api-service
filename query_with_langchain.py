@@ -1,25 +1,21 @@
 import ast
-import os
 from typing import (
     Any,
     List,
     Tuple
 )
-import marqo
 import tiktoken
-from redis_util import read_messages_from_redis, store_messages_in_redis
 from dotenv import load_dotenv
 from langchain.docstore.document import Document
-from langchain.vectorstores.marqo import Marqo
-from env_manager import ai_class, vectorstore_class
-from config_util import get_config_value
-from utils import convert_chat_messages
+from env_manager import llm_class, vectorstore_class
+from utils import convert_chat_messages, get_from_env_or_config
 from logger import logger
+from redis_util import read_messages_from_redis, store_messages_in_redis
 
 load_dotenv()
-temperature = float(get_config_value("llm", "temperature"))
-chatClient  = ai_class.get_client(temperature=temperature)
-max_messages = int(get_config_value("llm", "max_messages")) # Maximum number of messages to include in conversation history
+temperature = float(get_from_env_or_config("llm", "temperature"))
+chatClient  = llm_class.get_client(temperature=temperature)
+max_messages = int(get_from_env_or_config("llm", "max_messages")) # Maximum number of messages to include in conversation history
 
 def querying_with_langchain_gpt3(index_id, query, context):
     intent_response = check_bot_intent(query, context)
@@ -28,16 +24,16 @@ def querying_with_langchain_gpt3(index_id, query, context):
     
     try:
         system_rules = ""
-        activity_prompt_config = get_config_value("llm", "activity_prompt", None)
+        activity_prompt_config = get_from_env_or_config("llm", "activity_prompt", None)
         logger.debug(f"activity_prompt_config: {activity_prompt_config}")
         if activity_prompt_config:
             activity_prompt_dict = ast.literal_eval(activity_prompt_config)
             system_rules = activity_prompt_dict.get(context)
 
-        top_docs_to_fetch = get_config_value("database", "top_docs_to_fetch", None)
+        top_docs_to_fetch = get_from_env_or_config("database", "top_docs_to_fetch", None)
         documents = vectorstore_class.similarity_search_with_score(query, index_id, k=20)
         logger.debug(f"Marqo documents : {str(documents)}")
-        min_score = get_config_value("database", "docs_min_score", None)
+        min_score = get_from_env_or_config("database", "docs_min_score", None)
         filtered_document = get_score_filtered_documents(documents, float(min_score))
         filtered_document = filtered_document[:int(top_docs_to_fetch)]
         logger.info(f"Score filtered documents : {str(filtered_document)}")
@@ -69,7 +65,7 @@ def conversation_retrieval_chain(index_id, query, session_id, context):
     
     try:
         system_rules = ""
-        activity_prompt_config = get_config_value("llm", "activity_prompt", None)
+        activity_prompt_config = get_from_env_or_config("llm", "activity_prompt", None)
         logger.debug(f"activity_prompt_config: {activity_prompt_config}")
         activity_prompt_dict = ast.literal_eval(activity_prompt_config)
         system_rules = activity_prompt_dict.get(context)
@@ -83,9 +79,9 @@ def conversation_retrieval_chain(index_id, query, session_id, context):
         logger.info(f"search_intent :: {search_intent}")
         documents = vectorstore_class.similarity_search_with_score(search_intent, index_id, k=20)
         logger.debug(f"Marqo documents : {str(documents)}")
-        min_score = get_config_value("database", "docs_min_score", None)
+        min_score = get_from_env_or_config("database", "docs_min_score", None)
         filtered_document = get_score_filtered_documents(documents, float(min_score))
-        top_docs_to_fetch = get_config_value("database", "top_docs_to_fetch", None)
+        top_docs_to_fetch = get_from_env_or_config("database", "top_docs_to_fetch", None)
         filtered_document = filtered_document[:int(top_docs_to_fetch)]
         logger.info(f"Score filtered documents : {str(filtered_document)}")
         contexts = get_formatted_documents(filtered_document)
@@ -125,7 +121,7 @@ def format_assistant_message(a):
     return {'role': 'assistant', 'content': a.strip()}
 
 def get_chat_intent_prompt():
-    intent_prompt = get_config_value("llm", "chat_intent_prompt")
+    intent_prompt = get_from_env_or_config("llm", "chat_intent_prompt")
     return {'role': "system", 'content': intent_prompt }
 
 def get_intent_query(messages=[]):
@@ -151,7 +147,7 @@ def get_intent_query(messages=[]):
             "required": ["query"]
         }
     }
-    # gpt_model = get_config_value("llm", "GPT_MODEL", "gpt-4")
+    # gpt_model = get_from_env_or_config("llm", "GPT_MODEL", "gpt-4")
     # response = client.chat.completions.create(
     #     model=gpt_model,
     #     messages=messages,
@@ -160,7 +156,7 @@ def get_intent_query(messages=[]):
     #     stream=False,
     #     temperature=0.1,
     # )
-    clientIntent = ai_class.get_client(temperature=0.1)
+    clientIntent = llm_class.get_client(temperature=0.1)
     converted_messsages = convert_chat_messages(messages)
     response = clientIntent.invoke(input=converted_messsages)
 
@@ -275,18 +271,18 @@ def format_previous_messages(messages):
 
 def check_bot_intent(query: str, context: str):
 
-    enable_bot_intent = get_config_value("llm", "enable_bot_intent", None)
+    enable_bot_intent = get_from_env_or_config("llm", "enable_bot_intent", None)
     logger.debug(f"enable_bot_intent: {enable_bot_intent}")
     if enable_bot_intent.lower() == "false":
         return None
 
-    intent_prompt = get_config_value("llm", "intent_prompt")
+    intent_prompt = get_from_env_or_config("llm", "intent_prompt")
     intent_response = call_chat_model(
         messages=[{"role": "system", "content": intent_prompt}, {"role": "user", "content": query}]
     )
     logger.info({"label": "intent_response", "intent_response": intent_response})
     if intent_response.lower() == "yes":
-        bot_prompt_config = get_config_value("llm", "bot_prompt", "")
+        bot_prompt_config = get_from_env_or_config("llm", "bot_prompt", "")
         logger.debug(f"bot_prompt_config: {bot_prompt_config}")
         bot_prompt_dict = ast.literal_eval(bot_prompt_config)
         system_rules = bot_prompt_dict.get(context)

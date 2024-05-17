@@ -1,12 +1,12 @@
+from abc import ABC, abstractmethod
 from typing import (
     List,
     Tuple
 )
-
 from langchain.docstore.document import Document
 
 
-class BaseVectorStore:
+class BaseVectorStore(ABC):
     """Base class for vector store implementations."""
     SPLIT_LENGTH: int = 1
     SPLIT_OVERLAP: int = 0
@@ -18,6 +18,7 @@ class BaseVectorStore:
         """
         pass
 
+    @abstractmethod
     def get_client(self):
         """
         Returns the client object used to interact with the vector store.
@@ -27,7 +28,6 @@ class BaseVectorStore:
         Returns:
             The client object used to interact with the vector store.
         """
-        raise NotImplementedError
 
     def chunk_list(self, document: List, batch_size: int) -> List[List]:
         """
@@ -42,6 +42,7 @@ class BaseVectorStore:
         """
         return [document[i: i + batch_size] for i in range(0, len(document), batch_size)]
 
+    @abstractmethod
     def add_documents(self, documents: List[Document], fresh_collection: bool = False) -> List[str]:
         """
         Adds a list of documents to the vector store.
@@ -54,8 +55,8 @@ class BaseVectorStore:
         Returns:
             A list of document IDs for the added documents.
         """
-        raise NotImplementedError
 
+    @abstractmethod
     def similarity_search_with_score(self, query: str, collection_name: str, k: int = 20) -> List[Tuple[Document, float]]:
         """
         Performs a similarity search on the vector store and returns documents with their scores.
@@ -70,4 +71,3 @@ class BaseVectorStore:
         Returns:
             A list of tuples, where each tuple contains a document and its corresponding score.
         """
-        raise NotImplementedError

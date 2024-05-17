@@ -2,8 +2,7 @@ import os
 from typing import Any
 
 from langchain.chat_models import ChatOpenAI
-
-from llm.BaseChatClient import BaseChatClient
+from llm.base import BaseChatClient
 
 
 class OpenAIChatClient(BaseChatClient):

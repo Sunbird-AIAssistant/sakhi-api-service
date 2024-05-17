@@ -1,9 +1,10 @@
 import os
+from typing import Optional, Union
 import boto3
 from botocore.exceptions import ClientError
 from logger import logger
 
-from storage.BaseStorageClass import BaseStorageClass
+from storage.base import BaseStorageClass
 
 
 class OciBucketClass(BaseStorageClass):
@@ -16,7 +17,7 @@ class OciBucketClass(BaseStorageClass):
             endpoint_url=os.getenv("BUCKET_ENDPOINT_URL")
         ))
 
-    def upload_to_storage(self, file_name, object_name=None):
+    def upload_to_storage(self, file_name: str, object_name: Optional[str] = None) -> bool:
         if object_name is None:
             object_name = os.path.basename(file_name)
 
@@ -29,7 +30,7 @@ class OciBucketClass(BaseStorageClass):
             return False
         return True
 
-    def generate_public_url(self, object_name):
+    def generate_public_url(self, object_name: str) -> Union[tuple[str, None], tuple[None, str]]:
         """
         Generates the full path to a file in OCI Object Storage.
 

@@ -2,13 +2,14 @@ import redis
 import zlib
 import pickle
 import os
-from config_util import get_config_value
+
+from utils import get_from_env_or_config
 
 # Connect to Redis
 REDIS_HOST = os.environ.get('REDIS_HOST', 'localhost')
 REDIS_PORT = os.environ.get('REDIS_PORT', 6379)
 REDIS_DB = os.environ.get('REDIS_DB', 0)
-REDIS_TTL = get_config_value('redis', 'ttl') # 12 hours (TTL in seconds)
+REDIS_TTL = get_from_env_or_config('redis', 'ttl') # 12 hours (TTL in seconds)
 redis_client = redis.Redis(host=REDIS_HOST, port=int(REDIS_PORT), db=int(REDIS_DB))
 
 def store_messages_in_redis(key, message, ttl=int(REDIS_TTL)):
