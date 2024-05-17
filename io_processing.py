@@ -2,7 +2,7 @@ import time
 from logger import logger
 
 from env_manager import translate_class as translator
-from utils.env import get_from_env_or_config
+from utils import get_from_env_or_config
 
 DEFAULT_LANGAUGE = get_from_env_or_config('default', 'language', None)
 
