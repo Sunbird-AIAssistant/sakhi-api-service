@@ -1,10 +1,10 @@
 import time
-
 from logger import logger
+
 from env_manager import translate_class as translator
+from utils import get_from_env_or_config
 
-
-
+DEFAULT_LANGAUGE = get_from_env_or_config('default', 'language', None)
 
 def process_incoming_voice(file_url, input_language):
     """
@@ -14,7 +14,7 @@ def process_incoming_voice(file_url, input_language):
     try:
         regional_text = translator.speech_to_text(file_url, input_language)
         try:
-            english_text = translator.translate_text(text=regional_text, source=input_language, destination='en')
+            english_text = translator.translate_text(text=regional_text, source=input_language, destination=DEFAULT_LANGAUGE)
         except Exception as e:
             error_message = "Indic translation to English failed"
             logger.error(f"Exception occurred: {e}", exc_info=True)
@@ -33,7 +33,7 @@ def process_incoming_text(regional_text, input_language):
     """
     error_message = None
     try:
-        english_text = translator.translate_text(text=regional_text, source=input_language, destination='en')
+        english_text = translator.translate_text(text=regional_text, source=input_language, destination=DEFAULT_LANGAUGE)
     except Exception as e:
         error_message = "Indic translation to English failed"
         english_text = None
@@ -47,7 +47,7 @@ def process_outgoing_text(english_text, input_language):
     """
     error_message = None
     try:
-        regional_text = translator.translate_text(text=english_text, source='en', destination=input_language)
+        regional_text = translator.translate_text(text=english_text, source=DEFAULT_LANGAUGE, destination=input_language)
     except Exception as e:
         error_message = "English translation to indic language failed"
         logger.error(f"Exception occurred: {e}", exc_info=True)

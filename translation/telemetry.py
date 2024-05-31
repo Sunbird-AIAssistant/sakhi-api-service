@@ -1,6 +1,4 @@
 from telemetry_logger import TelemetryLogger
-
-
 telemetryLogger = TelemetryLogger()
 
 def log_success_telemetry_event(url, method, payload, process_time, status_code):

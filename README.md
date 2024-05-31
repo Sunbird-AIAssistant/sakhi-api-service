@@ -80,47 +80,7 @@ To use the code, you need to follow these steps:
 
 4. You will need Cloud storage account to store the audio file for response. (Supported - OCI, GCP, AWS)
 
-5. create another file **.env** which will hold the development credentials and add the following variables. Update the Azure OpenAI details, OCI details, Bhashini endpoint URL and API key.
-
-   ```bash
-   SERVICE_ENVIRONMENT=<name_of_the_environment>
-   LOG_LEVEL=<log_level>
-   CONFIG_INI_PATH=<your_config.ini_file_path>
-
-   #Redis Database
-   REDIS_HOST=localhost
-   REDIS_PORT=6379
-   REDIS_DB=0
-
-   #Telemetry
-   TELEMETRY_ENDPOINT_URL=<telemetry_endpoint_url>
-   TELEMETRY_LOG_ENABLED=<telemetry_enable_or_disable>
-
-   #LLM - openai, azure, ollama
-   LLM_TYPE=<llm_type> 
-   OPENAI_API_KEY=<your_openai_api_key>
-   GPT_MODEL=<your_gpt_model>
-
-   #Translation - bhashini, google, dhruva
-   TRANSLATION_TYPE=<translation_type> 
-   BHASHINI_ENDPOINT_URL=<your_bhashini_api_endpoint>
-   BHASHINI_API_KEY=<your_bhashini_api_key>
-
-   #Storage - oci, gcp, aws
-   BUCKET_TYPE=<bucket_type>
-   BUCKET_ENDPOINT_URL=<your_bucket_endpoint_url>
-   BUCKET_REGION_NAME=<your_bucket_region_name>
-   BUCKET_NAME=<your_bucket_name>
-   BUCKET_SECRET_ACCESS_KEY=<your_bucket_secret_access_key>
-   BUCKET_ACCESS_KEY_ID=<your_bucket_access_key_id>
-
-   #Vector Store - marqo
-   VECTOR_STORE_TYPE=marqo
-   VECTOR_STORE_ENDPOINT=http://localhost:8882
-   EMBEDDING_MODEL=flax-sentence-embeddings/all_datasets_v4_mpnet-base
-   VECTOR_COLLECTION_NAME=test
-
-   ```
+5. Copy `.env.example` file, paste it into the same location, and rename to `.env` and update the values in that file.
 
 # 🏃🏻 2. Running
 

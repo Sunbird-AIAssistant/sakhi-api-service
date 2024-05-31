@@ -7,7 +7,7 @@ config_file_path = os.getenv('CONFIG_INI_PATH', 'config.ini')  # Update with you
 config = ConfigParser()
 config.read(config_file_path)
 
-def get_config_value(section: str, key: str, default=None):
+def get_from_env_or_config(section: str, key: str, default=None):
     # Check if the key exists in the environment variables
     value = os.getenv(key.upper(), default)
 
