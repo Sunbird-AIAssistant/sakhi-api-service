@@ -30,7 +30,7 @@ class OciBucketClass(BaseStorageClass):
             return False
         return True
 
-    def generate_public_url(self, object_name: str) -> Union[tuple[str, None], tuple[None, str]]:
+    def generate_public_url(self, object_name: str):
         """
         Generates the full path to a file in OCI Object Storage.
 
