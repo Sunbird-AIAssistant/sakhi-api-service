@@ -18,7 +18,7 @@ class GcpBucketClass(BaseStorageClass):
 
         return True
 
-    def generate_public_url(self, object_name: str) -> Union[tuple[str, None], tuple[None, str]]:
+    def generate_public_url(self, object_name: str):
         try:
             bucket = self.client.get_bucket(self.bucket_name)
             blob = bucket.blob(object_name)

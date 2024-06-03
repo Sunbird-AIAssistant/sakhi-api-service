@@ -30,7 +30,7 @@ class AwsS3BucketClass(BaseStorageClass):
         return True
 
 
-    def generate_public_url(self, object_name: str) -> Union[tuple[str, None], tuple[None, str]]:
+    def generate_public_url(self, object_name: str):
         try:
             public_url = f'https://{self.bucket_name}.s3.amazonaws.com/{object_name}'
             return public_url, None
