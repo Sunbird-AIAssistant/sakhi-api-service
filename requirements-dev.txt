@@ -24,3 +24,4 @@ ffmpeg
 scikit-learn==1.2.1
 marqo==2.1.0
 redis>=5.0.1
+docx2txt

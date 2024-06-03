@@ -183,7 +183,6 @@ async def indexer_main():
 
     logger.info("Loading documents...")
     documents = load_and_split_documents(records, CHUNK_SIZE, CHUNK_OVERLAP)
-    print(documents)
     logger.info(f"Total documents :: => {len(documents)}")
     
     logger.info("Adding documents...")

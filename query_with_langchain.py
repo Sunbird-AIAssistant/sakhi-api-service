@@ -308,7 +308,7 @@ def get_formatted_documents(documents: List[Tuple[Document, Any]]):
     sources = ""
     for document, _ in documents:
         sources += f"""
-            > {document.page_content} \n Source: {document.metadata['file_name']},  page# {document.metadata['page_label']};\n\n
+            > {document.page_content} \n Source: [{document.metadata['file_name']}]({document.metadata['file_url']}),  page# {document.metadata['page_label']};\n\n
             """
     return sources
 
