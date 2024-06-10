@@ -22,14 +22,16 @@ from llm import (
 )
 
 from vectorstores import (
-   BaseVectorStore,
-   MarqoVectorStore
+    BaseVectorStore,
+    MarqoVectorStore
 )
+
 
 class EnvironmentManager():
     """
     Class for initializing functions respective to the env variable provided
     """
+
     def __init__(self):
         load_dotenv()
         self.indexes = {
@@ -76,12 +78,25 @@ class EnvironmentManager():
 
         logger.info(f"Init {env_key} class for: {type_value}")
         return self.indexes[env_key]["class"].get(type_value)()
-            
+
+
 env_class = EnvironmentManager()
 
 # create instances of functions
 logger.info(f"Initializing required classes for components")
 llm_class: BaseChatClient = env_class.create_instance("llm")
-translate_class: BaseTranslationClass = env_class.create_instance("translate")
-storage_class: BaseStorageClass = env_class.create_instance("storage")
+
+
+if os.environ["TRANSLATION_TYPE"] is None or os.environ["TRANSLATION_TYPE"] == "":
+    logger.info("No translation class specified.")
+    translate_class: BaseTranslationClass = None
+else:
+    translate_class: BaseTranslationClass = env_class.create_instance("translate")
+
+if os.environ["BUCKET_TYPE"] is None or os.environ["BUCKET_TYPE"] == "":
+    logger.info("No storage class specified.")
+    storage_class: BaseStorageClass = None
+else:
+    storage_class: BaseStorageClass = env_class.create_instance("storage")
+
 vectorstore_class: BaseVectorStore = env_class.create_instance("vectorstore")
