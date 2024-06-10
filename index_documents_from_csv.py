@@ -1,7 +1,7 @@
 import os
 import shutil
 import argparse
-from typing import ( Dict, List)
+from typing import ( Dict, List, Optional)
 from langchain.docstore.document import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from llama_index import SimpleDirectoryReader
@@ -9,6 +9,8 @@ from env_manager import vectorstore_class
 import asyncio
 from logger import logger
 import pandas as pd
+from urllib.parse import urlparse
+import re
 # import tenacity
 from aiohttp import ClientSession
 
@@ -130,6 +132,36 @@ async def download_files_async(records: List[Dict[str, str]]):
             tasks.append(task)
         await asyncio.gather(*tasks)
 
+def _parse_file_id(url: str) -> str | None:
+    """Parse a google drive url and return the file id if valid, otherwise None."""
+    # Define the regular expression pattern for Google Drive file URLs
+    pattern = r'(?:file/d/|id=|open\?id=|uc\?id=)([a-zA-Z0-9_-]{33,})'
+    
+    # Search for the pattern in the given URL
+    match = re.search(pattern, url)
+    
+    # If a match is found, return the file ID, otherwise return None
+    if match:
+        return match.group(1)
+    else:
+        return None
+
+def extract_file_id(file_url: str) -> str:
+    """Extracts the file ID from a Google Drive URL"""
+    # Parse the URL to get the domain
+    parsed_url = urlparse(file_url)
+    domain = parsed_url.netloc
+
+    # Check if the domain is specifically "drive.google.com"
+    if 'drive.google.com' not in domain:
+        return file_url
+        
+    file_id = _parse_file_id(file_url)
+    if not file_id:
+        raise ValueError(
+            f"Could not determine the file ID for the URL {file_url}"
+        )
+    return f"https://drive.google.com/uc?export=download&id={file_id}"
 
 async def indexer_main():
     parser = argparse.ArgumentParser()
@@ -174,7 +206,8 @@ async def indexer_main():
 
     # Read data from CSV File
     df = pd.read_csv(CSV_PATH)  # Use pandas to read the CSV file
-    df['filepath']  = [ os.path.join(DOWNLOAD_DIR, row['filename']) for idx, row in df.iterrows()]
+    df['filepath'] = [ os.path.join(DOWNLOAD_DIR, row['filename']) for idx, row in df.iterrows()]
+    df['fileurl'] = [ extract_file_id(row['fileurl']) for idx, row in df.iterrows()]
     records = df.fillna('').to_dict('records')
     logger.info(f"Total files :: => {len(records)}")
 
