@@ -20,14 +20,18 @@ from llm import (
     OpenAIChatClient,
     OllamaChatClient
 )
+from utils import get_from_env_or_config
 
 from vectorstores import (
     BaseVectorStore,
     MarqoVectorStore
 )
 
+disable_services = get_from_env_or_config("default", "disable_services", "").split(",")
+logger.info(f"Disable Services: {disable_services}")
 
-class EnvironmentManager():
+
+class EnvironmentManager:
     """
     Class for initializing functions respective to the env variable provided
     """
@@ -71,13 +75,15 @@ class EnvironmentManager():
         env_var = self.indexes[env_key]["env_key"]
         type_value = os.getenv(env_var)
 
-        if type_value is None:
+        if (type_value is None or type_value == "") and env_var not in disable_services:
             raise ValueError(
                 f"Missing credentials. Please pass the `{env_var}` environment variable"
             )
-
-        logger.info(f"Init {env_key} class for: {type_value}")
-        return self.indexes[env_key]["class"].get(type_value)()
+        elif (type_value is None or type_value == "") and env_var in disable_services:
+            return None
+        else:
+            logger.info(f"Init {env_key} class for: {type_value}")
+            return self.indexes[env_key]["class"].get(type_value)()
 
 
 env_class = EnvironmentManager()
@@ -85,18 +91,6 @@ env_class = EnvironmentManager()
 # create instances of functions
 logger.info(f"Initializing required classes for components")
 llm_class: BaseChatClient = env_class.create_instance("llm")
-
-
-if os.environ["TRANSLATION_TYPE"] is None or os.environ["TRANSLATION_TYPE"] == "":
-    logger.info("No translation class specified.")
-    translate_class: BaseTranslationClass = None
-else:
-    translate_class: BaseTranslationClass = env_class.create_instance("translate")
-
-if os.environ["BUCKET_TYPE"] is None or os.environ["BUCKET_TYPE"] == "":
-    logger.info("No storage class specified.")
-    storage_class: BaseStorageClass = None
-else:
-    storage_class: BaseStorageClass = env_class.create_instance("storage")
-
+translate_class: BaseTranslationClass = env_class.create_instance("translate")
+storage_class: BaseStorageClass = env_class.create_instance("storage")
 vectorstore_class: BaseVectorStore = env_class.create_instance("vectorstore")
