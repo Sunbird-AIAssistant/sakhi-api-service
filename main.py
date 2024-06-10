@@ -134,7 +134,10 @@ async def query(request: QueryModel, x_request_id: str = Header(None, alias="X-R
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid audio input!")
         query_text, text, error_message = process_incoming_voice(audio_url, language)
         is_audio = True
-    
+
+    if is_audio and (os.environ["BUCKET_TYPE"] is None or os.environ["BUCKET_TYPE"] == ""):
+        raise HTTPException(status_code=503, detail="Storage service is not configured!")
+
     if text is not None:
         answer, error_message, status_code = querying_with_langchain_gpt3(index_id, text, context)
         if len(answer) != 0:
@@ -198,7 +201,10 @@ async def chat(request: QueryModel, x_request_id: str = Header(None, alias="X-Re
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid audio input!")
         query_text, text, error_message = process_incoming_voice(audio_url, language)
         is_audio = True
-    
+
+    if is_audio and (os.environ["BUCKET_TYPE"] is None or os.environ["BUCKET_TYPE"] == ""):
+        raise HTTPException(status_code=503, detail="Storage service is not configured!")
+
     if text is not None:
         answer, error_message, status_code = conversation_retrieval_chain(index_id, text, redis_session_id, context)
         if len(answer) != 0:

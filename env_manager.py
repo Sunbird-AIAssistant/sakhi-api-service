@@ -20,16 +20,22 @@ from llm import (
     OpenAIChatClient,
     OllamaChatClient
 )
+from utils import get_from_env_or_config
 
 from vectorstores import (
-   BaseVectorStore,
-   MarqoVectorStore
+    BaseVectorStore,
+    MarqoVectorStore
 )
 
-class EnvironmentManager():
+disable_services = get_from_env_or_config("default", "disable_services", "").split(",")
+logger.info(f"Disable Services: {disable_services}")
+
+
+class EnvironmentManager:
     """
     Class for initializing functions respective to the env variable provided
     """
+
     def __init__(self):
         load_dotenv()
         self.indexes = {
@@ -69,14 +75,17 @@ class EnvironmentManager():
         env_var = self.indexes[env_key]["env_key"]
         type_value = os.getenv(env_var)
 
-        if type_value is None:
+        if (type_value is None or type_value == "") and env_var not in disable_services:
             raise ValueError(
                 f"Missing credentials. Please pass the `{env_var}` environment variable"
             )
+        elif (type_value is None or type_value == "") and env_var in disable_services:
+            return None
+        else:
+            logger.info(f"Init {env_key} class for: {type_value}")
+            return self.indexes[env_key]["class"].get(type_value)()
 
-        logger.info(f"Init {env_key} class for: {type_value}")
-        return self.indexes[env_key]["class"].get(type_value)()
-            
+
 env_class = EnvironmentManager()
 
 # create instances of functions
