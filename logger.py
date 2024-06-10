@@ -3,19 +3,14 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
-logger_name = "sakhi_activity"
-log_level = os.environ["LOG_LEVEL"]
-log_format = '%(asctime)s - %(thread)d - %(threadName)s - %(name)s - %(levelname)s - %(message)s'
 
-logging.basicConfig(
-    level=log_level,
-    format=log_format,
-    datefmt='%Y-%m-%d %H:%M:%S',
-)
+logging.config.fileConfig('logging.conf')
+
+logger_name = "app"
 
 # Configure the logger
 logger = logging.getLogger(logger_name)
-# logger.setLevel(log_level)
+logger.setLevel(os.environ("LOG_LEVEL"))
 
 # Example usage
 # logger.debug("This is a debug message.")
