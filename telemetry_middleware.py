@@ -34,7 +34,6 @@ telemetry_log_enabled = get_from_env_or_config('telemetry', 'telemetry_log_enabl
 
 routes_with_middleware = ["/"]
 rx = re.compile(r'^(/v1/[a-zA-Z0-9]+)$')  # support routes with path parameters
-my_constr = constr(regex="^[a-zA-Z0-9]+$")
 
 
 class TelemetryMiddleware(BaseHTTPMiddleware):
