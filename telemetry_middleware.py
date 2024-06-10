@@ -68,7 +68,7 @@ class TelemetryMiddleware(BaseHTTPMiddleware):
                     "method": request.method,
                     "url": request.url
                 }
-                event.update(request.headers)
+                # event.update(request.headers)
                 logger.info({"label": "api_call", "event": event})
 
                 if telemetry_log_enabled:
@@ -79,11 +79,9 @@ class TelemetryMiddleware(BaseHTTPMiddleware):
                     telemetryLogger.add_event(event)
 
             if "output" in json.loads(response_body.decode()):
-                response_body_json = json.loads("{\"output\":" + json.dumps(json.loads(response_body.decode())["output"]) + "}")
+                response_body_json = json.dumps({"output": json.loads(response_body.decode())["output"]}, indent=2)
             else:
-                response_body_json = json.loads(response_body.decode())
+                response_body_json = json.dumps(json.loads(response_body.decode()), indent=2)
 
-            resp_str = json.dumps({"data": response_body_json}, indent=2)
-
-            json_response = Response(content=resp_str, status_code=response.status_code, media_type="application/json")
+            json_response = Response(content=response_body_json, status_code=response.status_code, media_type="application/json")
             return json_response
