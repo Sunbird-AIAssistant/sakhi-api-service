@@ -3,29 +3,29 @@ import re
 import time
 
 from fastapi import Request
-from pydantic import constr
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
-from starlette.types import Message
 
 from logger import logger
 from telemetry_logger import TelemetryLogger
 from utils import get_from_env_or_config
 
+# from starlette.types import Message
+
 
 # https://github.com/tiangolo/fastapi/issues/394
 # Stream response does not work => https://github.com/tiangolo/fastapi/issues/394#issuecomment-994665859
-async def set_body(request: Request, body: bytes):
-    async def receive() -> Message:
-        return {"type": "http.request", "body": body}
-
-    request._receive = receive
-
-
-async def get_body(request: Request) -> bytes:
-    body = await request.body()
-    await set_body(request, body)
-    return body
+# async def set_body(request: Request, body: bytes):
+#     async def receive() -> Message:
+#         return {"type": "http.request", "body": body}
+#
+#     request._receive = receive
+#
+#
+# async def get_body(request: Request) -> bytes:
+#     body = await request.body()
+#     await set_body(request, body)
+#     return body
 
 
 telemetryLogger = TelemetryLogger()
@@ -45,10 +45,10 @@ class TelemetryMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request: Request, call_next):
         start_time = time.time()
-        await set_body(request, await request.body())
-        body = await get_body(request)
-        if body.decode("utf-8"):
-            body = json.loads(body)
+        # await set_body(request, await request.body())
+        # body = await get_body(request)
+        # if body.decode("utf-8"):
+        #     body = json.loads(body)
         response = await call_next(request)
         if request.url.path not in routes_with_middleware and not rx.match(request.url.path):
             return response
