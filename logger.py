@@ -10,7 +10,7 @@ logger_name = "app"
 
 # Configure the logger
 logger = logging.getLogger(logger_name)
-# logger.setLevel(log_level)
+logger.setLevel(os.getenv("LOG_LEVEL"))
 
 # Example usage
 # logger.debug("This is a debug message.")
