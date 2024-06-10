@@ -39,7 +39,7 @@ def split_documents(documents: List[Document], chunk_size: int = 4000, chunk_ove
             splited_docs.append(Document(page_content=chunk, metadata={
                 "page_label": document.metadata.get("page_label"),
                 "file_name": document.metadata.get("file_name"),
-                "file_path": document.metadata.get("file_path"),
+                # "file_path": document.metadata.get("file_path"),
                 "file_type": document.metadata.get("file_type")
             }))
     return splited_docs

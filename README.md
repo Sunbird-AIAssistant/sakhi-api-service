@@ -80,7 +80,8 @@ To use the code, you need to follow these steps:
 
 4. You will need Cloud storage account to store the audio file for response. (Supported - OCI, GCP, AWS)
 
-5. Copy `.env.example` file, paste it into the same location, and rename to `.env` and update the values in that file.
+5. Copy `.env.example` file, paste it into the same location, and rename to `.env` and update the values in that file.  
+   For more information, please refer to the [Environment Variables](https://ai-assistant.sunbird.org/components/sakhi-api-service/environment-variables) page.
 
 # 🏃🏻 2. Running
 

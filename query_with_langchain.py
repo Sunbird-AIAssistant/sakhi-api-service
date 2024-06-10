@@ -307,11 +307,17 @@ def get_score_filtered_documents(documents: List[Tuple[Document, Any]], min_scor
 def get_formatted_documents(documents: List[Tuple[Document, Any]]):
     sources = ""
     for document, _ in documents:
-        sources += f"""
-            > {document.page_content} \n Source: {document.metadata['file_name']},  page# {document.metadata['page_label']};\n\n
-            """
+        sources += f"> {document.page_content} \n"
+        if not document.metadata['file_url']:
+            sources += f"Source: {document.metadata['file_name']}"
+        else:
+            sources += f"Source: [{document.metadata['file_name']}]({document.metadata['file_url']})"
+                 
+        if document.metadata['page_label']:
+            sources += f",  page# {document.metadata['page_label']};\n\n"
+        else:
+            sources +="\n\n"
     return sources
-
 
 def generate_source_format(documents: List[Tuple[Document, Any]]) -> str:
     """Generates an answer format based on the given data.
