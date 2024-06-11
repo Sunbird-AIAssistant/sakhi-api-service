@@ -77,10 +77,12 @@ class TelemetryMiddleware(BaseHTTPMiddleware):
                         event = telemetryLogger.prepare_log_event(eventInput=event, elevel="ERROR", message="failed")
                     telemetryLogger.add_event(event)
 
-            if "output" in json.loads(response_body.decode()):
-                response_body_json = json.dumps({"output": json.loads(response_body.decode())["output"]}, indent=2)
-            else:
-                response_body_json = json.dumps(json.loads(response_body.decode()), indent=2)
+            response_body_json = json.loads(response_body.decode())
 
-            json_response = Response(content=response_body_json, status_code=response.status_code, media_type="application/json")
+            if "output" in response_body_json:
+                response_body_str = json.dumps({"output": response_body_json["output"]}, indent=2)
+            else:
+                response_body_str = json.dumps(response_body_json, indent=2)
+
+            json_response = Response(content=response_body_str, status_code=response.status_code, media_type="application/json")
             return json_response
