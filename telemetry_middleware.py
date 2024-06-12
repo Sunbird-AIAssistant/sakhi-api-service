@@ -8,7 +8,7 @@ from starlette.types import Message
 
 from logger import logger
 from telemetry_logger import TelemetryLogger
-from utils import get_from_env_or_config
+from utils import get_from_env_or_config, is_url 
 
 
 
@@ -29,6 +29,13 @@ async def get_body(request: Request) -> bytes:
 
 telemetryLogger = TelemetryLogger()
 telemetry_log_enabled = get_from_env_or_config('telemetry', 'telemetry_log_enabled', None).lower() == "true"
+
+def remove_base64_from_request(request):
+    if not is_url(request["input"]["audio"]):
+        request["input"]["audio"] = ""
+        return request
+    return request 
+
 class TelemetryMiddleware(BaseHTTPMiddleware):
     def __init__(
             self,
@@ -65,6 +72,7 @@ class TelemetryMiddleware(BaseHTTPMiddleware):
                     event = telemetryLogger.prepare_log_event(eventInput=event, message="success")
                 else:
                     event["body"] = { **event["body"], **body}
+                    event["body"] = remove_base64_from_request(event["body"])
                     event = telemetryLogger.prepare_log_event(eventInput=event, elevel="ERROR", message="failed")
                 telemetryLogger.add_event(event)
 
@@ -72,6 +80,6 @@ class TelemetryMiddleware(BaseHTTPMiddleware):
                 response_body_str = json.dumps({"output": response_body_json["output"]}, indent=2)
             else:
                 response_body_str = json.dumps(response_body_json, indent=2)
-            return Response(content=response_body_str, status_code=response.status_code, media_type="application/json")
+            return Response(content=response_body_str, status_code=response.status_code, media_type=response.media_type)
             
         return response
