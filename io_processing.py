@@ -6,14 +6,15 @@ from env_manager import translate_class as translator
 from utils import get_from_env_or_config
 
 DEFAULT_LANGAUGE = get_from_env_or_config('default', 'language', None)
-
+TRANSLATION_TYPE = os.getenv('TRANSLATION_TYPE')
+BUCKET_TYPE = os.getenv('BUCKET_TYPE')
 
 def process_incoming_voice(file_url, input_language):
     """
     Main Function for processing audio based queries
     """
     error_message = None
-    if os.getenv("TRANSLATION_TYPE") is None or os.getenv("TRANSLATION_TYPE") == "":
+    if not TRANSLATION_TYPE:
         return None, None, "Translation service is not configured!"
 
     try:
@@ -37,7 +38,7 @@ def process_incoming_text(regional_text, input_language):
     Main function for processing text queries
     """
     error_message = None
-    if os.getenv("TRANSLATION_TYPE") is None or os.getenv("TRANSLATION_TYPE") == "":
+    if not TRANSLATION_TYPE:
         return regional_text, error_message
 
     try:
@@ -54,7 +55,7 @@ def process_outgoing_text(english_text, input_language):
     Main func for generating text response
     """
     error_message = None
-    if os.getenv("TRANSLATION_TYPE") is None or os.getenv("TRANSLATION_TYPE") == "":
+    if not TRANSLATION_TYPE:
         return english_text, error_message
 
     try:
@@ -70,7 +71,7 @@ def process_outgoing_voice(message, input_language):
     """
     Main function for generating audio response
     """
-    if os.getenv("BUCKET_TYPE") is None or os.getenv("BUCKET_TYPE") == "":
+    if not BUCKET_TYPE:
         return None, "Storage service is not configured!"
 
     error_message = None

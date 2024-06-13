@@ -82,7 +82,7 @@ class ResponseForQuery(BaseModel):
 
 # Telemetry API logs middleware
 app.add_middleware(TelemetryMiddleware)
-
+BUCKET_TYPE = os.environ["BUCKET_TYPE"]
 
 @app.get("/", include_in_schema=False)
 async def root():
@@ -140,7 +140,7 @@ async def query(request: QueryModel, x_request_id: str = Header(None, alias="X-R
         query_text, text, error_message = process_incoming_voice(audio_url, language)
         is_audio = True
 
-    if is_audio and (os.environ["BUCKET_TYPE"] is None or os.environ["BUCKET_TYPE"] == ""):
+    if is_audio and not BUCKET_TYPE:
         raise HTTPException(status_code=503, detail="Storage service is not configured!")
 
     if text is not None:
@@ -208,7 +208,7 @@ async def chat(request: QueryModel, x_request_id: str = Header(None, alias="X-Re
         query_text, text, error_message = process_incoming_voice(audio_url, language)
         is_audio = True
 
-    if is_audio and (os.environ["BUCKET_TYPE"] is None or os.environ["BUCKET_TYPE"] == ""):
+    if is_audio and not BUCKET_TYPE:
         raise HTTPException(status_code=503, detail="Storage service is not configured!")
 
     if text is not None:
