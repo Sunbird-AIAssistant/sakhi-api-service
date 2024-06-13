@@ -1,4 +1,5 @@
 import os
+import re
 import time
 from logger import logger
 
@@ -57,13 +58,12 @@ def process_outgoing_text(english_text, input_language):
     if os.getenv("TRANSLATION_TYPE") is None or os.getenv("TRANSLATION_TYPE") == "":
         return english_text, error_message
 
-    try:
-        regional_text = translator.translate_text(text=english_text, source=DEFAULT_LANGAUGE, destination=input_language)
-    except Exception as e:
-        error_message = "English translation to indic language failed"
-        logger.error(f"Exception occurred: {e}", exc_info=True)
-        regional_text = None
-    return regional_text, error_message
+    sections = split_text(english_text)
+    translated_sections, error_message = translate_sections(sections, input_language)
+    if error_message is not None:
+        return None, error_message
+    formatted_translated_text = reassemble_text(translated_sections)
+    return formatted_translated_text, None
 
 
 def process_outgoing_voice(message, input_language):
@@ -86,3 +86,29 @@ def process_outgoing_voice(message, input_language):
     error_message = "Text to Audio conversion failed"
     logger.error(error_message)
     return None, error_message
+
+
+def split_text(text):
+    return re.split(r'(\t|\n)', text)
+
+
+def reassemble_text(sections):
+    return ''.join(sections)
+
+
+def translate_sections(sections, input_language):
+    translated_sections = []
+    error_message = None
+    for section in sections:
+        if section.strip():
+            try:
+                regional_text = translator.translate_text(text=section, source=DEFAULT_LANGAUGE, destination=input_language)
+            except Exception as e:
+                error_message = "English translation to indic language failed"
+                logger.error(f"Exception occurred: {e}", exc_info=True)
+                regional_text = None
+            translated_sections.append(regional_text)
+        else:
+            translated_sections.append(section)
+    return translated_sections, error_message
+
