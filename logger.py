@@ -1,5 +1,4 @@
 import logging
-import logging.config
 import os
 from dotenv import load_dotenv
 
