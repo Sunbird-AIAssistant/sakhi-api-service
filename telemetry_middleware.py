@@ -80,6 +80,8 @@ class TelemetryMiddleware(BaseHTTPMiddleware):
                 response_body_str = json.dumps({"output": response_body_json["output"]}, indent=2)
             else:
                 response_body_str = json.dumps(response_body_json, indent=2)
-            return Response(content=response_body_str, status_code=response.status_code, media_type=response.media_type)
+            modified_response = response_body_str.encode("utf-8")
+            response.headers['Content-Length'] = str(len(modified_response))
+            return Response(content=response_body_str, headers=dict(response.headers), status_code=response.status_code,media_type=response.media_type)
             
         return response
