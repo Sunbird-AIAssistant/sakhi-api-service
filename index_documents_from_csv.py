@@ -1,7 +1,8 @@
 import os
 import shutil
 import argparse
-from typing import ( Dict, List, Optional)
+from pathlib import Path
+from typing import ( Dict, List)
 from langchain.docstore.document import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from llama_index import SimpleDirectoryReader
@@ -10,12 +11,17 @@ import asyncio
 from logger import logger
 import pandas as pd
 from urllib.parse import urlparse
+from langchain.document_loaders.youtube import ALLOWED_NETLOCK
+from document_downloader import YoutubeAudioDownloader
 import re
 # import tenacity
 from aiohttp import ClientSession
 
+DOWNLOAD_DIR = 'documents'
 DEFAULT_MAX_RETRIES = 3 # Retry up to 3 times
 DEFAULT_WAIT_RETRIES = 2 # Wait 2 seconds between retries
+
+youtubeAudioDownloader = YoutubeAudioDownloader(DOWNLOAD_DIR)
 
 def document_loader(csv_records: List[Dict]) -> List[Document]:
     """Loads documents from file paths specified in CSV records.
@@ -27,9 +33,9 @@ def document_loader(csv_records: List[Dict]) -> List[Document]:
         List[Document]: A list of Document objects loaded from the specified files.
     """
 
-    input_files = [record.get('filepath') for record in csv_records]
+    # input_files = [record.get('filepath') for record in csv_records]
     return SimpleDirectoryReader(
-        input_files=input_files, recursive=True).load_data() # show_progress=True 
+        input_dir=DOWNLOAD_DIR, recursive=True).load_data() # show_progress=True 
 
 
 def split_documents(records: List[Dict], documents: List[Document], chunk_size: int = 4000, chunk_overlap = 200) -> List[Document]:
@@ -52,8 +58,9 @@ def split_documents(records: List[Dict], documents: List[Document], chunk_size: 
     for document in documents:
         for chunk in text_splitter.split_text(document.text):
             splited_documents.append(Document(page_content=chunk, metadata={
+                "file_name": Path(document.metadata.get("file_name")).stem,
                 "page_label": document.metadata.get("page_label"),
-                "file_name": document.metadata.get("file_name"),
+                "file_name_with_ext": document.metadata.get("file_name"),
                 # "file_path": document.metadata.get("file_path"),
                 "file_type": document.metadata.get("file_type"),
                 "file_url": file_url_map.get(document.metadata.get("file_name"), '')
@@ -100,18 +107,29 @@ async def download_file(record: Dict[str, str], session: ClientSession):
     """
 
     filepath = record.get('filepath')
+    download_url = record.get('download_url')
     try:
-        async with session.get(record.get('fileurl')) as response:
+        async with session.get(download_url) as response:
             response.raise_for_status()  # Raise an exception for non-200 status codes
             content = await response.read()
             with open(filepath, 'wb') as f:
                 f.write(content)
             logger.info(f"Downloaded: {filepath}")
     except Exception as e:
-        logger.error(f"Download failed for {filepath}: {e}")
-        logger.info(f"Download failed for {filepath}. So skipping this file")
+        logger.error(f"Download failed for {download_url}: {e}")
+        logger.info(f"Download failed for {download_url}. So skipping this file")
         pass
         # raise  # Re-raise the exception to stop execution
+
+async def download_youtube_video(record: Dict[str, str]):
+    try:
+        downloaded_filepath = youtubeAudioDownloader.download_audio(record.get('download_url'))
+        if downloaded_filepath:
+            record["filename"] = os.path.basename(downloaded_filepath)
+    except Exception as e:
+        logger.error(f"Download failed for {record.get('download_url')}: {e}")
+        logger.info(f"Download failed for {record.get('download_url')}. So skipping this file")
+
 
 
 # Function to download files asynchronously
@@ -128,9 +146,14 @@ async def download_files_async(records: List[Dict[str, str]]):
     tasks = []
     async with ClientSession() as session:
         for record in records:
-            task = asyncio.create_task(download_file(record, session))
+            parsed_url = urlparse(record.get('download_url'))
+            if parsed_url.netloc in ALLOWED_NETLOCK:
+                 task = asyncio.create_task(download_youtube_video(record))
+            else:
+                task = asyncio.create_task(download_file(record, session))
             tasks.append(task)
         await asyncio.gather(*tasks)
+    return records
 
 def _parse_file_id(url: str) -> str | None:
     """Parse a google drive url and return the file id if valid, otherwise None."""
@@ -163,6 +186,13 @@ def extract_file_id(file_url: str) -> str:
         )
     return f"https://drive.google.com/uc?export=download&id={file_id}"
 
+def load_records_from_csv(csv_path):
+    """Reads data from a CSV file and adds filepaths and download URLs."""
+    df = pd.read_csv(csv_path)  # Use pandas to read the CSV file
+    df['filepath'] = [ os.path.join(DOWNLOAD_DIR, row['filename']) for idx, row in df.iterrows()]
+    df['download_url'] = [ extract_file_id(row['fileurl']) for idx, row in df.iterrows()]
+    return df.fillna('').to_dict('records')
+
 async def indexer_main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--csv_path',
@@ -192,7 +222,6 @@ async def indexer_main():
     FRESH_INDEX = args.fresh_index
     CHUNK_SIZE = args.chunk_size
     CHUNK_OVERLAP = args.chunk_overlap
-    DOWNLOAD_DIR = 'documents'
 
     try:
         # Delete the directory and its contents (if it exists)
@@ -205,22 +234,19 @@ async def indexer_main():
         print(f"Error creating directory: {e}")
 
     # Read data from CSV File
-    df = pd.read_csv(CSV_PATH)  # Use pandas to read the CSV file
-    df['filepath'] = [ os.path.join(DOWNLOAD_DIR, row['filename']) for idx, row in df.iterrows()]
-    df['fileurl'] = [ extract_file_id(row['fileurl']) for idx, row in df.iterrows()]
-    records = df.fillna('').to_dict('records')
+    records = load_records_from_csv(CSV_PATH)
     logger.info(f"Total files :: => {len(records)}")
 
     # Function to download files asynchronously
-    await download_files_async(records)
-
+    records = await download_files_async(records)
+    
     logger.info("Loading documents...")
     documents = load_and_split_documents(records, CHUNK_SIZE, CHUNK_OVERLAP)
     logger.info(f"Total documents :: => {len(documents)}")
     
     logger.info("Adding documents...")
     results = vectorstore_class.add_documents(documents, FRESH_INDEX)
-    # logger.info("results =======>", results)
+    logger.info("results =======>", results)
 
 if __name__ == "__main__":
     try:
